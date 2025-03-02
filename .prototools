@@ -1,0 +1,6 @@
+bun = "1.2.4"
+node = "~22"
+
+[settings]
+auto-install = true
+auto-clean = true
