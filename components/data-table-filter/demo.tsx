@@ -29,7 +29,15 @@ import {
 import { DataTableFilter } from '@/registry/data-table-filter/components/data-table-filter'
 import { fuzzyFilter } from '@/registry/data-table-filter/lib/filters'
 import { format } from 'date-fns'
-import { CircleDashedIcon } from 'lucide-react'
+import {
+  CalendarArrowDownIcon,
+  CalendarArrowUpIcon,
+  CircleDashedIcon,
+  CircleDotDashedIcon,
+  ClockIcon,
+  Heading1Icon,
+  UserCheckIcon,
+} from 'lucide-react'
 import { issues, users } from './data'
 import { type Issue, issueStatuses } from './types'
 
@@ -73,11 +81,21 @@ export const columns: ColumnDef<Issue>[] = [
         </div>
       )
     },
+    meta: {
+      displayName: 'Status',
+      type: 'option',
+      icon: CircleDotDashedIcon,
+    },
   },
   {
     accessorKey: 'title',
     header: 'Title',
     cell: ({ row }) => <div>{row.getValue('title')}</div>,
+    meta: {
+      displayName: 'Title',
+      type: 'text',
+      icon: Heading1Icon,
+    },
   },
   {
     accessorKey: 'assignee',
@@ -103,6 +121,11 @@ export const columns: ColumnDef<Issue>[] = [
         </Avatar>
       )
     },
+    meta: {
+      displayName: 'Assignee',
+      type: 'option',
+      icon: UserCheckIcon,
+    },
   },
   {
     accessorKey: 'estimatedHours',
@@ -123,6 +146,11 @@ export const columns: ColumnDef<Issue>[] = [
         </span>
       )
     },
+    meta: {
+      displayName: 'Estimated Hours',
+      type: 'number',
+      icon: ClockIcon,
+    },
   },
   {
     accessorKey: 'startDate',
@@ -138,6 +166,11 @@ export const columns: ColumnDef<Issue>[] = [
 
       return <span>{formatted}</span>
     },
+    meta: {
+      displayName: 'Start Date',
+      type: 'date',
+      icon: CalendarArrowUpIcon,
+    },
   },
   {
     accessorKey: 'endDate',
@@ -152,6 +185,11 @@ export const columns: ColumnDef<Issue>[] = [
       const formatted = format(endDate, 'MMM dd')
 
       return <span>{formatted}</span>
+    },
+    meta: {
+      displayName: 'End Date',
+      type: 'date',
+      icon: CalendarArrowDownIcon,
     },
   },
 ]
