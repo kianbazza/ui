@@ -84,13 +84,9 @@ export function TableFilter<TData>({ table }: { table: Table<TData> }) {
       }}
     >
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="sm"
-          className={cn('h-7 font-normal', hasFilters && 'w-fit px-2')}
-        >
+        <Button variant="outline" className={cn('h-7', hasFilters && 'w-fit')}>
           <Filter className="size-4" />
-          {!hasFilters && <span className="ml-1.5">Filter</span>}
+          {!hasFilters && <span>Filter</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-fit p-0">
@@ -138,11 +134,9 @@ export function TableFilterMenuItem<TData>({
       <div className="flex w-full items-center justify-between">
         <div className="inline-flex items-center gap-1.5">
           {<Icon strokeWidth={2.25} className="size-4" />}
-          <span className="text-slate-600">
-            {column.columnDef.meta?.displayName}
-          </span>
+          <span>{column.columnDef.meta?.displayName}</span>
         </div>
-        <ArrowRight className="size-4 text-slate-600 opacity-0 group-aria-selected:opacity-100" />
+        <ArrowRight className="size-4 opacity-0 group-aria-selected:opacity-100" />
       </div>
     </CommandItem>
   )

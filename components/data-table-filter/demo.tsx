@@ -7,6 +7,8 @@ import {
   type VisibilityState,
   flexRender,
   getCoreRowModel,
+  getFacetedMinMaxValues,
+  getFacetedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
@@ -27,7 +29,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTableFilter } from '@/registry/data-table-filter/components/data-table-filter'
-import { fuzzyFilter } from '@/registry/data-table-filter/lib/filters'
+import { filterFn, fuzzyFilter } from '@/registry/data-table-filter/lib/filters'
 import { format } from 'date-fns'
 import {
   CalendarArrowDownIcon,
@@ -81,10 +83,12 @@ export const columns: ColumnDef<Issue>[] = [
         </div>
       )
     },
+    filterFn: filterFn('option'),
     meta: {
       displayName: 'Status',
       type: 'option',
       icon: CircleDotDashedIcon,
+      options: issueStatuses.map((x) => ({ ...x, label: x.name })),
     },
   },
   {
@@ -121,10 +125,28 @@ export const columns: ColumnDef<Issue>[] = [
         </Avatar>
       )
     },
+    filterFn: filterFn('option'),
     meta: {
       displayName: 'Assignee',
       type: 'option',
       icon: UserCheckIcon,
+      // transformFn: (u: User) => u.id,
+      options: users.map((x) => ({
+        value: x.id,
+        label: x.name,
+        icon: (
+          <Avatar className="size-4">
+            <AvatarImage src={x.picture} />
+            <AvatarFallback>
+              {x.name
+                .split(' ')
+                .map((x) => x[0])
+                .join('')
+                .toUpperCase()}
+            </AvatarFallback>
+          </Avatar>
+        ),
+      })),
     },
   },
   {
@@ -151,6 +173,7 @@ export const columns: ColumnDef<Issue>[] = [
       type: 'number',
       icon: ClockIcon,
     },
+    filterFn: filterFn('number'),
   },
   {
     accessorKey: 'startDate',
@@ -171,6 +194,7 @@ export const columns: ColumnDef<Issue>[] = [
       type: 'date',
       icon: CalendarArrowUpIcon,
     },
+    filterFn: filterFn('date'),
   },
   {
     accessorKey: 'endDate',
@@ -191,6 +215,7 @@ export const columns: ColumnDef<Issue>[] = [
       type: 'date',
       icon: CalendarArrowDownIcon,
     },
+    filterFn: filterFn('date'),
   },
 ]
 
@@ -199,6 +224,7 @@ export default function DataTableDemo() {
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
   )
+  const [globalFilter, setGlobalFilter] = React.useState('')
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
@@ -206,17 +232,21 @@ export default function DataTableDemo() {
   const table = useReactTable({
     data: issues,
     columns,
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
     onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
+    onGlobalFilterChange: setGlobalFilter,
     state: {
       sorting,
       columnFilters,
+      globalFilter,
       columnVisibility,
       rowSelection,
     },
@@ -227,16 +257,16 @@ export default function DataTableDemo() {
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
-        <Input
-          type="search"
-          placeholder="Filter issues..."
-          value={(table.getColumn('title')?.getFilterValue() as string) ?? ''}
-          onChange={(event) =>
-            table.getColumn('title')?.setFilterValue(event.target.value)
-          }
-          className="max-w-sm"
-        />
+      <div className="flex items-center py-4 gap-2">
+        {/* <Input */}
+        {/*   type="search" */}
+        {/*   placeholder="Filter issues..." */}
+        {/*   value={(table.getColumn('title')?.getFilterValue() as string) ?? ''} */}
+        {/*   onChange={(event) => */}
+        {/*     table.getColumn('title')?.setFilterValue(event.target.value) */}
+        {/*   } */}
+        {/*   className="max-w-sm" */}
+        {/* /> */}
         <DataTableFilter table={table} />
       </div>
       <div className="rounded-md border">

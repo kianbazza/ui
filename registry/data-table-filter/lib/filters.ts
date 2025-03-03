@@ -10,6 +10,7 @@ import {
   startOfDay,
 } from 'date-fns'
 import type { LucideIcon } from 'lucide-react'
+import type { JSX } from 'react'
 import { intersection, uniq } from './array'
 
 declare module '@tanstack/react-table' {
@@ -78,7 +79,7 @@ export interface ColumnOption {
   /* The internal value of the option. */
   value: string
   /* An optional icon to display next to the label. */
-  icon?: LucideIcon
+  icon?: React.ReactElement | React.ElementType
 }
 
 /*
@@ -627,6 +628,7 @@ export function __optionFilterFn(
   inputData: string,
   filterValue: FilterValue<'option'>,
 ) {
+  if (!inputData) return false
   if (filterValue.values.length === 0) return true
 
   const value = inputData.toString().toLowerCase()
@@ -689,13 +691,13 @@ export function dateFilterFn<TData>(
   columnId: string,
   filterValue: FilterValue<'date'>,
 ) {
-  const valueStr = row.getValue<string>(columnId)
+  const valueStr = row.getValue<Date>(columnId)
 
   return __dateFilterFn(valueStr, filterValue)
 }
 
 export function __dateFilterFn(
-  inputData: string,
+  inputData: Date,
   filterValue: FilterValue<'date'>,
 ) {
   if (!filterValue || filterValue.values.length === 0) return true
@@ -716,7 +718,7 @@ export function __dateFilterFn(
   const d1 = filterVals[0]
   const d2 = filterVals[1]
 
-  const value = parseISO(inputData)
+  const value = inputData
 
   switch (filterValue.operator) {
     case 'is':

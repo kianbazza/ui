@@ -33,7 +33,7 @@ import {
 import type { Row, RowModel, Table } from '@tanstack/react-table'
 import { format, isEqual } from 'date-fns'
 import { Ellipsis } from 'lucide-react'
-import { useState } from 'react'
+import { isValidElement, useState } from 'react'
 import type { DateRange } from 'react-day-picker'
 
 export function PropertyFilterValueController<TData, TValue>({
@@ -48,7 +48,7 @@ export function PropertyFilterValueController<TData, TValue>({
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
-          className="m-0 h-full w-full whitespace-nowrap rounded-none p-0 px-2 text-xs"
+          className="m-0 h-full w-fit whitespace-nowrap rounded-none p-0 px-2 text-xs"
         >
           <PropertyFilterValueDisplay id={id} table={table} />
         </Button>
@@ -157,7 +157,12 @@ export function PropertyFilterOptionValueDisplay<TData>({
     const hasIcon = !!Icon
     return (
       <span className="inline-flex items-center gap-1">
-        {hasIcon && <Icon strokeWidth={2.25} className="size-4" />}
+        {hasIcon &&
+          (isValidElement(Icon) ? (
+            Icon
+          ) : (
+            <Icon className="size-4 text-primary" />
+          ))}
         <span className="text-slate-700">{label}</span>
       </span>
     )
@@ -172,7 +177,11 @@ export function PropertyFilterOptionValueDisplay<TData>({
       {hasOptionIcons &&
         take(selected, 3).map(({ value, icon }) => {
           const Icon = icon!
-          return <Icon key={value} strokeWidth={2.25} className="size-4" />
+          return isValidElement(Icon) ? (
+            Icon
+          ) : (
+            <Icon key={value} className="size-4" />
+          )
         })}
       <span className={cn('text-slate-700', hasOptionIcons && 'ml-1.5')}>
         {selected.length} {pluralName}
@@ -239,7 +248,13 @@ export function PropertyFilterMultiOptionValueDisplay<TData>({
     const hasIcon = !!Icon
     return (
       <span className="inline-flex items-center gap-1">
-        {hasIcon && <Icon strokeWidth={2.25} className="size-4" />}
+        {hasIcon &&
+          (isValidElement(Icon) ? (
+            Icon
+          ) : (
+            <Icon className="size-4 text-primary" />
+          ))}
+
         <span className="text-slate-700">{label}</span>
       </span>
     )
@@ -254,7 +269,11 @@ export function PropertyFilterMultiOptionValueDisplay<TData>({
       {hasOptionIcons &&
         take(selected, 3).map(({ value, icon }) => {
           const Icon = icon!
-          return <Icon key={value} strokeWidth={2.25} className="size-4" />
+          return isValidElement(Icon) ? (
+            Icon
+          ) : (
+            <Icon key={value} className="size-4" />
+          )
         })}
       <span className={cn('text-slate-700', hasOptionIcons && 'ml-1.5')}>
         {selected.length} {name}
@@ -506,24 +525,24 @@ export function PropertyFilterOptionValueMenu<TData>({
                 onSelect={() => {
                   handleOptionSelect(v.value, !checked)
                 }}
-                className="group flex items-center justify-between gap-1.5 text-slate-700"
+                className="group flex items-center justify-between gap-1.5"
               >
-                <div className="flex items-center gap-1.5 text-slate-700">
+                <div className="flex items-center gap-1.5">
                   <Checkbox
                     checked={checked}
-                    className="border-slate-300 opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100"
+                    className="opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100"
                   />
-                  {v.icon && (
-                    <v.icon
-                      strokeWidth={2.25}
-                      className="size-4 text-primary"
-                    />
-                  )}
+                  {v.icon &&
+                    (isValidElement(v.icon) ? (
+                      v.icon
+                    ) : (
+                      <v.icon className="size-4 text-primary" />
+                    ))}
                   <span className="text-slate-700">
                     {v.label}
                     <sup
                       className={cn(
-                        'ml-0.5 tabular-nums tracking-tight text-slate-400',
+                        'ml-0.5 tabular-nums tracking-tight',
                         count === 0 && 'slashed-zero',
                       )}
                     >
@@ -672,24 +691,24 @@ export function PropertyFilterMultiOptionValueMenu<TData>({
                 onSelect={() => {
                   handleOptionSelect(v.value, !checked)
                 }}
-                className="group flex items-center justify-between gap-1.5 text-slate-700"
+                className="group flex items-center justify-between gap-1.5"
               >
-                <div className="flex items-center gap-1.5 text-slate-700">
+                <div className="flex items-center gap-1.5">
                   <Checkbox
                     checked={checked}
-                    className="border-slate-300 opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100"
+                    className="opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100"
                   />
-                  {v.icon && (
-                    <v.icon
-                      strokeWidth={2.25}
-                      className="size-4 text-primary"
-                    />
-                  )}
-                  <span className="text-slate-700">
+                  {v.icon &&
+                    (isValidElement(v.icon) ? (
+                      v.icon
+                    ) : (
+                      <v.icon className="size-4 text-primary" />
+                    ))}
+                  <span>
                     {v.label}
                     <sup
                       className={cn(
-                        'ml-0.5 tabular-nums tracking-tight text-slate-400',
+                        'ml-0.5 tabular-nums tracking-tight',
                         count === 0 && 'slashed-zero',
                       )}
                     >
@@ -970,9 +989,7 @@ export function PropertyFilterNumberValueMenu<TData>({
                 />
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-slate-600">
-                      Min
-                    </span>
+                    <span className="text-sm font-medium">Min</span>
                     <Input
                       type="number"
                       value={inputValues[0]}
@@ -981,9 +998,7 @@ export function PropertyFilterNumberValueMenu<TData>({
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium text-slate-600">
-                      Max
-                    </span>
+                    <span className="text-sm font-medium">Max</span>
                     <Input
                       type="text"
                       value={inputValues[1]}
@@ -996,9 +1011,7 @@ export function PropertyFilterNumberValueMenu<TData>({
               </>
             ) : (
               <div className="flex w-1/2 items-center gap-2">
-                <span className="text-sm font-medium text-slate-600">
-                  Value
-                </span>
+                <span className="text-sm font-medium">Value</span>
                 <Input
                   id="single"
                   type="number"

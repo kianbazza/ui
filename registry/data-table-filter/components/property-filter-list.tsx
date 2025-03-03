@@ -31,10 +31,10 @@ export function PropertyFilterList<TData>({ table }: { table: Table<TData> }) {
         return (
           <div
             key={`filter-${id}`}
-            className="flex h-7 items-center rounded-2xl border border-slate-300 bg-background"
+            className="flex h-7 items-center rounded-2xl border border-border bg-background"
           >
             <PropertyFilterSubject meta={meta} />
-            <Separator orientation="vertical" className="bg-slate-200" />
+            <Separator orientation="vertical" />
             <PropertyFilterOperatorController
               id={id}
               table={table}
@@ -46,7 +46,7 @@ export function PropertyFilterList<TData>({ table }: { table: Table<TData> }) {
             <Separator orientation="vertical" />
             <Button
               variant="ghost"
-              className="m-0 h-full w-full rounded-none rounded-r-2xl p-0 px-2 text-xs"
+              className="rounded-none rounded-r-2xl text-xs w-7 h-full"
               onClick={() => deleteFilter(id)}
             >
               <X className="size-4 -translate-x-0.5" />
