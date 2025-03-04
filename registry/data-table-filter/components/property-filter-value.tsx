@@ -16,6 +16,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import {
   Popover,
+  PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
@@ -30,7 +31,7 @@ import {
   determineNewOperator,
   numberFilterDetails,
 } from '@/registry/data-table-filter/lib/filters'
-import type { Row, RowModel, Table } from '@tanstack/react-table'
+import type { Row, Table } from '@tanstack/react-table'
 import { format, isEqual } from 'date-fns'
 import { Ellipsis } from 'lucide-react'
 import { isValidElement, useState } from 'react'
@@ -45,6 +46,7 @@ export function PropertyFilterValueController<TData, TValue>({
 }) {
   return (
     <Popover>
+      <PopoverAnchor className="w-full h-full" />
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
@@ -53,7 +55,7 @@ export function PropertyFilterValueController<TData, TValue>({
           <PropertyFilterValueDisplay id={id} table={table} />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-fit p-0">
+      <PopoverContent className="w-fit p-0" align="start" side="bottom">
         <PropertyFilterValueMenu id={id} table={table} />
       </PopoverContent>
     </Popover>

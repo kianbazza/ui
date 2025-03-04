@@ -100,6 +100,7 @@ export const columns: ColumnDef<Issue>[] = [
       type: 'text',
       icon: Heading1Icon,
     },
+    filterFn: filterFn('text'),
   },
   {
     accessorKey: 'assignee',

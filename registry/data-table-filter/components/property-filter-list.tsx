@@ -31,7 +31,7 @@ export function PropertyFilterList<TData>({ table }: { table: Table<TData> }) {
         return (
           <div
             key={`filter-${id}`}
-            className="flex h-7 items-center rounded-2xl border border-border bg-background"
+            className="flex h-7 items-center rounded-2xl border border-border bg-background shadow-xs"
           >
             <PropertyFilterSubject meta={meta} />
             <Separator orientation="vertical" />
