@@ -23,7 +23,7 @@ import {
   optionFilterDetails,
   textFilterDetails,
 } from '@/registry/data-table-filter/lib/filters'
-import type { Table } from '@tanstack/react-table'
+import type { Column, ColumnMeta, Table } from '@tanstack/react-table'
 import { useState } from 'react'
 
 // Renders the filter operator display and menu for a given column filter
@@ -33,21 +33,17 @@ export function PropertyFilterOperatorController<
   TData,
   T extends ColumnDataType,
 >({
-  id,
-  table,
+  column,
+  columnMeta,
   filter,
 }: {
-  id: string
-  table: Table<TData>
+  column: Column<TData, unknown>
+  columnMeta: ColumnMeta<TData, unknown>
   filter: FilterValue<T>
 }) {
   const [open, setOpen] = useState<boolean>(false)
 
   const close = () => setOpen(false)
-
-  const columnMeta = table.getColumn(id)?.columnDef.meta
-
-  if (!columnMeta) return null
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -68,8 +64,7 @@ export function PropertyFilterOperatorController<
           <CommandEmpty>No results.</CommandEmpty>
           <CommandList className="max-h-fit">
             <PropertyFilterOperatorMenu
-              id={id}
-              table={table}
+              column={column}
               closeController={close}
             />
           </CommandList>
@@ -88,66 +83,53 @@ export function PropertyFilterOperatorDisplay<T extends ColumnDataType>({
 }) {
   const details = filterTypeOperatorDetails[filterType][filter.operator]
 
-  return <span className="text-slate-500">{details.label}</span>
+  return <span>{details.label}</span>
 }
 
 interface PropertyFilterOperatorMenuProps<TData> {
-  id: string
-  table: Table<TData>
+  column: Column<TData, unknown>
   closeController: () => void
 }
 
 export function PropertyFilterOperatorMenu<TData>({
-  id,
-  table,
+  column,
   closeController,
 }: PropertyFilterOperatorMenuProps<TData>) {
-  const column = table.getColumn(id)
-
-  if (!column) {
-    return null
-  }
-
   const { type } = column.columnDef.meta!
 
   switch (type) {
     case 'option':
       return (
         <PropertyFilterOptionOperatorMenu
-          id={id}
-          table={table}
+          column={column}
           closeController={closeController}
         />
       )
     case 'multiOption':
       return (
         <PropertyFilterMultiOptionOperatorMenu
-          id={id}
-          table={table}
+          column={column}
           closeController={closeController}
         />
       )
     case 'date':
       return (
         <PropertyFilterDateOperatorMenu
-          id={id}
-          table={table}
+          column={column}
           closeController={closeController}
         />
       )
     case 'text':
       return (
         <PropertyFilterTextOperatorMenu
-          id={id}
-          table={table}
+          column={column}
           closeController={closeController}
         />
       )
     case 'number':
       return (
         <PropertyFilterNumberOperatorMenu
-          id={id}
-          table={table}
+          column={column}
           closeController={closeController}
         />
       )
@@ -157,16 +139,9 @@ export function PropertyFilterOperatorMenu<TData>({
 }
 
 function PropertyFilterOptionOperatorMenu<TData>({
-  id,
-  table,
+  column,
   closeController,
 }: PropertyFilterOperatorMenuProps<TData>) {
-  const column = table.getColumn(id)
-
-  if (!column) {
-    return null
-  }
-
   const filter = column.getFilterValue() as FilterValue<'option'>
   const filterDetails = optionFilterDetails[filter.operator]
 
@@ -193,16 +168,9 @@ function PropertyFilterOptionOperatorMenu<TData>({
 }
 
 function PropertyFilterMultiOptionOperatorMenu<TData>({
-  id,
-  table,
+  column,
   closeController,
 }: PropertyFilterOperatorMenuProps<TData>) {
-  const column = table.getColumn(id)
-
-  if (!column) {
-    return null
-  }
-
   const filter = column.getFilterValue() as FilterValue<'multiOption'>
   const filterDetails = multiOptionFilterDetails[filter.operator]
 
@@ -229,16 +197,9 @@ function PropertyFilterMultiOptionOperatorMenu<TData>({
 }
 
 function PropertyFilterDateOperatorMenu<TData>({
-  id,
-  table,
+  column,
   closeController,
 }: PropertyFilterOperatorMenuProps<TData>) {
-  const column = table.getColumn(id)
-
-  if (!column) {
-    return null
-  }
-
   const filter = column.getFilterValue() as FilterValue<'date'>
   const filterDetails = dateFilterDetails[filter.operator]
 
@@ -265,16 +226,9 @@ function PropertyFilterDateOperatorMenu<TData>({
 }
 
 export function PropertyFilterTextOperatorMenu<TData>({
-  id,
-  table,
+  column,
   closeController,
 }: PropertyFilterOperatorMenuProps<TData>) {
-  const column = table.getColumn(id)
-
-  if (!column) {
-    return null
-  }
-
   const filter = column.getFilterValue() as FilterValue<'text'>
   const filterDetails = textFilterDetails[filter.operator]
 
@@ -301,16 +255,9 @@ export function PropertyFilterTextOperatorMenu<TData>({
 }
 
 function PropertyFilterNumberOperatorMenu<TData>({
-  id,
-  table,
+  column,
   closeController,
 }: PropertyFilterOperatorMenuProps<TData>) {
-  const column = table.getColumn(id)
-
-  if (!column) {
-    return null
-  }
-
   const filter = column.getFilterValue() as FilterValue<'number'>
 
   // Show all related operators

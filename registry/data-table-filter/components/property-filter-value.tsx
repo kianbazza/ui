@@ -31,7 +31,7 @@ import {
   determineNewOperator,
   numberFilterDetails,
 } from '@/registry/data-table-filter/lib/filters'
-import type { Row, Table } from '@tanstack/react-table'
+import type { Column, ColumnMeta, Row, Table } from '@tanstack/react-table'
 import { format, isEqual } from 'date-fns'
 import { Ellipsis } from 'lucide-react'
 import { isValidElement, useState } from 'react'
@@ -39,9 +39,13 @@ import type { DateRange } from 'react-day-picker'
 
 export function PropertyFilterValueController<TData, TValue>({
   id,
+  column,
+  columnMeta,
   table,
 }: {
   id: string
+  column: Column<TData>
+  columnMeta: ColumnMeta<TData, TValue>
   table: Table<TData>
 }) {
   return (
@@ -52,72 +56,109 @@ export function PropertyFilterValueController<TData, TValue>({
           variant="ghost"
           className="m-0 h-full w-fit whitespace-nowrap rounded-none p-0 px-2 text-xs"
         >
-          <PropertyFilterValueDisplay id={id} table={table} />
+          <PropertyFilterValueDisplay
+            id={id}
+            column={column}
+            columnMeta={columnMeta}
+            table={table}
+          />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-fit p-0" align="start" side="bottom">
-        <PropertyFilterValueMenu id={id} table={table} />
+        <PropertyFilterValueMenu
+          id={id}
+          column={column}
+          columnMeta={columnMeta}
+          table={table}
+        />
       </PopoverContent>
     </Popover>
   )
 }
 
+interface PropertyFilterValueDisplayProps<TData, TValue> {
+  id: string
+  column: Column<TData>
+  columnMeta: ColumnMeta<TData, TValue>
+  table: Table<TData>
+}
+
 export function PropertyFilterValueDisplay<TData, TValue>({
   id,
+  column,
+  columnMeta,
   table,
-}: {
-  id: string
-  table: Table<TData>
-}) {
-  const column = table.getColumn(id)
-  if (!column) return null
-  const meta = column.columnDef.meta
-  if (!meta) return null
-
-  switch (meta.type) {
+}: PropertyFilterValueDisplayProps<TData, TValue>) {
+  switch (columnMeta.type) {
     case 'option':
-      return <PropertyFilterOptionValueDisplay id={id} table={table} />
+      return (
+        <PropertyFilterOptionValueDisplay
+          id={id}
+          column={column}
+          columnMeta={columnMeta}
+          table={table}
+        />
+      )
     case 'multiOption':
-      return <PropertyFilterMultiOptionValueDisplay id={id} table={table} />
+      return (
+        <PropertyFilterMultiOptionValueDisplay
+          id={id}
+          column={column}
+          columnMeta={columnMeta}
+          table={table}
+        />
+      )
     case 'date':
-      return <PropertyFilterDateValueDisplay id={id} table={table} />
+      return (
+        <PropertyFilterDateValueDisplay
+          id={id}
+          column={column}
+          columnMeta={columnMeta}
+          table={table}
+        />
+      )
     case 'text':
-      return <PropertyFilterTextValueDisplay id={id} table={table} />
+      return (
+        <PropertyFilterTextValueDisplay
+          id={id}
+          column={column}
+          columnMeta={columnMeta}
+          table={table}
+        />
+      )
     case 'number':
-      return <PropertyFilterNumberValueDisplay id={id} table={table} />
+      return (
+        <PropertyFilterNumberValueDisplay
+          id={id}
+          column={column}
+          columnMeta={columnMeta}
+          table={table}
+        />
+      )
     default:
       return null
   }
 }
 
-export function PropertyFilterOptionValueDisplay<TData>({
+export function PropertyFilterOptionValueDisplay<TData, TValue>({
   id,
+  column,
+  columnMeta,
   table,
-}: {
-  id: string
-  table: Table<TData>
-}) {
-  const column = table.getColumn(id)
-
-  if (!column) return null
-
-  const meta = column.columnDef.meta
-
-  if (!meta) return null
-
-  const providedOptions = meta.options
+}: PropertyFilterValueDisplayProps<TData, TValue>) {
+  const providedOptions = columnMeta.options
 
   let options: ColumnOption[]
 
   if (providedOptions) {
     // If provided options are available for the column, use them
     options = providedOptions
-  } else if (meta.transformFn) {
+  } else if (columnMeta.transformFn) {
     // No provided options, we should dynamically generate them based on the column data
     // If a transform function is provided, we use it to transform the column data into
     // an acceptable format
     const columnVals = table.getCoreRowModel().rows.map((r) => r.getValue(id))
-    const transformed = columnVals.map(meta.transformFn) as string[]
+    const transformed = columnVals.map(columnMeta.transformFn) as string[]
     const unique = uniq(transformed)
     options = unique.map((value) => {
       const option: ColumnOption = {
@@ -169,10 +210,10 @@ export function PropertyFilterOptionValueDisplay<TData>({
       </span>
     )
   }
-  const name = meta.displayName.toLowerCase()
+  const name = columnMeta.displayName.toLowerCase()
   const pluralName = name.endsWith('s') ? `${name}es` : `${name}s`
 
-  const hasOptionIcons = !!meta.options
+  const hasOptionIcons = !!columnMeta.options
 
   return (
     <div className="inline-flex items-center gap-0.5">
@@ -192,30 +233,21 @@ export function PropertyFilterOptionValueDisplay<TData>({
   )
 }
 
-export function PropertyFilterMultiOptionValueDisplay<TData>({
+export function PropertyFilterMultiOptionValueDisplay<TData, TValue>({
   id,
+  column,
+  columnMeta,
   table,
-}: {
-  id: string
-  table: Table<TData>
-}) {
-  const column = table.getColumn(id)
-
-  if (!column) return null
-
-  const meta = column.columnDef.meta
-
-  if (!meta) return null
-
-  const providedOptions = meta.options
+}: PropertyFilterValueDisplayProps<TData, TValue>) {
+  const providedOptions = columnMeta.options
 
   let options: ColumnOption[]
 
   if (providedOptions) {
     options = providedOptions
-  } else if (meta.transformFn) {
+  } else if (columnMeta.transformFn) {
     const columnVals = table.getCoreRowModel().rows.map((r) => r.getValue(id))
-    const transformed = columnVals.map(meta.transformFn) as string[][]
+    const transformed = columnVals.map(columnMeta.transformFn) as string[][]
     const flattened = flatten(transformed)
     const unique = uniq(flattened)
     options = unique.map((value) => {
@@ -262,9 +294,9 @@ export function PropertyFilterMultiOptionValueDisplay<TData>({
     )
   }
 
-  const name = meta.displayName.toLowerCase()
+  const name = columnMeta.displayName.toLowerCase()
 
-  const hasOptionIcons = !!meta.options
+  const hasOptionIcons = !!columnMeta.options
 
   return (
     <div className="inline-flex items-center gap-0.5">
@@ -300,18 +332,8 @@ function formatDateRange(start: Date, end: Date) {
 }
 
 export function PropertyFilterDateValueDisplay<TData, TValue>({
-  id,
-  table,
-}: {
-  id: string
-  table: Table<TData>
-}) {
-  const column = table.getColumn(id)
-
-  if (!column) {
-    return null
-  }
-
+  column,
+}: PropertyFilterValueDisplayProps<TData, TValue>) {
   const filter = column.getFilterValue()
     ? (column.getFilterValue() as FilterValue<'date'>)
     : undefined
@@ -333,18 +355,8 @@ export function PropertyFilterDateValueDisplay<TData, TValue>({
 }
 
 export function PropertyFilterTextValueDisplay<TData, TValue>({
-  id,
-  table,
-}: {
-  id: string
-  table: Table<TData>
-}) {
-  const column = table.getColumn(id)
-
-  if (!column) {
-    return null
-  }
-
+  column,
+}: PropertyFilterValueDisplayProps<TData, TValue>) {
   const filter = column.getFilterValue()
     ? (column.getFilterValue() as FilterValue<'text'>)
     : undefined
@@ -359,19 +371,10 @@ export function PropertyFilterTextValueDisplay<TData, TValue>({
 }
 
 export function PropertyFilterNumberValueDisplay<TData, TValue>({
-  id,
-  table,
-}: {
-  id: string
-  table: Table<TData>
-}) {
-  const column = table.getColumn(id)
-
-  if (!column) {
-    return null
-  }
-
-  const maxFromMeta = column.columnDef.meta?.max
+  column,
+  columnMeta,
+}: PropertyFilterValueDisplayProps<TData, TValue>) {
+  const maxFromMeta = columnMeta.max
   const cappedMax = maxFromMeta ?? 2147483647
 
   const filter = column.getFilterValue()
@@ -408,59 +411,87 @@ export function PropertyFilterNumberValueDisplay<TData, TValue>({
   )
 }
 
-export function PropertyFilterValueMenu<TData>({
+export function PropertyFilterValueMenu<TData, TValue>({
   id,
+  column,
+  columnMeta,
   table,
 }: {
   id: string
+  column: Column<TData>
+  columnMeta: ColumnMeta<TData, TValue>
   table: Table<TData>
 }) {
-  const column = table.getColumn(id)
-
-  if (!column) {
-    return null
-  }
-
-  const { type } = column.columnDef.meta!
-
-  switch (type) {
+  switch (columnMeta.type) {
     case 'option':
-      return <PropertyFilterOptionValueMenu id={id} table={table} />
+      return (
+        <PropertyFilterOptionValueMenu
+          id={id}
+          column={column}
+          columnMeta={columnMeta}
+          table={table}
+        />
+      )
     case 'multiOption':
-      return <PropertyFilterMultiOptionValueMenu id={id} table={table} />
+      return (
+        <PropertyFilterMultiOptionValueMenu
+          id={id}
+          column={column}
+          columnMeta={columnMeta}
+          table={table}
+        />
+      )
     case 'date':
-      return <PropertyFilterDateValueMenu id={id} table={table} />
+      return (
+        <PropertyFilterDateValueMenu
+          id={id}
+          column={column}
+          columnMeta={columnMeta}
+          table={table}
+        />
+      )
     case 'text':
-      return <PropertyFilterTextValueMenu id={id} table={table} />
+      return (
+        <PropertyFilterTextValueMenu
+          id={id}
+          column={column}
+          columnMeta={columnMeta}
+          table={table}
+        />
+      )
     case 'number':
-      return <PropertyFilterNumberValueMenu id={id} table={table} />
+      return (
+        <PropertyFilterNumberValueMenu
+          id={id}
+          column={column}
+          columnMeta={columnMeta}
+          table={table}
+        />
+      )
     default:
       return null
   }
 }
 
-export function PropertyFilterOptionValueMenu<TData>({
-  id,
-  table,
-}: {
+interface ProperFilterValueMenuProps<TData, TValue> {
   id: string
+  column: Column<TData>
+  columnMeta: ColumnMeta<TData, TValue>
   table: Table<TData>
-}) {
-  const column = table.getColumn(id)
+}
 
-  if (!column) {
-    return null
-  }
-
+export function PropertyFilterOptionValueMenu<TData, TValue>({
+  id,
+  column,
+  columnMeta,
+  table,
+}: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue()
     ? (column.getFilterValue() as FilterValue<'option'>)
     : undefined
 
-  const meta = column.columnDef.meta!
-
-  const optionsProvided = !!meta && !!meta.options
-  const options = optionsProvided
-    ? (meta.options as ColumnOption[])
+  const options = columnMeta.options
+    ? columnMeta.options
     : uniq(table.getCoreRowModel().rows.map((r) => r.getValue<string>(id))).map(
         (value) => {
           const option: ColumnOption = {
@@ -515,8 +546,8 @@ export function PropertyFilterOptionValueMenu<TData>({
               return value
             })
 
-            if (meta.transformFn) {
-              data = data.map(meta.transformFn)
+            if (columnMeta.transformFn) {
+              data = data.map(columnMeta.transformFn)
             }
 
             const count = data.filter((d) => d === v.value).length ?? 0
@@ -561,38 +592,25 @@ export function PropertyFilterOptionValueMenu<TData>({
   )
 }
 
-export function PropertyFilterMultiOptionValueMenu<TData>({
+export function PropertyFilterMultiOptionValueMenu<TData, TValue>({
   id,
+  column,
+  columnMeta,
   table,
-}: {
-  id: string
-  table: Table<TData>
-}) {
-  const column = table.getColumn(id)
-
-  if (!column) {
-    return null
-  }
-
+}: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue()
     ? (column.getFilterValue() as FilterValue<'multiOption'>)
     : undefined
 
-  const meta = column.columnDef.meta
-
-  if (!meta) return null
-
-  const hasProvidedOptions = !!meta.options
-
   let options: ColumnOption[]
 
-  if (hasProvidedOptions) {
-    options = meta.options as ColumnOption[]
-  } else if (meta.transformFn) {
+  if (columnMeta.options) {
+    options = columnMeta.options
+  } else if (columnMeta.transformFn) {
     const columnVals = table
       .getCoreRowModel()
       .rows.flatMap((r) => r.getValue(id))
-    const transformed = columnVals.map(meta.transformFn) as string[]
+    const transformed = columnVals.map(columnMeta.transformFn) as string[]
     // const flattened = flatten(transformed)
     // TODO: Do we need to flatten?
     const flattened = transformed
@@ -623,7 +641,7 @@ export function PropertyFilterMultiOptionValueMenu<TData>({
   // Handles the selection/deselection of an option
   function handleOptionSelect(value: string, check: boolean) {
     if (check) {
-      column?.setFilterValue((old: undefined | FilterValue<'multiOption'>) => {
+      column.setFilterValue((old: undefined | FilterValue<'multiOption'>) => {
         if (
           !old ||
           old.values.length === 0 ||
@@ -648,7 +666,7 @@ export function PropertyFilterMultiOptionValueMenu<TData>({
         } satisfies FilterValue<'multiOption'>
       })
     } else
-      column?.setFilterValue((old: undefined | FilterValue<'multiOption'>) => {
+      column.setFilterValue((old: undefined | FilterValue<'multiOption'>) => {
         if (!old?.values[0] || old.values[0].length <= 1) return undefined
 
         const newValues = [
@@ -680,8 +698,8 @@ export function PropertyFilterMultiOptionValueMenu<TData>({
               .rows.map((r) => r.original as Record<string, unknown>)
               .map((d) => d[id])
 
-            if (meta.transformFn) {
-              data = data.map(meta.transformFn)
+            if (columnMeta.transformFn) {
+              data = data.map(columnMeta.transformFn)
             }
 
             const count =
@@ -727,27 +745,17 @@ export function PropertyFilterMultiOptionValueMenu<TData>({
   )
 }
 
-export function PropertyFilterDateValueMenu<TData>({
-  id,
-  table,
-}: {
-  id: string
-  table: Table<TData>
-}) {
-  const column = table.getColumn(id)
-
-  const filter = column?.getFilterValue()
-    ? (column?.getFilterValue() as FilterValue<'date'>)
+export function PropertyFilterDateValueMenu<TData, TValue>({
+  column,
+}: ProperFilterValueMenuProps<TData, TValue>) {
+  const filter = column.getFilterValue()
+    ? (column.getFilterValue() as FilterValue<'date'>)
     : undefined
 
   const [date, setDate] = useState<DateRange | undefined>({
     from: filter?.values[0] ?? new Date(),
     to: filter?.values[1] ?? undefined,
   })
-
-  if (!column) {
-    return null
-  }
 
   function changeDateRange(value: DateRange | undefined) {
     const start = value?.from
@@ -762,7 +770,7 @@ export function PropertyFilterDateValueMenu<TData>({
 
     const newValues = isRange ? [start, end] : start ? [start] : []
 
-    column?.setFilterValue((old: undefined | FilterValue<'date'>) => {
+    column.setFilterValue((old: undefined | FilterValue<'date'>) => {
       if (!old || old.values.length === 0)
         return {
           operator: newValues.length > 1 ? 'is between' : 'is',
@@ -803,25 +811,15 @@ export function PropertyFilterDateValueMenu<TData>({
   )
 }
 
-export function PropertyFilterTextValueMenu<TData>({
-  id,
-  table,
-}: {
-  id: string
-  table: Table<TData>
-}) {
-  const column = table.getColumn(id)
-
-  const filter = column?.getFilterValue()
-    ? (column?.getFilterValue() as FilterValue<'text'>)
+export function PropertyFilterTextValueMenu<TData, TValue>({
+  column,
+}: ProperFilterValueMenuProps<TData, TValue>) {
+  const filter = column.getFilterValue()
+    ? (column.getFilterValue() as FilterValue<'text'>)
     : undefined
 
-  if (!column) {
-    return null
-  }
-
   const changeText = (value: string | number) => {
-    column?.setFilterValue((old: undefined | FilterValue<'text'>) => {
+    column.setFilterValue((old: undefined | FilterValue<'text'>) => {
       if (!old || old.values.length === 0)
         return {
           operator: 'contains',
@@ -849,22 +847,12 @@ export function PropertyFilterTextValueMenu<TData>({
   )
 }
 
-export function PropertyFilterNumberValueMenu<TData>({
-  id,
-  table,
-}: {
-  id: string
-  table: Table<TData>
-}) {
-  const column = table.getColumn(id) ?? {
-    getFilterValue: () => undefined,
-    columnDef: { meta: { max: 2147483647 } },
-    setFilterValue: () => {},
-    getFacetedMinMaxValues: () => [0, 2147483647],
-  }
-
-  const maxFromMeta = column.columnDef.meta?.max
-  const cappedMax = maxFromMeta ?? 2147483647
+export function PropertyFilterNumberValueMenu<TData, TValue>({
+  column,
+  columnMeta,
+}: ProperFilterValueMenuProps<TData, TValue>) {
+  const maxFromMeta = columnMeta.max
+  const cappedMax = maxFromMeta ?? Number.POSITIVE_INFINITY
 
   const filter = column.getFilterValue()
     ? (column.getFilterValue() as FilterValue<'number'>)
