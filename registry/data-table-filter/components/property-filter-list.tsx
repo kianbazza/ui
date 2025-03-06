@@ -11,6 +11,7 @@ import type {
 } from '@/registry/data-table-filter/lib/filters'
 import type { Column, ColumnMeta, Table } from '@tanstack/react-table'
 import { X } from 'lucide-react'
+import { getColumn, getColumnMeta } from '../lib/table'
 
 export function PropertyFilterList<TData>({ table }: { table: Table<TData> }) {
   const filters = table.getState().columnFilters
@@ -20,11 +21,8 @@ export function PropertyFilterList<TData>({ table }: { table: Table<TData> }) {
       {filters.map((filter) => {
         const { id } = filter
 
-        const column = table.getColumn(id)
-        if (!column) throw new Error(`Column with id ${id} not found`)
-
-        const meta = column.columnDef.meta
-        if (!meta) throw new Error(`Column meta not found for column ${id}`)
+        const column = getColumn(table, id)
+        const meta = getColumnMeta(table, id)
 
         // Skip if no filter value
         if (!filter.value) return null
@@ -98,7 +96,12 @@ function renderFilter<TData, T extends ColumnDataType>(
         filter={value} // Typed as FilterValue<T>
       />
       <Separator orientation="vertical" />
-      <PropertyFilterValueController id={filter.id} table={table} />
+      <PropertyFilterValueController
+        id={filter.id}
+        column={column}
+        columnMeta={meta}
+        table={table}
+      />
       <Separator orientation="vertical" />
       <Button
         variant="ghost"

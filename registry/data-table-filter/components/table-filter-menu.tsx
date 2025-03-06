@@ -15,9 +15,13 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
+import {
+  getColumn,
+  getColumnMeta,
+} from '@/registry/data-table-filter/lib/table'
 import type { Column, Table } from '@tanstack/react-table'
 import { ArrowRight, Filter } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { PropertyFilterValueMenu } from './property-filter-value'
 
 export function TableFilter<TData>({ table }: { table: Table<TData> }) {
@@ -26,43 +30,14 @@ export function TableFilter<TData>({ table }: { table: Table<TData> }) {
   const [property, setProperty] = useState<string | undefined>(undefined)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  const column = property ? getColumn(table, property) : undefined
+  const columnMeta = property ? getColumnMeta(table, property) : undefined
+
   const properties = table
     .getAllColumns()
     .filter((column) => column.getCanFilter())
 
   const hasFilters = table.getState().columnFilters.length > 0
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    const isInputFocused = () => {
-      const activeElement = document.activeElement
-      return (
-        activeElement &&
-        (activeElement.tagName === 'INPUT' ||
-          activeElement.tagName === 'TEXTAREA')
-      )
-    }
-
-    const down = (e: KeyboardEvent) => {
-      /*
-       * Open the filter menu when the user presses the "F" key
-       *
-       * Ensures:
-       * 1) the menu is not already open
-       * 2) there are not focused inputs (eg. user is not typing elsewhere)
-       */
-      if (!open && e.key === 'f' && !isInputFocused()) {
-        e.preventDefault()
-        setOpen((open) => !open)
-      }
-    }
-
-    // Add the listener to the document
-    document.addEventListener('keydown', down)
-
-    // On component unmount, remove the listener
-    return () => document.removeEventListener('keydown', down)
-  }, [setOpen, open])
 
   useEffect(() => {
     if (property && inputRef) {
@@ -74,6 +49,41 @@ export function TableFilter<TData>({ table }: { table: Table<TData> }) {
   useEffect(() => {
     if (!open) setTimeout(() => setValue(''), 150)
   }, [open])
+
+  const content = useMemo(
+    () =>
+      property && column && columnMeta ? (
+        <PropertyFilterValueMenu
+          id={property}
+          column={column}
+          columnMeta={columnMeta}
+          table={table}
+        />
+      ) : (
+        <Command loop>
+          <CommandInput
+            value={value}
+            onValueChange={setValue}
+            ref={inputRef}
+            placeholder="Search..."
+          />
+          <CommandEmpty>No results.</CommandEmpty>
+          <CommandList className="max-h-fit">
+            <CommandGroup>
+              {properties.map((column) => (
+                <TableFilterMenuItem
+                  key={column.id}
+                  column={column}
+                  table={table}
+                  setProperty={setProperty}
+                />
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      ),
+    [property, column, columnMeta, value, table, properties],
+  )
 
   return (
     <Popover
@@ -90,30 +100,7 @@ export function TableFilter<TData>({ table }: { table: Table<TData> }) {
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-fit p-0">
-        {!property && (
-          <Command loop>
-            <CommandInput
-              value={value}
-              onValueChange={setValue}
-              ref={inputRef}
-              placeholder="Search..."
-            />
-            <CommandEmpty>No results.</CommandEmpty>
-            <CommandList className="max-h-fit">
-              <CommandGroup>
-                {properties.map((column) => (
-                  <TableFilterMenuItem
-                    key={column.id}
-                    column={column}
-                    table={table}
-                    setProperty={setProperty}
-                  />
-                ))}
-              </CommandGroup>
-            </CommandList>
-          </Command>
-        )}
-        {property && <PropertyFilterValueMenu id={property} table={table} />}
+        {content}
       </PopoverContent>
     </Popover>
   )
@@ -121,7 +108,6 @@ export function TableFilter<TData>({ table }: { table: Table<TData> }) {
 
 export function TableFilterMenuItem<TData>({
   column,
-  table,
   setProperty,
 }: {
   column: Column<TData>

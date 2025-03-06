@@ -50,7 +50,7 @@ export function PropertyFilterValueController<TData, TValue>({
 }) {
   return (
     <Popover>
-      <PopoverAnchor className="w-full h-full" />
+      <PopoverAnchor className="h-full" />
       <PopoverTrigger asChild>
         <Button
           variant="ghost"
@@ -206,7 +206,7 @@ export function PropertyFilterOptionValueDisplay<TData, TValue>({
           ) : (
             <Icon className="size-4 text-primary" />
           ))}
-        <span className="text-slate-700">{label}</span>
+        <span>{label}</span>
       </span>
     )
   }
@@ -226,7 +226,7 @@ export function PropertyFilterOptionValueDisplay<TData, TValue>({
             <Icon key={value} className="size-4" />
           )
         })}
-      <span className={cn('text-slate-700', hasOptionIcons && 'ml-1.5')}>
+      <span className={cn(hasOptionIcons && 'ml-1.5')}>
         {selected.length} {pluralName}
       </span>
     </div>
@@ -289,7 +289,7 @@ export function PropertyFilterMultiOptionValueDisplay<TData, TValue>({
             <Icon className="size-4 text-primary" />
           ))}
 
-        <span className="text-slate-700">{label}</span>
+        <span>{label}</span>
       </span>
     )
   }
@@ -309,7 +309,7 @@ export function PropertyFilterMultiOptionValueDisplay<TData, TValue>({
             <Icon key={value} className="size-4" />
           )
         })}
-      <span className={cn('text-slate-700', hasOptionIcons && 'ml-1.5')}>
+      <span className={cn(hasOptionIcons && 'ml-1.5')}>
         {selected.length} {name}
       </span>
     </div>
@@ -339,8 +339,7 @@ export function PropertyFilterDateValueDisplay<TData, TValue>({
     : undefined
 
   if (!filter) return null
-  if (filter.values.length === 0)
-    return <Ellipsis className="size-4 text-slate-400" />
+  if (filter.values.length === 0) return <Ellipsis className="size-4" />
   if (filter.values.length === 1) {
     const value = filter.values[0]
 
@@ -363,11 +362,11 @@ export function PropertyFilterTextValueDisplay<TData, TValue>({
 
   if (!filter) return null
   if (filter.values.length === 0 || filter.values[0].trim() === '')
-    return <Ellipsis className="size-4 text-slate-400" />
+    return <Ellipsis className="size-4" />
 
   const value = filter.values[0]
 
-  return <span className="text-slate-700">{value}</span>
+  return <span>{value}</span>
 }
 
 export function PropertyFilterNumberValueDisplay<TData, TValue>({
@@ -395,7 +394,7 @@ export function PropertyFilterNumberValueDisplay<TData, TValue>({
         : filter.values[1]
 
     return (
-      <span className="tabular-nums tracking-tight text-slate-700">
+      <span className="tabular-nums tracking-tight">
         {minValue} and {maxValue}
       </span>
     )
@@ -406,9 +405,7 @@ export function PropertyFilterNumberValueDisplay<TData, TValue>({
   }
 
   const value = filter.values[0]
-  return (
-    <span className="tabular-nums tracking-tight text-slate-700">{value}</span>
-  )
+  return <span className="tabular-nums tracking-tight">{value}</span>
 }
 
 export function PropertyFilterValueMenu<TData, TValue>({
@@ -571,7 +568,7 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
                     ) : (
                       <v.icon className="size-4 text-primary" />
                     ))}
-                  <span className="text-slate-700">
+                  <span>
                     {v.label}
                     <sup
                       className={cn(
@@ -952,7 +949,7 @@ export function PropertyFilterNumberValueMenu<TData, TValue>({
     <Command className="w-[300px]">
       <CommandList>
         <CommandGroup>
-          <CommandItem className="flex flex-col items-start gap-4 bg-transparent pt-4 aria-selected:bg-transparent">
+          <CommandItem className="flex flex-col items-start gap-4 bg-transparent pt-4 data-[selected=true]:bg-transparent">
             {isNumberRange ? (
               <>
                 <Slider
@@ -1013,7 +1010,7 @@ export function PropertyFilterNumberValueMenu<TData, TValue>({
             )}
           </CommandItem>
           <CommandSeparator className="my-4" />
-          <CommandItem className="bg-transparent pb-3 pt-0 aria-selected:bg-transparent">
+          <CommandItem className="bg-transparent pb-3 pt-0  data-[selected=true]:bg-transparent">
             <div className="flex items-center gap-2">
               <Switch
                 checked={isNumberRange}
