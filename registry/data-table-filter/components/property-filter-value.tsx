@@ -347,12 +347,12 @@ export function PropertyFilterDateValueDisplay<TData, TValue>({
 
     const formattedDateStr = format(value, 'MMM d, yyyy')
 
-    return <span className="text-slate-700">{formattedDateStr}</span>
+    return <span>{formattedDateStr}</span>
   }
 
   const formattedRangeStr = formatDateRange(filter.values[0], filter.values[1])
 
-  return <span className="text-slate-700">{formattedRangeStr}</span>
+  return <span>{formattedRangeStr}</span>
 }
 
 export function PropertyFilterTextValueDisplay<TData, TValue>({
@@ -574,7 +574,7 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
                     {v.label}
                     <sup
                       className={cn(
-                        'ml-0.5 tabular-nums tracking-tight',
+                        'ml-0.5 tabular-nums tracking-tight text-muted-foreground',
                         count === 0 && 'slashed-zero',
                       )}
                     >
@@ -727,7 +727,7 @@ export function PropertyFilterMultiOptionValueMenu<TData, TValue>({
                     {v.label}
                     <sup
                       className={cn(
-                        'ml-0.5 tabular-nums tracking-tight',
+                        'ml-0.5 tabular-nums tracking-tight text-muted-foreground',
                         count === 0 && 'slashed-zero',
                       )}
                     >

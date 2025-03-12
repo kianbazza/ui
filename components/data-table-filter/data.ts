@@ -32,7 +32,7 @@ export const issues: Issue[] = [
     status: 'in-progress',
     assignee: users.find((u) => u.name === 'John Smith')!.id,
     startDate: sub(new Date(), { days: 3 }),
-    estimatedHours: 8,
+    estimatedHours: 101,
   },
   {
     id: nanoid(),

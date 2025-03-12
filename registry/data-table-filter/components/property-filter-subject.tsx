@@ -8,7 +8,7 @@ export function PropertyFilterSubject<TData>({
   const hasIcon = !!meta?.icon
   return (
     <span className="flex select-none items-center gap-1 whitespace-nowrap px-2 font-medium">
-      {hasIcon && <meta.icon className="size-4" strokeWidth={2.25} />}
+      {hasIcon && <meta.icon className="size-4 stroke-[2.25px]" />}
       <span>{meta.displayName}</span>
     </span>
   )

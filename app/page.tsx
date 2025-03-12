@@ -4,7 +4,7 @@ import { ThemeToggle } from '@/components/theme-toggle'
 export default function Page() {
   return (
     <div className="p-8 w-full">
-      {/* <ThemeToggle /> */}
+      <ThemeToggle />
       <DataTableDemo />
     </div>
   )
