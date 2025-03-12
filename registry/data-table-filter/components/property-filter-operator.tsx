@@ -58,7 +58,10 @@ export function PropertyFilterOperatorController<
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-fit p-0">
+      <PopoverContent
+        align="start"
+        className="w-fit p-0 origin-(--radix-popover-content-transform-origin)"
+      >
         <Command loop>
           <CommandInput placeholder="Search..." />
           <CommandEmpty>No results.</CommandEmpty>

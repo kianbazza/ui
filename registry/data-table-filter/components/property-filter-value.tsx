@@ -10,10 +10,8 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-  CommandSeparator,
 } from '@/components/ui/command'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
   Popover,
   PopoverAnchor,
@@ -21,7 +19,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Slider } from '@/components/ui/slider'
-import { Switch } from '@/components/ui/switch'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { DebouncedInput } from '@/registry/data-table-filter/components/debounced-input'
 import { flatten, take, uniq } from '@/registry/data-table-filter/lib/array'
@@ -64,7 +62,11 @@ export function PropertyFilterValueController<TData, TValue>({
           />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-fit p-0" align="start" side="bottom">
+      <PopoverContent
+        align="start"
+        side="bottom"
+        className="w-fit p-0 origin-(--radix-popover-content-transform-origin)"
+      >
         <PropertyFilterValueMenu
           id={id}
           column={column}
@@ -845,11 +847,12 @@ export function PropertyFilterTextValueMenu<TData, TValue>({
 }
 
 export function PropertyFilterNumberValueMenu<TData, TValue>({
+  table,
   column,
   columnMeta,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const maxFromMeta = columnMeta.max
-  const cappedMax = maxFromMeta ?? Number.POSITIVE_INFINITY
+  const cappedMax = maxFromMeta ?? Number.MAX_SAFE_INTEGER
 
   const filter = column.getFilterValue()
     ? (column.getFilterValue() as FilterValue<'number'>)
@@ -945,30 +948,63 @@ export function PropertyFilterNumberValueMenu<TData, TValue>({
     }
   }
 
+  const slider = {
+    value: inputValues.map((val) =>
+      val === '' || val === `${cappedMax}+`
+        ? cappedMax
+        : Number.parseInt(val, 10),
+    ),
+    onValueChange: (value: number[]) => {
+      const values = value.map((val) => (val >= cappedMax ? cappedMax : val))
+      setInputValues(
+        values.map((v) => (v >= cappedMax ? `${cappedMax}+` : v.toString())),
+      )
+      changeNumber(values)
+    },
+  }
+
   return (
-    <Command className="w-[300px]">
-      <CommandList>
+    <Command>
+      <CommandList className="w-[300px] px-2 py-2">
         <CommandGroup>
-          <CommandItem className="flex flex-col items-start gap-4 bg-transparent pt-4 data-[selected=true]:bg-transparent">
-            {isNumberRange ? (
-              <>
+          <div className="flex flex-col w-full">
+            <Tabs
+              value={isNumberRange ? 'range' : 'single'}
+              onValueChange={(v) =>
+                changeType(v === 'range' ? 'range' : 'single')
+              }
+            >
+              <TabsList className="w-full *:text-xs">
+                <TabsTrigger value="single">Single</TabsTrigger>
+                <TabsTrigger value="range">Range</TabsTrigger>
+              </TabsList>
+              <TabsContent value="single" className="flex flex-col gap-4 mt-4">
                 <Slider
-                  value={inputValues.map((val) =>
-                    val === '' || val === `${cappedMax}+`
-                      ? cappedMax
-                      : Number.parseInt(val, 10),
-                  )}
+                  value={[Number(inputValues[0])]}
                   onValueChange={(value) => {
-                    const values = value.map((val) =>
-                      val >= cappedMax ? cappedMax : val,
-                    )
-                    setInputValues(
-                      values.map((v) =>
-                        v >= cappedMax ? `${cappedMax}+` : v.toString(),
-                      ),
-                    )
-                    changeNumber(values)
+                    console.log(value)
+                    handleInputChange(0, value[0].toString())
                   }}
+                  min={datasetMin}
+                  max={cappedMax}
+                  step={1}
+                  aria-orientation="horizontal"
+                />
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium">Value</span>
+                  <Input
+                    id="single"
+                    type="number"
+                    value={inputValues[0]}
+                    onChange={(e) => handleInputChange(0, e.target.value)}
+                    max={cappedMax}
+                  />
+                </div>
+              </TabsContent>
+              <TabsContent value="range" className="flex flex-col gap-4 mt-4">
+                <Slider
+                  value={slider.value}
+                  onValueChange={slider.onValueChange}
                   min={datasetMin}
                   max={cappedMax}
                   step={1}
@@ -976,7 +1012,7 @@ export function PropertyFilterNumberValueMenu<TData, TValue>({
                 />
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">Min</span>
+                    <span className="text-xs font-medium">Min</span>
                     <Input
                       type="number"
                       value={inputValues[0]}
@@ -985,7 +1021,7 @@ export function PropertyFilterNumberValueMenu<TData, TValue>({
                     />
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="text-sm font-medium">Max</span>
+                    <span className="text-xs font-medium">Max</span>
                     <Input
                       type="text"
                       value={inputValues[1]}
@@ -995,32 +1031,9 @@ export function PropertyFilterNumberValueMenu<TData, TValue>({
                     />
                   </div>
                 </div>
-              </>
-            ) : (
-              <div className="flex w-1/2 items-center gap-2">
-                <span className="text-sm font-medium">Value</span>
-                <Input
-                  id="single"
-                  type="number"
-                  value={inputValues[0]}
-                  onChange={(e) => handleInputChange(0, e.target.value)}
-                  max={cappedMax}
-                />
-              </div>
-            )}
-          </CommandItem>
-          <CommandSeparator className="my-4" />
-          <CommandItem className="bg-transparent pb-3 pt-0  data-[selected=true]:bg-transparent">
-            <div className="flex items-center gap-2">
-              <Switch
-                checked={isNumberRange}
-                onCheckedChange={(checked) =>
-                  changeType(checked ? 'range' : 'single')
-                }
-              />
-              <Label className="font-normal">Range</Label>
-            </div>
-          </CommandItem>
+              </TabsContent>
+            </Tabs>
+          </div>
         </CommandGroup>
       </CommandList>
     </Command>

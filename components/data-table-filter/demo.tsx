@@ -173,6 +173,7 @@ export const columns: ColumnDef<Issue>[] = [
       displayName: 'Estimated Hours',
       type: 'number',
       icon: ClockIcon,
+      max: 100,
     },
     filterFn: filterFn('number'),
   },

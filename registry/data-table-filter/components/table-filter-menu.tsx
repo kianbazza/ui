@@ -99,7 +99,10 @@ export function TableFilter<TData>({ table }: { table: Table<TData> }) {
           {!hasFilters && <span>Filter</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent align="start" className="w-fit p-0">
+      <PopoverContent
+        align="start"
+        className="w-fit p-0 origin-(--radix-popover-content-transform-origin)"
+      >
         {content}
       </PopoverContent>
     </Popover>
