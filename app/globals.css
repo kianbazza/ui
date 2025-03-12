@@ -6,6 +6,7 @@
 
 @theme inline {
   --font-sans: var(--font-inter);
+  --font-mono: var(--font-geist-mono);
 }
 
 :root {

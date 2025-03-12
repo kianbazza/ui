@@ -1,11 +1,18 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Geist_Mono, Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/providers/theme-provider'
 
 const inter = Inter({
+  axes: ['opsz'],
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+})
+
+const geistMono = Geist_Mono({
+  subsets: ['latin'],
+  variable: '--font-geist-mono',
   display: 'swap',
 })
 
@@ -21,11 +28,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      {/* <head> */}
-      {/*   <script src="https://unpkg.com/react-scan/dist/auto.global.js" /> */}
-      {/* </head> */}
       <body
-        className={`${inter.variable} font-sans antialiased h-screen w-screen`}
+        className={`${inter.variable} ${geistMono.variable} font-sans antialiased h-screen w-screen`}
       >
         <ThemeProvider
           attribute="class"
