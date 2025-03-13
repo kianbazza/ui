@@ -1,11 +1,282 @@
 import DataTableDemo from '@/components/data-table-filter/demo'
+import { CodeBlock } from '@/components/landing/code-block'
+import { FadeBlurContainer } from '@/components/landing/fade-blur-container'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { Button } from '@/components/ui/button'
+import bazzadevIcon from '@/public/bazzadev.png'
+import filterOperatorsDarkSrc from '@/public/filter-operators-dark.png'
+import filterOperatorsLightSrc from '@/public/filter-operators-light.png'
+import heroDarkSrc from '@/public/hero-dark.png'
+import heroLightSrc from '@/public/hero-light.png'
+import {
+  ArrowRightIcon,
+  CalendarIcon,
+  HashIcon,
+  LetterTextIcon,
+  TagIcon,
+  TagsIcon,
+} from 'lucide-react'
+import Image from 'next/image'
 
 export default function Page() {
   return (
-    <div className="p-8 w-full">
-      <ThemeToggle />
-      <DataTableDemo />
+    <div className="flex flex-col h-full">
+      <div className="border-b border-border border-dashed">
+        <div className="px-4 py-2 max-w-screen-xl w-full mx-auto border-border border-dashed border-l border-r">
+          <div className="flex items-center gap-4 justify-between h-8">
+            <div className="inline-flex items-center gap-1 tracking-tight font-medium">
+              <Image className="size-6" src={bazzadevIcon} alt="BazzaDEV" />
+              <span>bazza</span>
+              <span className="text-xl text-border">/</span>
+              <span>ui</span>
+            </div>
+            <div>
+              <ThemeToggle />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="border-b border-border border-dashed">
+        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed border-x">
+          <div className="flex lg:flex-row flex-col gap-8">
+            <div className="flex flex-col gap-8 w-full">
+              <div className="flex justify-between items-center gap-4">
+                <div className="space-y-8">
+                  <h1 className="text-4xl lg:text-6xl font-[538] tracking-[-0.03em] drop-shadow-xs">
+                    Data table filters for
+                    <br />
+                    your next project.
+                  </h1>
+                  <div className="*:text-lg leading-none *:lg:text-xl *:tracking-[-0.01em] *:font-[410] text-neutral-800 dark:text-neutral-300 flex flex-col gap-1">
+                    <span>
+                      A powerful data table filter component inspired by Linear.
+                    </span>
+                    <span>Built with shadcn/ui and TanStack Table.</span>
+                    <span>Open source and free forever.</span>
+                  </div>
+                </div>
+                <div className="w-[400px]">
+                  <Image
+                    className="dark:hidden"
+                    src={heroLightSrc}
+                    alt="Hero"
+                  />
+                  <Image
+                    className="hidden dark:block"
+                    src={heroDarkSrc}
+                    alt="Hero"
+                  />
+                </div>
+              </div>
+              <div>
+                <Button size="lg">
+                  Get started <ArrowRightIcon className="translate-x-0.5" />
+                </Button>
+              </div>
+            </div>
+            <div className="hidden lg:inline">{/* <FilterHero /> */}</div>
+          </div>
+        </div>
+      </div>
+      <div className="border-b border-border border-dashed">
+        <div className="border-x border-border border-dashed px-4 py-24 max-w-screen-xl w-full mx-auto space-y-4">
+          <h2 className="text-5xl tracking-[-0.03em] font-semibold drop-shadow-xs text-center">
+            Check out the demo.
+          </h2>
+          <DataTableDemo />
+        </div>
+      </div>
+      <div className="border-b border-border border-dashed">
+        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed border-x">
+          <div className="flex gap-8">
+            <div className="space-y-4">
+              <h2 className="text-5xl tracking-[-0.03em] font-semibold drop-shadow-xs">
+                Easy to use.
+              </h2>
+              <span className="font-[410]">
+                We've designed this component to make it as easy as possible to
+                get started. Just add a few lines to your existing TanStack
+                Table columns definition and you're ready to go.
+              </span>
+            </div>
+            <div>
+              <CodeBlock lang="typescript">
+                {[
+                  'export const columns: ColumnDef<Issue>[] = [',
+                  '  /* ..other columns */',
+                  '  {',
+                  "    accessorKey: 'status',",
+                  "    header: 'Status',",
+                  // '    cell: ({ row }) => {',
+                  // '      const status = issueStatuses.find(',
+                  // "        (x) => x.value === row.getValue('status'),",
+                  // '      )!',
+                  // '',
+                  // '      const StatusIcon = status.icon',
+                  // '',
+                  // '      return (',
+                  // '        <div className="flex items-center gap-2">',
+                  // '          <StatusIcon className="size-4" />',
+                  // '          <span>{status.name}</span>',
+                  // '        </div>',
+                  // '      )',
+                  // '    },',
+                  // '// [!code highlight:7]',
+                  "    filterFn: filterFn('option'),  // [!code ++]",
+                  '    meta: {  // [!code ++]',
+                  "      displayName: 'Status',  // [!code ++]",
+                  "      type: 'option',  // [!code ++]",
+                  '      icon: CircleDotDashedIcon,  // [!code ++]',
+                  '      options: issueStatuses.map((x) => ({ ...x, label: x.name })),  // [!code ++]',
+                  '    },  // [!code ++]',
+                  '  }  // [!code ++]',
+                  ']',
+                ].join('\n')}
+              </CodeBlock>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div className="border-b border-border border-dashed">
+        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed border-x">
+          <div className="flex flex-col gap-8">
+            <h2 className="text-5xl tracking-[-0.03em] font-semibold drop-shadow-xs">
+              Packed with features.
+            </h2>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="flex flex-col justify-between gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border">
+                {/* <ul className="flex flex-col gap-x-4 gap-y-1 *:inline-flex *:items-center *:gap-1.5 *:[&>svg]:size-5"> */}
+                {/*   <li> */}
+                {/*     <HashIcon /> Number */}
+                {/*   </li> */}
+                {/*   <li> */}
+                {/*     <LetterTextIcon /> Text */}
+                {/*   </li> */}
+                {/*   <li> */}
+                {/*     <CalendarIcon /> Date */}
+                {/*   </li> */}
+                {/*   <li> */}
+                {/*     <TagIcon /> Option */}
+                {/*   </li> */}
+                {/*   <li> */}
+                {/*     <TagsIcon /> Multi Option */}
+                {/*   </li> */}
+                {/* </ul> */}
+                <CodeBlock
+                  lang="typescript"
+                  className="p-0 border-none shadow-none dark:bg-neutral-950"
+                  colorReplacements={{
+                    '#121212': 'oklch(0.145 0 0)',
+                  }}
+                >
+                  {[
+                    'export type Issue = {',
+                    '  id: string',
+                    '  title: string',
+                    '  description?: string',
+                    '  status: Status',
+                    '  assignee?: string',
+                    '  startDate?: Date',
+                    '  endDate?: Date',
+                    '  estimatedHours?: number',
+                    '}',
+                  ].join('\n')}
+                </CodeBlock>
+                <div className="space-y-4">
+                  <h3 className="text-2xl tracking-[-0.02em] font-[510] drop-shadow-xs">
+                    Work with all your data.
+                  </h3>
+                  <ul className="flex flex-wrap gap-x-4 *:inline-flex *:items-center *:gap-1.5 *:[&>svg]:size-4">
+                    <li>
+                      <HashIcon /> Number
+                    </li>
+                    <li>
+                      <LetterTextIcon /> Text
+                    </li>
+                    <li>
+                      <CalendarIcon /> Date
+                    </li>
+                    <li>
+                      <TagIcon /> Option
+                    </li>
+                    <li>
+                      <TagsIcon /> Multi Option
+                    </li>
+                  </ul>
+                </div>
+              </div>
+              <div className="flex flex-col gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border">
+                <Image
+                  className="dark:hidden"
+                  alt="Filter operators"
+                  src={filterOperatorsLightSrc}
+                />
+                <Image
+                  className="hidden dark:block"
+                  alt="Filter operators"
+                  src={filterOperatorsDarkSrc}
+                />
+
+                <div className="space-y-4">
+                  <h3 className="text-2xl tracking-[-0.02em] font-[510] drop-shadow-xs">
+                    Filter selectively with operators.
+                  </h3>
+                  <span>
+                    Just let us know what kind of data is in your column and
+                    we'll handle the rest for you.
+                  </span>
+                </div>
+              </div>
+              <div className="flex flex-col justify-between gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border overflow-clip">
+                <FadeBlurContainer
+                  fadeColor="#ffffff"
+                  fadeStart={80}
+                  fadeDirection={['right', 'bottom']}
+                  className="h-[200px]"
+                >
+                  <CodeBlock
+                    lang="typescript"
+                    className="p-0 border-none shadow-none text-xs"
+                  >
+                    {[
+                      'type FilterOperatorDetailsBase<OperatorValue, T extends ColumnDataType> = {',
+                      '  /* The operator value. Usually the string representation of the operator. */',
+                      '  value: OperatorValue',
+                      '  /* The label for the operator, to show in the UI. */',
+                      '  label: string',
+                      '  /* How much data the operator applies to. */',
+                      "  target: 'single' | 'multiple'",
+                      '  /* The plural form of the operator, if applicable. */',
+                      '  singularOf?: FilterOperators[T]',
+                      '  /* The singular form of the operator, if applicable. */',
+                      '  pluralOf?: FilterOperators[T]',
+                      '  /* All related operators. Normally, all the operators which share the same target. */',
+                      '  relativeOf: FilterOperators[T] | Array<FilterOperators[T]>',
+                      '  /* Whether the operator is negated. */',
+                      '  isNegated: boolean',
+                      '  /* If the operator is not negated, this provides the negated equivalent. */',
+                      '  negation?: FilterOperators[T]',
+                      '  /* If the operator is negated, this provides the positive equivalent. */',
+                      '  negationOf?: FilterOperators[T]',
+                      '}',
+                    ].join('\n')}
+                  </CodeBlock>
+                </FadeBlurContainer>
+
+                <div className="space-y-4">
+                  <h3 className="text-2xl tracking-[-0.02em] font-[510] drop-shadow-xs">
+                    End-to-end type safety.
+                  </h3>
+                  <span>
+                    Countless hours have been spent on designing a type-safe
+                    interface, at your disposal.
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   )
 }

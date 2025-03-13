@@ -2,11 +2,17 @@
 
 @plugin "tailwindcss-animate";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark, .dark *));
 
 @theme inline {
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
+
+  --width-screen-sm: var(--breakpoint-sm);
+  --width-screen-md: var(--breakpoint-md);
+  --width-screen-lg: var(--breakpoint-lg);
+  --width-screen-xl: var(--breakpoint-xl);
+  --width-screen-2xl: var(--breakpoint-2xl);
 }
 
 :root {
@@ -126,5 +132,75 @@
 
   body {
     @apply bg-background text-foreground;
+  }
+
+  html.dark .shiki,
+  html.dark .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    /* Optional, if you also want font styles */
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
+
+  .shiki {
+    .line {
+      @apply border-l-4 border-transparent;
+
+      /*&::before {*/
+      /*  counter-increment: step;*/
+      /*  @apply mr-6 inline-block w-4 border-transparent text-right text-neutral-600 content-[counter(step)];*/
+      /*}*/
+
+      &.highlighted,
+      &.diff {
+        @apply -ml-4 -mr-5 inline-block w-[calc(100%+(theme(spacing.4)+theme(spacing.4)))] pl-4 pr-5;
+      }
+
+      &.highlighted {
+        @apply border-neutral-500 bg-neutral-800;
+      }
+
+      &.diff {
+
+        &.add,
+        &.remove {
+          span:first-child::before {
+            @apply -ml-4 inline-flex w-4;
+          }
+        }
+
+        &.add {
+          @apply border-green-500 bg-green-500/10 dark:bg-green-500 before:text-green-500;
+
+          span:first-child::before {
+            @apply text-green-500 translate-x-0.5 content-["+"];
+          }
+        }
+
+        &.remove {
+          @apply border-orange-500 bg-orange-500/30 opacity-70 before:text-orange-500;
+
+          span:first-child::before {
+            @apply text-orange-500 content-["-"];
+          }
+        }
+      }
+    }
+  }
+}
+
+@layer utilities {
+  .border-grid {
+    @apply border-border/50 dark:border-border border-dashed;
+  }
+
+  .container-wrapper {
+    @apply max-w-[1400px] min-[1800px]:max-w-screen-2xl min-[1400px]:border-x border-border/70 dark:border-border mx-auto w-full border-dashed;
+  }
+
+  .container {
+    @apply px-4 xl:px-6 mx-auto max-w-screen-2xl;
   }
 }

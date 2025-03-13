@@ -259,18 +259,9 @@ export default function DataTableDemo() {
   return (
     <div className="w-full">
       <div className="flex items-center py-4 gap-2">
-        {/* <Input */}
-        {/*   type="search" */}
-        {/*   placeholder="Filter issues..." */}
-        {/*   value={(table.getColumn('title')?.getFilterValue() as string) ?? ''} */}
-        {/*   onChange={(event) => */}
-        {/*     table.getColumn('title')?.setFilterValue(event.target.value) */}
-        {/*   } */}
-        {/*   className="max-w-sm" */}
-        {/* /> */}
         <DataTableFilter table={table} />
       </div>
-      <div className="rounded-md border">
+      <div className="rounded-md border bg-white dark:bg-inherit">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
