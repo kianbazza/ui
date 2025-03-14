@@ -24,8 +24,12 @@ export default function Page() {
       <div className="border-b border-border border-dashed">
         <div className="px-4 py-2 max-w-screen-xl w-full mx-auto border-border border-dashed border-l border-r">
           <div className="flex items-center gap-4 justify-between h-8">
-            <div className="inline-flex items-center gap-1 tracking-tight font-medium">
-              <Image className="size-6" src={bazzadevIcon} alt="BazzaDEV" />
+            <div className="inline-flex items-center gap-1 font-medium font-mono tracking-tight">
+              <Image
+                className="size-6 mr-1"
+                src={bazzadevIcon}
+                alt="BazzaDEV"
+              />
               <span>bazza</span>
               <span className="text-xl text-border">/</span>
               <span>ui</span>
