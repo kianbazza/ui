@@ -10,7 +10,7 @@ import {
   startOfDay,
 } from 'date-fns'
 import type { LucideIcon } from 'lucide-react'
-import { intersection, uniq } from './array'
+import { intersection, uniq } from '@/registry/data-table-filter/lib/array'
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -658,6 +658,8 @@ export function __multiOptionFilterFn(
   inputData: string[],
   filterValue: FilterValue<'multiOption'>,
 ) {
+  if (!inputData) return false
+
   if (
     filterValue.values.length === 0 ||
     !filterValue.values[0] ||

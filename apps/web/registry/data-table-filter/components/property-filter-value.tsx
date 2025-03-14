@@ -298,20 +298,23 @@ export function PropertyFilterMultiOptionValueDisplay<TData, TValue>({
 
   const name = columnMeta.displayName.toLowerCase()
 
-  const hasOptionIcons = !!columnMeta.options
+  const hasOptionIcons = !columnMeta.options?.some((o) => !o.icon)
 
   return (
-    <div className="inline-flex items-center gap-0.5">
-      {hasOptionIcons &&
-        take(selected, 3).map(({ value, icon }) => {
-          const Icon = icon!
-          return isValidElement(Icon) ? (
-            Icon
-          ) : (
-            <Icon key={value} className="size-4" />
-          )
-        })}
-      <span className={cn(hasOptionIcons && 'ml-1.5')}>
+    <div className="inline-flex items-center gap-1.5">
+      {hasOptionIcons && (
+        <div className="inline-flex items-center gap-0.5">
+          {take(selected, 3).map(({ value, icon }) => {
+            const Icon = icon!
+            return isValidElement(Icon) ? (
+              Icon
+            ) : (
+              <Icon key={value} className="size-4" />
+            )
+          })}
+        </div>
+      )}
+      <span>
         {selected.length} {name}
       </span>
     </div>
@@ -391,7 +394,7 @@ export function PropertyFilterNumberValueDisplay<TData, TValue>({
     const minValue = filter.values[0]
     const maxValue =
       filter.values[1] === Number.POSITIVE_INFINITY ||
-      filter.values[1] >= cappedMax
+        filter.values[1] >= cappedMax
         ? `${cappedMax}+`
         : filter.values[1]
 
@@ -492,16 +495,16 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
   const options = columnMeta.options
     ? columnMeta.options
     : uniq(table.getCoreRowModel().rows.map((r) => r.getValue<string>(id))).map(
-        (value) => {
-          const option: ColumnOption = {
-            value: value,
-            label: value,
-            icon: undefined,
-          }
+      (value) => {
+        const option: ColumnOption = {
+          value: value,
+          label: value,
+          icon: undefined,
+        }
 
-          return option
-        },
-      )
+        return option
+      },
+    )
 
   function handleOptionSelect(value: string, check: boolean) {
     if (check)
@@ -688,7 +691,7 @@ export function PropertyFilterMultiOptionValueMenu<TData, TValue>({
     <Command loop>
       <CommandInput autoFocus placeholder="Search..." />
       <CommandEmpty>No results.</CommandEmpty>
-      <CommandList className="max-h-fit">
+      <CommandList>
         <CommandGroup>
           {options.map((v) => {
             const checked = Boolean(filter?.values[0]?.includes(v.value))
@@ -982,7 +985,6 @@ export function PropertyFilterNumberValueMenu<TData, TValue>({
                 <Slider
                   value={[Number(inputValues[0])]}
                   onValueChange={(value) => {
-                    console.log(value)
                     handleInputChange(0, value[0].toString())
                   }}
                   min={datasetMin}
