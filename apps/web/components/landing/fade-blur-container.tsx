@@ -31,7 +31,7 @@ const hexToRgba = (hex: string, alpha: number) => {
   // Convert 3-digit hexValue to 6-digit
   if (hexValue.length === 3) {
     hexValue =
-      hexValue[0] +
+      hexValue[0]! +
       hexValue[0] +
       hexValue[1] +
       hexValue[1] +
@@ -253,7 +253,7 @@ const generateCombinedGradients = (
 ) => {
   // If there's only one direction or it's a corner, use the simple approach
   if (directions.length === 1) {
-    const direction = directions[0]
+    const direction = directions[0]!
     return {
       colorGradient: generateSingleGradient(
         direction,
