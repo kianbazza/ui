@@ -7,12 +7,6 @@
 @theme inline {
   --font-sans: var(--font-inter);
   --font-mono: var(--font-geist-mono);
-
-  --width-screen-sm: var(--breakpoint-sm);
-  --width-screen-md: var(--breakpoint-md);
-  --width-screen-lg: var(--breakpoint-lg);
-  --width-screen-xl: var(--breakpoint-xl);
-  --width-screen-2xl: var(--breakpoint-2xl);
 }
 
 :root {
@@ -203,4 +197,8 @@
   .container {
     @apply px-4 xl:px-6 mx-auto max-w-screen-2xl;
   }
+}
+
+@utility max-w-screen-* {
+  max-width: --value(--breakpoint-*);
 }

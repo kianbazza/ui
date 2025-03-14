@@ -1,3 +1,4 @@
+import '@tanstack/table-core'
 import { type RankingInfo, rankItem } from '@tanstack/match-sorter-utils'
 import type { FilterFn, Row, RowData } from '@tanstack/react-table'
 import {

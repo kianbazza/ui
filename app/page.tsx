@@ -37,7 +37,7 @@ export default function Page() {
         </div>
       </div>
       <div className="border-b border-border border-dashed">
-        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed border-x">
+        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed border-x flex items-center gap-4 justify-between">
           <div className="flex lg:flex-row flex-col gap-8">
             <div className="flex flex-col gap-8 w-full">
               <div className="flex justify-between items-center gap-4">
@@ -55,18 +55,6 @@ export default function Page() {
                     <span>Open source and free forever.</span>
                   </div>
                 </div>
-                <div className="w-[400px]">
-                  <Image
-                    className="dark:hidden"
-                    src={heroLightSrc}
-                    alt="Hero"
-                  />
-                  <Image
-                    className="hidden dark:block"
-                    src={heroDarkSrc}
-                    alt="Hero"
-                  />
-                </div>
               </div>
               <div>
                 <Button size="lg">
@@ -74,7 +62,10 @@ export default function Page() {
                 </Button>
               </div>
             </div>
-            <div className="hidden lg:inline">{/* <FilterHero /> */}</div>
+          </div>
+          <div className="w-[450px]">
+            <Image className="dark:hidden" src={heroLightSrc} alt="Hero" />
+            <Image className="hidden dark:block" src={heroDarkSrc} alt="Hero" />
           </div>
         </div>
       </div>
@@ -141,27 +132,10 @@ export default function Page() {
         <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed border-x">
           <div className="flex flex-col gap-8">
             <h2 className="text-5xl tracking-[-0.03em] font-semibold drop-shadow-xs">
-              Packed with features.
+              Powerful.
             </h2>
             <div className="grid grid-cols-3 gap-4">
               <div className="flex flex-col justify-between gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border">
-                {/* <ul className="flex flex-col gap-x-4 gap-y-1 *:inline-flex *:items-center *:gap-1.5 *:[&>svg]:size-5"> */}
-                {/*   <li> */}
-                {/*     <HashIcon /> Number */}
-                {/*   </li> */}
-                {/*   <li> */}
-                {/*     <LetterTextIcon /> Text */}
-                {/*   </li> */}
-                {/*   <li> */}
-                {/*     <CalendarIcon /> Date */}
-                {/*   </li> */}
-                {/*   <li> */}
-                {/*     <TagIcon /> Option */}
-                {/*   </li> */}
-                {/*   <li> */}
-                {/*     <TagsIcon /> Multi Option */}
-                {/*   </li> */}
-                {/* </ul> */}
                 <CodeBlock
                   lang="typescript"
                   className="p-0 border-none shadow-none dark:bg-neutral-950"
@@ -184,9 +158,9 @@ export default function Page() {
                 </CodeBlock>
                 <div className="space-y-4">
                   <h3 className="text-2xl tracking-[-0.02em] font-[510] drop-shadow-xs">
-                    Work with all your data.
+                    Data types.
                   </h3>
-                  <ul className="flex flex-wrap gap-x-4 *:inline-flex *:items-center *:gap-1.5 *:[&>svg]:size-4">
+                  <ul className="flex flex-wrap gap-x-4 *:inline-flex *:items-center *:gap-1.5 *:[&>svg]:size-4 text-muted-foreground">
                     <li>
                       <HashIcon /> Number
                     </li>
@@ -219,9 +193,9 @@ export default function Page() {
 
                 <div className="space-y-4">
                   <h3 className="text-2xl tracking-[-0.02em] font-[510] drop-shadow-xs">
-                    Filter selectively with operators.
+                    Operators.
                   </h3>
-                  <span>
+                  <span className="text-muted-foreground">
                     Just let us know what kind of data is in your column and
                     we'll handle the rest for you.
                   </span>
@@ -229,14 +203,18 @@ export default function Page() {
               </div>
               <div className="flex flex-col justify-between gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border overflow-clip">
                 <FadeBlurContainer
-                  fadeColor="#ffffff"
-                  fadeStart={80}
+                  lightFadeColor="#ffffff"
+                  darkFadeColor="#0a0a0a"
+                  fadeStart={75}
                   fadeDirection={['right', 'bottom']}
                   className="h-[200px]"
                 >
                   <CodeBlock
                     lang="typescript"
-                    className="p-0 border-none shadow-none text-xs"
+                    className="p-0 border-none shadow-none text-[0.6rem]"
+                    colorReplacements={{
+                      '#121212': 'oklch(0.145 0 0)',
+                    }}
                   >
                     {[
                       'type FilterOperatorDetailsBase<OperatorValue, T extends ColumnDataType> = {',
@@ -267,7 +245,7 @@ export default function Page() {
                   <h3 className="text-2xl tracking-[-0.02em] font-[510] drop-shadow-xs">
                     End-to-end type safety.
                   </h3>
-                  <span>
+                  <span className="text-muted-foreground">
                     Countless hours have been spent on designing a type-safe
                     interface, at your disposal.
                   </span>
