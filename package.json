@@ -21,6 +21,12 @@
   "packageManager": "bun@1.2.4",
   "workspaces": [
     "apps/*",
-    "packages/*"
+    "packages/*",
+    "examples/*"
+  ],
+  "trustedDependencies": [
+    "@biomejs/biome",
+    "@repo/web",
+    "@swc/core"
   ]
 }
