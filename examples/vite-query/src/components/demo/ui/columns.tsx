@@ -228,7 +228,17 @@ export const columns: ColumnDef<Issue>[] = [
       displayName: 'Labels',
       type: 'multiOption',
       icon: TagsIcon,
-      options: ISSUE_LABELS.map((x) => ({ ...x, value: x.id, label: x.name })),
+      options: ISSUE_LABELS.map((x) => ({
+        ...x,
+        value: x.id,
+        label: x.name,
+        icon: (
+          <div
+            className="rounded-full size-2"
+            style={{ backgroundColor: x.color }}
+          />
+        ),
+      })),
       // @ts-expect-error: x
       transformFn: (value) => {
         return value ?? []

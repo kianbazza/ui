@@ -9,13 +9,13 @@ import { lorem } from '@ndaidong/txtgen'
 import { sample, randomInteger } from 'remeda'
 import { nanoid } from 'nanoid'
 import { isAnyOf } from './utils'
-import { differenceInDays, sub } from 'date-fns'
+import { add, differenceInDays, sub } from 'date-fns'
 
 export const calculateEndDate = (start: Date) => {
   const diff = differenceInDays(new Date(), start)
   const offset = randomInteger(0, diff + 1)
 
-  return sub(start, { days: offset })
+  return add(start, { days: offset })
 }
 
 export function generateSampleIssue(): Issue {

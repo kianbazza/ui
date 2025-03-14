@@ -658,6 +658,8 @@ export function __multiOptionFilterFn(
   inputData: string[],
   filterValue: FilterValue<'multiOption'>,
 ) {
+  if (!inputData) return false
+
   if (
     filterValue.values.length === 0 ||
     !filterValue.values[0] ||
