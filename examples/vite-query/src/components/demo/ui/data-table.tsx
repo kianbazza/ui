@@ -118,7 +118,10 @@ export default function DataTable() {
       <div className="flex items-center justify-end space-x-2 py-4">
         <div className="flex-1 text-sm text-muted-foreground tabular-nums">
           {table.getFilteredSelectedRowModel().rows.length} of{' '}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {table.getFilteredRowModel().rows.length} row(s) selected.{' '}
+          <span className="text-primary font-medium">
+            Total row count: {table.getCoreRowModel().rows.length}
+          </span>
         </div>
         <div className="space-x-2">
           <Button
