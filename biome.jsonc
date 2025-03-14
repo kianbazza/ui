@@ -7,7 +7,9 @@
   },
   "files": {
     "ignoreUnknown": false,
-    "ignore": ["node_modules"]
+    "ignore": [
+      "node_modules"
+    ]
   },
   "formatter": {
     "enabled": true,
