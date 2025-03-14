@@ -1,3 +1,9 @@
+import DataTable from './components/demo/ui/data-table'
+
 export default function App() {
-  return <div>Hello world</div>
+  return (
+    <div className="p-16">
+      <DataTable />
+    </div>
+  )
 }
