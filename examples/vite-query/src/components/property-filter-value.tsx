@@ -154,43 +154,35 @@ export function PropertyFilterOptionValueDisplay<TData, TValue>({
   columnMeta,
   table,
 }: PropertyFilterValueDisplayProps<TData, TValue>) {
-  const providedOptions = columnMeta.options
-
   let options: ColumnOption[]
+  const columnVals = table
+    .getCoreRowModel()
+    .rows.flatMap((r) => r.getValue<TValue>(id))
+    .filter((v): v is NonNullable<TValue> => v !== undefined && v !== null)
 
-  if (providedOptions) {
-    // If provided options are available for the column, use them
-    options = providedOptions
-  } else if (columnMeta.transformFn) {
-    // No provided options, we should dynamically generate them based on the column data
-    // If a transform function is provided, we use it to transform the column data into
-    // an acceptable format
-    const columnVals = table.getCoreRowModel().rows.map((r) => r.getValue(id))
-    const transformed = columnVals.map(columnMeta.transformFn) as string[]
-    const unique = uniq(transformed)
-    options = unique.map((value) => {
-      const option: ColumnOption = {
-        value: value,
-        label: value,
-        icon: undefined,
-      }
-      return option
-    })
-  } else {
-    // No provided options or transform function
-    // We should generate options based on the raw column data
-    const columnVals = table
-      .getCoreRowModel()
-      .rows.map((r) => r.getValue<string>(id))
+  // If static options are provided, use them
+  if (columnMeta.options) {
+    options = columnMeta.options
+  }
+
+  // No static options provided,
+  // We should dynamically generate them based on the column data
+  else if (columnMeta.transformOptionFn) {
+    const transformOptionFn = columnMeta.transformOptionFn
+
     const unique = uniq(columnVals)
-    options = unique.map((value) => {
-      const option: ColumnOption = {
-        value: value,
-        label: value,
-        icon: undefined,
-      }
-      return option
-    })
+
+    options = unique.map((v) =>
+      transformOptionFn(v as ElementType<NonNullable<TValue>>),
+    )
+  }
+
+  // No static options provided
+  // Missing transformOptionFn - throw error
+  else {
+    throw new Error(
+      'No options provided - this is required for multiOption data type without static options',
+    )
   }
 
   const filter = column.getFilterValue() as FilterValue<'option', TData>
@@ -494,19 +486,48 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
     ? (column.getFilterValue() as FilterValue<'option', TData>)
     : undefined
 
-  const options = columnMeta.options
-    ? columnMeta.options
-    : uniq(table.getCoreRowModel().rows.map((r) => r.getValue<string>(id))).map(
-      (value) => {
-        const option: ColumnOption = {
-          value: value,
-          label: value,
-          icon: undefined,
-        }
+  let options: ColumnOption[]
+  const columnVals = table
+    .getCoreRowModel()
+    .rows.flatMap((r) => r.getValue<TValue>(id))
+    .filter((v): v is NonNullable<TValue> => v !== undefined && v !== null)
 
-        return option
-      },
+  // If static options are provided, use them
+  if (columnMeta.options) {
+    options = columnMeta.options
+  }
+
+  // No static options provided,
+  // We should dynamically generate them based on the column data
+  else if (columnMeta.transformOptionFn) {
+    const transformOptionFn = columnMeta.transformOptionFn
+
+    const unique = uniq(columnVals)
+
+    options = unique.map((v) =>
+      transformOptionFn(v as ElementType<NonNullable<TValue>>),
     )
+  }
+
+  // No static options provided
+  // Missing transformOptionFn - throw error
+  else {
+    throw new Error(
+      'No options provided - this is required for multiOption data type without static options',
+    )
+  }
+
+  const optionsCount: Record<ColumnOption['value'], number> = columnVals.reduce(
+    (acc, curr) => {
+      const { value } = columnMeta.transformOptionFn!(
+        curr as ElementType<NonNullable<TValue>>,
+      )
+
+      acc[value] = (acc[value] ?? 0) + 1
+      return acc
+    },
+    {} as Record<ColumnOption['value'], number>,
+  )
 
   function handleOptionSelect(value: string, check: boolean) {
     if (check)
@@ -551,17 +572,7 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
         <CommandGroup>
           {options.map((v) => {
             const checked = Boolean(filter?.values.includes(v.value))
-            let data = table.getCoreRowModel().rows.map((r: Row<TData>) => {
-              const original = r.original as Record<string, unknown>
-              const value = original[id]
-              return value
-            })
-
-            if (columnMeta.transformFn) {
-              data = data.map(columnMeta.transformFn)
-            }
-
-            const count = data.filter((d) => d === v.value).length ?? 0
+            const count = optionsCount[v.value] ?? 0
 
             return (
               <CommandItem

@@ -647,8 +647,22 @@ export function optionFilterFn<TData>(
   columnId: string,
   filterValue: FilterValue<'option', TData>,
 ) {
-  const value = row.getValue<string>(columnId)
-  return __optionFilterFn(value, filterValue)
+  const value = row.getValue(columnId)
+
+  if (!value) return false
+
+  const columnMeta = filterValue.column.columnDef.meta!
+
+  if (typeof value === 'string') {
+    return __optionFilterFn(value, filterValue)
+  }
+
+  if (isColumnOption(value)) {
+    return __optionFilterFn(value.value, filterValue)
+  }
+
+  const sanitizedValue = columnMeta.transformOptionFn!(value as never)
+  return __optionFilterFn(sanitizedValue.value, filterValue)
 }
 
 export function __optionFilterFn<TData>(
@@ -671,11 +685,6 @@ export function __optionFilterFn<TData>(
       return !found
   }
 }
-
-export type TransformFilterValueFn<TData, TValue> = (
-  value: TValue,
-  column?: Column<TData>,
-) => unknown
 
 function isColumnOption(value: unknown): value is ColumnOption {
   return typeof value === 'object' && value !== null && 'value' in value

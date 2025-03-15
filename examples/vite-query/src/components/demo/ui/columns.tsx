@@ -64,11 +64,14 @@ export const columns = [
       displayName: 'Status',
       type: 'option',
       icon: CircleDotDashedIcon,
-      options: ISSUE_STATUSES.map((x) => ({
-        ...x,
-        value: x.id,
-        label: x.name,
-      })),
+      transformOptionFn(value) {
+        return { value: value.id, label: value.name, icon: value.icon }
+      },
+      // options: ISSUE_STATUSES.map((x) => ({
+      //   ...x,
+      //   value: x.id,
+      //   label: x.name,
+      // })),
     },
   }),
   // columnHelper.accessor((row) => row.title, {
