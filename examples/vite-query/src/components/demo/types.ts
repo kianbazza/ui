@@ -22,7 +22,8 @@ export type Issue = {
   id: string
   title: string
   description?: string
-  statusId: 'backlog' | 'todo' | 'in-progress' | 'done'
+  // statusId: 'backlog' | 'todo' | 'in-progress' | 'done'
+  status: IssueStatus
   labels?: IssueLabel[]
   assigneeId?: string
   startDate?: Date
@@ -37,7 +38,7 @@ export type IssueLabel = {
 }
 
 export type IssueStatus = {
-  id: Issue['statusId']
+  id: string
   name: string
   icon: LucideIcon
 }

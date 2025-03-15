@@ -22,7 +22,7 @@ import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { DebouncedInput } from '@/components/debounced-input'
-import { flatten, take, uniq } from '@/lib/array'
+import { take, uniq } from '@/lib/array'
 import type { ColumnOption, ElementType } from '@/lib/filters'
 import {
   type FilterValue,
@@ -193,7 +193,7 @@ export function PropertyFilterOptionValueDisplay<TData, TValue>({
     })
   }
 
-  const filter = column.getFilterValue() as FilterValue<'option'>
+  const filter = column.getFilterValue() as FilterValue<'option', TData>
   const selected = options.filter((o) => filter?.values.includes(o.value))
 
   // We display the selected options based on how many are selected
@@ -278,7 +278,7 @@ export function PropertyFilterMultiOptionValueDisplay<TData, TValue>({
     )
   }
 
-  const filter = column.getFilterValue() as FilterValue<'multiOption'>
+  const filter = column.getFilterValue() as FilterValue<'multiOption', TData>
   const selected = options.filter((o) => filter?.values[0].includes(o.value))
 
   if (selected.length === 1) {
@@ -342,7 +342,7 @@ export function PropertyFilterDateValueDisplay<TData, TValue>({
   column,
 }: PropertyFilterValueDisplayProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'date'>)
+    ? (column.getFilterValue() as FilterValue<'date', TData>)
     : undefined
 
   if (!filter) return null
@@ -364,7 +364,7 @@ export function PropertyFilterTextValueDisplay<TData, TValue>({
   column,
 }: PropertyFilterValueDisplayProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'text'>)
+    ? (column.getFilterValue() as FilterValue<'text', TData>)
     : undefined
 
   if (!filter) return null
@@ -384,7 +384,7 @@ export function PropertyFilterNumberValueDisplay<TData, TValue>({
   const cappedMax = maxFromMeta ?? 2147483647
 
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'number'>)
+    ? (column.getFilterValue() as FilterValue<'number', TData>)
     : undefined
 
   if (!filter) return null
@@ -491,7 +491,7 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
   table,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'option'>)
+    ? (column.getFilterValue() as FilterValue<'option', TData>)
     : undefined
 
   const options = columnMeta.options
@@ -510,30 +510,37 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
 
   function handleOptionSelect(value: string, check: boolean) {
     if (check)
-      column?.setFilterValue((old: undefined | FilterValue<'option'>) => {
-        if (!old || old.values.length === 0)
+      column?.setFilterValue(
+        (old: undefined | FilterValue<'option', TData>) => {
+          if (!old || old.values.length === 0)
+            return {
+              operator: 'is',
+              values: [value],
+              column,
+            } satisfies FilterValue<'option', TData>
+
+          const newValues = [...old.values, value]
+
           return {
-            operator: 'is',
-            values: [value],
-          } satisfies FilterValue<'option'>
-
-        const newValues = [...old.values, value]
-
-        return {
-          operator: 'is any of',
-          values: newValues,
-        } satisfies FilterValue<'option'>
-      })
+            operator: 'is any of',
+            values: newValues,
+            column,
+          } satisfies FilterValue<'option', TData>
+        },
+      )
     else
-      column?.setFilterValue((old: undefined | FilterValue<'option'>) => {
-        if (!old || old.values.length <= 1) return undefined
+      column?.setFilterValue(
+        (old: undefined | FilterValue<'option', TData>) => {
+          if (!old || old.values.length <= 1) return undefined
 
-        const newValues = old.values.filter((v) => v !== value)
-        return {
-          operator: newValues.length > 1 ? 'is any of' : 'is',
-          values: newValues,
-        } satisfies FilterValue<'option'>
-      })
+          const newValues = old.values.filter((v) => v !== value)
+          return {
+            operator: newValues.length > 1 ? 'is any of' : 'is',
+            values: newValues,
+            column,
+          } satisfies FilterValue<'option', TData>
+        },
+      )
   }
 
   return (
@@ -606,7 +613,7 @@ export function PropertyFilterMultiOptionValueMenu<
   table,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue() as
-    | FilterValue<'multiOption'>
+    | FilterValue<'multiOption', TData>
     | undefined
 
   let options: ColumnOption[]
@@ -655,48 +662,55 @@ export function PropertyFilterMultiOptionValueMenu<
   // Handles the selection/deselection of an option
   function handleOptionSelect(value: string, check: boolean) {
     if (check) {
-      column.setFilterValue((old: undefined | FilterValue<'multiOption'>) => {
-        if (
-          !old ||
-          old.values.length === 0 ||
-          !old.values[0] ||
-          old.values[0].length === 0
-        )
+      column.setFilterValue(
+        (old: undefined | FilterValue<'multiOption', TData>) => {
+          if (
+            !old ||
+            old.values.length === 0 ||
+            !old.values[0] ||
+            old.values[0].length === 0
+          )
+            return {
+              operator: 'include',
+              values: [[value]],
+              column,
+            } satisfies FilterValue<'multiOption', TData>
+
+          const newValues = [uniq([...old.values[0], value])]
+
           return {
-            operator: 'include',
-            values: [[value]],
-          } satisfies FilterValue<'multiOption'>
-
-        const newValues = [uniq([...old.values[0], value])]
-
-        return {
-          operator: determineNewOperator(
-            'multiOption',
-            old.values,
-            newValues,
-            old.operator,
-          ),
-          values: newValues,
-        } satisfies FilterValue<'multiOption'>
-      })
+            operator: determineNewOperator(
+              'multiOption',
+              old.values,
+              newValues,
+              old.operator,
+            ),
+            values: newValues,
+            column,
+          } satisfies FilterValue<'multiOption', TData>
+        },
+      )
     } else
-      column.setFilterValue((old: undefined | FilterValue<'multiOption'>) => {
-        if (!old?.values[0] || old.values[0].length <= 1) return undefined
+      column.setFilterValue(
+        (old: undefined | FilterValue<'multiOption', TData>) => {
+          if (!old?.values[0] || old.values[0].length <= 1) return undefined
 
-        const newValues = [
-          uniq([...old.values[0], value]).filter((v) => v !== value),
-        ]
+          const newValues = [
+            uniq([...old.values[0], value]).filter((v) => v !== value),
+          ]
 
-        return {
-          operator: determineNewOperator(
-            'multiOption',
-            old.values,
-            newValues,
-            old.operator,
-          ),
-          values: newValues,
-        } satisfies FilterValue<'multiOption'>
-      })
+          return {
+            operator: determineNewOperator(
+              'multiOption',
+              old.values,
+              newValues,
+              old.operator,
+            ),
+            values: newValues,
+            column,
+          } satisfies FilterValue<'multiOption', TData>
+        },
+      )
   }
 
   return (
@@ -753,7 +767,7 @@ export function PropertyFilterDateValueMenu<TData, TValue>({
   column,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'date'>)
+    ? (column.getFilterValue() as FilterValue<'date', TData>)
     : undefined
 
   const [date, setDate] = useState<DateRange | undefined>({
@@ -774,12 +788,13 @@ export function PropertyFilterDateValueMenu<TData, TValue>({
 
     const newValues = isRange ? [start, end] : start ? [start] : []
 
-    column.setFilterValue((old: undefined | FilterValue<'date'>) => {
+    column.setFilterValue((old: undefined | FilterValue<'date', TData>) => {
       if (!old || old.values.length === 0)
         return {
           operator: newValues.length > 1 ? 'is between' : 'is',
           values: newValues,
-        } satisfies FilterValue<'date'>
+          column,
+        } satisfies FilterValue<'date', TData>
 
       return {
         operator:
@@ -789,7 +804,8 @@ export function PropertyFilterDateValueMenu<TData, TValue>({
               ? 'is'
               : old.operator,
         values: newValues,
-      } satisfies FilterValue<'date'>
+        column,
+      } satisfies FilterValue<'date', TData>
     })
   }
 
@@ -819,16 +835,17 @@ export function PropertyFilterTextValueMenu<TData, TValue>({
   column,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'text'>)
+    ? (column.getFilterValue() as FilterValue<'text', TData>)
     : undefined
 
   const changeText = (value: string | number) => {
-    column.setFilterValue((old: undefined | FilterValue<'text'>) => {
+    column.setFilterValue((old: undefined | FilterValue<'text', TData>) => {
       if (!old || old.values.length === 0)
         return {
           operator: 'contains',
           values: [String(value)],
-        } satisfies FilterValue<'text'>
+          column,
+        } satisfies FilterValue<'text', TData>
       return { operator: old.operator, values: [String(value)] }
     })
   }
@@ -860,7 +877,7 @@ export function PropertyFilterNumberValueMenu<TData, TValue>({
   const cappedMax = maxFromMeta ?? Number.MAX_SAFE_INTEGER
 
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'number'>)
+    ? (column.getFilterValue() as FilterValue<'number', TData>)
     : undefined
 
   const isNumberRange =
@@ -882,7 +899,7 @@ export function PropertyFilterNumberValueMenu<TData, TValue>({
   const changeNumber = (value: number[]) => {
     const sortedValues = [...value].sort((a, b) => a - b)
 
-    column.setFilterValue((old: undefined | FilterValue<'number'>) => {
+    column.setFilterValue((old: undefined | FilterValue<'number', TData>) => {
       if (!old || old.values.length === 0) {
         return {
           operator: 'is',
@@ -931,7 +948,7 @@ export function PropertyFilterNumberValueMenu<TData, TValue>({
   }
 
   const changeType = (type: 'single' | 'range') => {
-    column.setFilterValue((old: undefined | FilterValue<'number'>) => {
+    column.setFilterValue((old: undefined | FilterValue<'number', TData>) => {
       if (type === 'single') {
         return {
           operator: 'is',

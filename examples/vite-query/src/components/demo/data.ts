@@ -50,7 +50,7 @@ export function generateSampleIssue(): Issue {
     id: nanoid(),
     title,
     description,
-    statusId: status.id,
+    status,
     labels,
     assigneeId,
     startDate,
@@ -583,4 +583,4 @@ export function generateIssues(count: number) {
   return arr
 }
 
-export const ISSUES = generateIssues(1000)
+export const ISSUES = generateIssues(100)
