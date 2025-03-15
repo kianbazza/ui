@@ -1,6 +1,6 @@
 import '@tanstack/table-core'
 import { type RankingInfo, rankItem } from '@tanstack/match-sorter-utils'
-import type { FilterFn, Row, RowData } from '@tanstack/react-table'
+import type { Column, FilterFn, Row, RowData } from '@tanstack/react-table'
 import {
   endOfDay,
   isAfter,
@@ -11,6 +11,9 @@ import {
 } from 'date-fns'
 import type { LucideIcon } from 'lucide-react'
 import { intersection, uniq } from './array'
+import type { ColumnMeta } from '@tanstack/react-table'
+
+export type ElementType<T> = T extends (infer U)[] ? U : T
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -37,8 +40,32 @@ declare module '@tanstack/react-table' {
     /* An optional function to transform the column value before filtering. */
     /* This can be used to convert the column value to the column data type's native value. */
     /* Native types for each data type are defined in the FilterTypes interface. */
-    transformFn?: (value: unknown) => FilterTypes[ColumnDataType]
+    transformFn?: (
+      value: Exclude<TValue, undefined | null>,
+    ) => FilterTypes[ColumnDataType]
+
+    /* An optional function to transform columns with type 'option' or 'multiOption'. */
+    /* This is used to convert each raw option into a ColumnOption. */
+    transformOptionFn?: (
+      value: ElementType<NonNullable<TValue>>,
+    ) => ColumnOption
   }
+}
+
+// Helper function
+export function defineMeta<
+  TData extends RowData,
+  TValue,
+  TType extends ColumnDataType,
+>(
+  meta: Omit<ColumnMeta<TData, TValue>, 'type' | 'transformFn'> & {
+    type: TType
+    transformFn?: (
+      value: Exclude<TValue, undefined | null>,
+    ) => FilterTypes[TType]
+  },
+): ColumnMeta<TData, TValue> {
+  return meta
 }
 
 declare module '@tanstack/table-core' {
@@ -643,6 +670,11 @@ export function __optionFilterFn(
       return !found
   }
 }
+
+export type TransformFilterValueFn<TData, TValue> = (
+  value: TValue,
+  column?: Column<TData>,
+) => unknown
 
 export function multiOptionFilterFn<TData>(
   row: Row<TData>,

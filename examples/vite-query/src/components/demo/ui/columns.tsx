@@ -1,8 +1,8 @@
-import type { ColumnDef } from '@tanstack/react-table'
-import type { Issue } from '../types'
+import { createColumnHelper, type ColumnDef } from '@tanstack/react-table'
+import type { Issue, IssueLabel } from '../types'
 import { Checkbox } from '@/components/ui/checkbox'
 import { USERS, ISSUE_STATUSES, ISSUE_LABELS } from '../data'
-import { filterFn } from '@/lib/filters'
+import { defineMeta, filterFn } from '@/lib/filters'
 import {
   CalendarArrowDownIcon,
   CalendarArrowUpIcon,
@@ -16,8 +16,10 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { format } from 'date-fns'
 
-export const columns: ColumnDef<Issue>[] = [
-  {
+const columnHelper = createColumnHelper<Issue>()
+
+export const columns = [
+  columnHelper.display({
     id: 'select',
     header: ({ table }) => (
       <Checkbox
@@ -38,9 +40,9 @@ export const columns: ColumnDef<Issue>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
-  },
-  {
-    accessorKey: 'statusId',
+  }),
+  columnHelper.accessor((row) => row.statusId, {
+    id: 'statusId',
     header: 'Status',
     cell: ({ row }) => {
       const status = ISSUE_STATUSES.find(
@@ -67,9 +69,9 @@ export const columns: ColumnDef<Issue>[] = [
         label: x.name,
       })),
     },
-  },
-  {
-    accessorKey: 'title',
+  }),
+  columnHelper.accessor((row) => row.title, {
+    id: 'title',
     header: 'Title',
     cell: ({ row }) => <div>{row.getValue('title')}</div>,
     meta: {
@@ -78,9 +80,9 @@ export const columns: ColumnDef<Issue>[] = [
       icon: Heading1Icon,
     },
     filterFn: filterFn('text'),
-  },
-  {
-    accessorKey: 'assigneeId',
+  }),
+  columnHelper.accessor('assigneeId', {
+    id: 'assigneeId',
     header: 'Assignee',
     cell: ({ row }) => {
       const user = USERS.find((x) => x.id === row.getValue('assigneeId'))
@@ -125,9 +127,9 @@ export const columns: ColumnDef<Issue>[] = [
         ),
       })),
     },
-  },
-  {
-    accessorKey: 'estimatedHours',
+  }),
+  columnHelper.accessor((row) => row.estimatedHours, {
+    id: 'estimatedHours',
     header: 'Estimated Hours',
     cell: ({ row }) => {
       const estimatedHours = row.getValue<number>('estimatedHours')
@@ -152,9 +154,9 @@ export const columns: ColumnDef<Issue>[] = [
       max: 16,
     },
     filterFn: filterFn('number'),
-  },
-  {
-    accessorKey: 'startDate',
+  }),
+  columnHelper.accessor((row) => row.startDate, {
+    id: 'startDate',
     header: 'Start Date',
     cell: ({ row }) => {
       const startDate = row.getValue<Issue['startDate']>('startDate')
@@ -173,9 +175,9 @@ export const columns: ColumnDef<Issue>[] = [
       icon: CalendarArrowUpIcon,
     },
     filterFn: filterFn('date'),
-  },
-  {
-    accessorKey: 'endDate',
+  }),
+  columnHelper.accessor((row) => row.endDate, {
+    id: 'endDate',
     header: 'End Date',
     cell: ({ row }) => {
       const endDate = row.getValue<Issue['endDate']>('endDate')
@@ -194,20 +196,14 @@ export const columns: ColumnDef<Issue>[] = [
       icon: CalendarArrowDownIcon,
     },
     filterFn: filterFn('date'),
-  },
-  {
-    accessorKey: 'labelIds',
+  }),
+  columnHelper.accessor((row) => row.labels, {
+    id: 'labels',
     header: 'Labels',
     cell: ({ row }) => {
-      const labelIds = row.getValue<Issue['labelIds']>('labelIds')
+      const labels = row.getValue<Issue['labels']>('labels')
 
-      if (!labelIds) {
-        return null
-      }
-
-      const labels = labelIds.map(
-        (labelId) => ISSUE_LABELS.find((x) => x.id === labelId)!,
-      )
+      if (!labels) return null
 
       return (
         <div className="flex gap-1">
@@ -224,25 +220,16 @@ export const columns: ColumnDef<Issue>[] = [
       )
     },
     filterFn: filterFn('multiOption'),
-    meta: {
+    meta: defineMeta<Issue, Issue['labels'], 'multiOption'>({
       displayName: 'Labels',
-      type: 'multiOption',
+      type: 'multiOption' as const,
       icon: TagsIcon,
-      options: ISSUE_LABELS.map((x) => ({
-        ...x,
-        value: x.id,
-        label: x.name,
-        icon: (
-          <div
-            className="rounded-full size-2"
-            style={{ backgroundColor: x.color }}
-          />
-        ),
-      })),
-      // @ts-expect-error: x
       transformFn: (value) => {
-        return value ?? []
+        return value.map((v) => v.id)
       },
-    },
-  },
+      transformOptionFn(data) {
+        return { value: data.id, label: data.name, icon: undefined }
+      },
+    }),
+  }),
 ]

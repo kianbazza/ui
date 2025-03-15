@@ -6,12 +6,24 @@ export type User = {
   picture: string
 }
 
+// export type Issue = {
+//   id: string
+//   title: string
+//   description?: string
+//   statusId: 'backlog' | 'todo' | 'in-progress' | 'done'
+//   labelIds?: string[]
+//   assigneeId?: string
+//   startDate?: Date
+//   endDate?: Date
+//   estimatedHours?: number
+// }
+
 export type Issue = {
   id: string
   title: string
   description?: string
   statusId: 'backlog' | 'todo' | 'in-progress' | 'done'
-  labelIds?: string[]
+  labels?: IssueLabel[]
   assigneeId?: string
   startDate?: Date
   endDate?: Date

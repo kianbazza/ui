@@ -23,13 +23,19 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { DebouncedInput } from '@/components/debounced-input'
 import { flatten, take, uniq } from '@/lib/array'
-import type { ColumnOption } from '@/lib/filters'
+import type { ColumnOption, ElementType } from '@/lib/filters'
 import {
   type FilterValue,
   determineNewOperator,
   numberFilterDetails,
 } from '@/lib/filters'
-import type { Column, ColumnMeta, Row, Table } from '@tanstack/react-table'
+import type {
+  Column,
+  ColumnMeta,
+  Row,
+  RowData,
+  Table,
+} from '@tanstack/react-table'
 import { format, isEqual } from 'date-fns'
 import { Ellipsis } from 'lucide-react'
 import { isValidElement, useState } from 'react'
@@ -241,39 +247,35 @@ export function PropertyFilterMultiOptionValueDisplay<TData, TValue>({
   columnMeta,
   table,
 }: PropertyFilterValueDisplayProps<TData, TValue>) {
-  const providedOptions = columnMeta.options
-
   let options: ColumnOption[]
+  const columnVals = table
+    .getCoreRowModel()
+    .rows.flatMap((r) => r.getValue<TValue>(id))
+    .filter((v): v is NonNullable<TValue> => v !== undefined && v !== null)
 
-  if (providedOptions) {
-    options = providedOptions
-  } else if (columnMeta.transformFn) {
-    const columnVals = table.getCoreRowModel().rows.map((r) => r.getValue(id))
-    const transformed = columnVals.map(columnMeta.transformFn) as string[][]
-    const flattened = flatten(transformed)
-    const unique = uniq(flattened)
-    options = unique.map((value) => {
-      const option: ColumnOption = {
-        value: value,
-        label: value,
-        icon: undefined,
-      }
-      return option
-    })
-  } else {
-    const columnVals = table
-      .getCoreRowModel()
-      .rows.map((r) => r.getValue<string[]>(id))
-    const flattened = flatten(columnVals)
-    const unique = uniq(flattened)
-    options = unique.map((value) => {
-      const option: ColumnOption = {
-        value: value,
-        label: value,
-        icon: undefined,
-      }
-      return option
-    })
+  // If static options are provided, use them
+  if (columnMeta.options) {
+    options = columnMeta.options
+  }
+
+  // No static options provided,
+  // We should dynamically generate them based on the column data
+  else if (columnMeta.transformOptionFn) {
+    const transformOptionFn = columnMeta.transformOptionFn
+
+    const unique = uniq(columnVals)
+
+    options = unique.map((v) =>
+      transformOptionFn(v as ElementType<NonNullable<TValue>>),
+    )
+  }
+
+  // No static options provided
+  // Missing transformOptionFn - throw error
+  else {
+    throw new Error(
+      'No options provided - this is required for multiOption data type without static options',
+    )
   }
 
   const filter = column.getFilterValue() as FilterValue<'multiOption'>
@@ -284,12 +286,12 @@ export function PropertyFilterMultiOptionValueDisplay<TData, TValue>({
     const hasIcon = !!Icon
     return (
       <span className="inline-flex items-center gap-1">
-        {hasIcon &&
-          (isValidElement(Icon) ? (
-            Icon
-          ) : (
-            <Icon className="size-4 text-primary" />
-          ))}
+        {/* {hasIcon && */}
+        {/*   (isValidElement(Icon) ? ( */}
+        {/*     Icon */}
+        {/*   ) : ( */}
+        {/*     <Icon className="size-4 text-primary" /> */}
+        {/*   ))} */}
 
         <span>{label}</span>
       </span>
@@ -302,18 +304,18 @@ export function PropertyFilterMultiOptionValueDisplay<TData, TValue>({
 
   return (
     <div className="inline-flex items-center gap-1.5">
-      {hasOptionIcons && (
-        <div className="inline-flex items-center gap-0.5">
-          {take(selected, 3).map(({ value, icon }) => {
-            const Icon = icon!
-            return isValidElement(Icon) ? (
-              Icon
-            ) : (
-              <Icon key={value} className="size-4" />
-            )
-          })}
-        </div>
-      )}
+      {/* {hasOptionIcons && ( */}
+      {/*   <div className="inline-flex items-center gap-0.5"> */}
+      {/*     {take(selected, 3).map(({ value, icon }) => { */}
+      {/*       const Icon = icon! */}
+      {/*       return isValidElement(Icon) ? ( */}
+      {/*         Icon */}
+      {/*       ) : ( */}
+      {/*         <Icon key={value} className="size-4" /> */}
+      {/*       ) */}
+      {/*     })} */}
+      {/*   </div> */}
+      {/* )} */}
       <span>
         {selected.length} {name}
       </span>
@@ -594,51 +596,61 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
   )
 }
 
-export function PropertyFilterMultiOptionValueMenu<TData, TValue>({
+export function PropertyFilterMultiOptionValueMenu<
+  TData extends RowData,
+  TValue,
+>({
   id,
   column,
   columnMeta,
   table,
 }: ProperFilterValueMenuProps<TData, TValue>) {
-  const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'multiOption'>)
-    : undefined
+  const filter = column.getFilterValue() as
+    | FilterValue<'multiOption'>
+    | undefined
 
   let options: ColumnOption[]
+  const columnVals = table
+    .getCoreRowModel()
+    .rows.flatMap((r) => r.getValue<TValue>(id))
+    .filter((v): v is NonNullable<TValue> => v !== undefined && v !== null)
 
+  // If static options are provided, use them
   if (columnMeta.options) {
     options = columnMeta.options
-  } else if (columnMeta.transformFn) {
-    const columnVals = table
-      .getCoreRowModel()
-      .rows.flatMap((r) => r.getValue(id))
-    const transformed = columnVals.map(columnMeta.transformFn) as string[]
-    // const flattened = flatten(transformed)
-    // TODO: Do we need to flatten?
-    const flattened = transformed
-    const unique = uniq(flattened)
-    options = unique.map((value) => {
-      const option: ColumnOption = {
-        value: value,
-        label: value,
-        icon: undefined,
-      }
-      return option
-    })
-  } else {
-    const columnVals = table
-      .getCoreRowModel()
-      .rows.flatMap((r) => r.getValue<string[]>(id))
-    const unique = uniq(columnVals)
-    options = unique.map((value) => {
-      const option: ColumnOption = {
-        value: value,
-        label: value,
-        icon: undefined,
-      }
-      return option
-    })
   }
+
+  // No static options provided,
+  // We should dynamically generate them based on the column data
+  else if (columnMeta.transformOptionFn) {
+    const transformOptionFn = columnMeta.transformOptionFn
+
+    const unique = uniq(columnVals)
+
+    options = unique.map((v) =>
+      transformOptionFn(v as ElementType<NonNullable<TValue>>),
+    )
+  }
+
+  // No static options provided
+  // Missing transformOptionFn - throw error
+  else {
+    throw new Error(
+      'No options provided - this is required for multiOption data type without static options',
+    )
+  }
+
+  const optionsCount: Record<ColumnOption['value'], number> = columnVals.reduce(
+    (acc, curr) => {
+      const { value } = columnMeta.transformOptionFn!(
+        curr as ElementType<NonNullable<TValue>>,
+      )
+
+      acc[value] = (acc[value] ?? 0) + 1
+      return acc
+    },
+    {} as Record<ColumnOption['value'], number>,
+  )
 
   // Handles the selection/deselection of an option
   function handleOptionSelect(value: string, check: boolean) {
@@ -695,17 +707,7 @@ export function PropertyFilterMultiOptionValueMenu<TData, TValue>({
         <CommandGroup>
           {options.map((v) => {
             const checked = Boolean(filter?.values[0]?.includes(v.value))
-            let data = table
-              .getCoreRowModel()
-              .rows.map((r) => r.original as Record<string, unknown>)
-              .map((d) => d[id])
-
-            if (columnMeta.transformFn) {
-              data = data.map(columnMeta.transformFn)
-            }
-
-            const count =
-              data.filter((d) => (d as unknown[]).includes(v.value)).length ?? 0
+            const count = optionsCount[v.value] ?? 0
 
             return (
               <CommandItem

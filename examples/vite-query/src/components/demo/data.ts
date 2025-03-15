@@ -27,7 +27,7 @@ export function generateSampleIssue(): Issue {
     labelsCount > 0
       ? (sample(ISSUE_LABELS, labelsCount) as IssueLabel[])
       : undefined
-  const labelIds = labels?.map((l) => l.id)
+  // const labelIds = labels?.map((l) => l.id)
 
   let [assignee] = sample(USERS, 1)
   if (!assignee) throw new Error('No assignee found')
@@ -51,7 +51,7 @@ export function generateSampleIssue(): Issue {
     title,
     description,
     statusId: status.id,
-    labelIds,
+    labels,
     assigneeId,
     startDate,
     endDate,
