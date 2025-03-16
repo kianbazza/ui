@@ -152,8 +152,9 @@ export default function Page() {
                     '  id: string',
                     '  title: string',
                     '  description?: string',
-                    '  status: Status',
-                    '  assignee?: string',
+                    '  status: IssueStatus',
+                    '  assignee?: User',
+                    '  labels?: IssueLabel[]',
                     '  startDate?: Date',
                     '  endDate?: Date',
                     '  estimatedHours?: number',
@@ -183,7 +184,7 @@ export default function Page() {
                   </ul>
                 </div>
               </div>
-              <div className="flex flex-col gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border">
+              <div className="flex flex-col justify-between gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border">
                 <Image
                   className="dark:hidden"
                   alt="Filter operators"
@@ -200,8 +201,8 @@ export default function Page() {
                     Operators.
                   </h3>
                   <span className="text-muted-foreground">
-                    Just let us know what kind of data is in your column and
-                    we'll handle the rest for you.
+                    Negation, target types (single or multiple), and related
+                    operators - they just <i>work</i>.
                   </span>
                 </div>
               </div>
