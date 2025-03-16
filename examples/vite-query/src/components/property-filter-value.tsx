@@ -38,7 +38,7 @@ import type {
 } from '@tanstack/react-table'
 import { format, isEqual } from 'date-fns'
 import { Ellipsis } from 'lucide-react'
-import { isValidElement, useState } from 'react'
+import { cloneElement, isValidElement, useState } from 'react'
 import type { DateRange } from 'react-day-picker'
 
 export function PropertyFilterValueController<TData, TValue>({
@@ -277,13 +277,13 @@ export function PropertyFilterMultiOptionValueDisplay<TData, TValue>({
     const { label, icon: Icon } = selected[0]
     const hasIcon = !!Icon
     return (
-      <span className="inline-flex items-center gap-1">
-        {/* {hasIcon && */}
-        {/*   (isValidElement(Icon) ? ( */}
-        {/*     Icon */}
-        {/*   ) : ( */}
-        {/*     <Icon className="size-4 text-primary" /> */}
-        {/*   ))} */}
+      <span className="inline-flex items-center gap-1.5">
+        {hasIcon &&
+          (isValidElement(Icon) ? (
+            Icon
+          ) : (
+            <Icon className="size-4 text-primary" />
+          ))}
 
         <span>{label}</span>
       </span>
@@ -296,18 +296,18 @@ export function PropertyFilterMultiOptionValueDisplay<TData, TValue>({
 
   return (
     <div className="inline-flex items-center gap-1.5">
-      {/* {hasOptionIcons && ( */}
-      {/*   <div className="inline-flex items-center gap-0.5"> */}
-      {/*     {take(selected, 3).map(({ value, icon }) => { */}
-      {/*       const Icon = icon! */}
-      {/*       return isValidElement(Icon) ? ( */}
-      {/*         Icon */}
-      {/*       ) : ( */}
-      {/*         <Icon key={value} className="size-4" /> */}
-      {/*       ) */}
-      {/*     })} */}
-      {/*   </div> */}
-      {/* )} */}
+      {hasOptionIcons && (
+        <div key="icons" className="inline-flex items-center gap-0.5">
+          {take(selected, 3).map(({ value, icon }) => {
+            const Icon = icon!
+            return isValidElement(Icon) ? (
+              cloneElement(Icon, { key: value })
+            ) : (
+              <Icon key={value} className="size-4" />
+            )
+          })}
+        </div>
+      )}
       <span>
         {selected.length} {name}
       </span>
@@ -519,9 +519,9 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
 
   const optionsCount: Record<ColumnOption['value'], number> = columnVals.reduce(
     (acc, curr) => {
-      const { value } = columnMeta.transformOptionFn!(
-        curr as ElementType<NonNullable<TValue>>,
-      )
+      const { value } = columnMeta.transformOptionFn
+        ? columnMeta.transformOptionFn(curr as ElementType<NonNullable<TValue>>)
+        : { value: curr as string }
 
       acc[value] = (acc[value] ?? 0) + 1
       return acc

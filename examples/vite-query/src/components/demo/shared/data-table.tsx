@@ -1,21 +1,4 @@
-import { useState } from 'react'
-
-import {
-  type ColumnFiltersState,
-  type SortingState,
-  type VisibilityState,
-  flexRender,
-  getCoreRowModel,
-  getFacetedMinMaxValues,
-  getFacetedRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  getSortedRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
-import { ISSUES } from '../data'
-import { columns } from './columns'
-import { fuzzyFilter } from '@/lib/filters'
+import { type Table as TanStackTable, flexRender } from '@tanstack/react-table'
 import { DataTableFilter } from '@/components/data-table-filter'
 import {
   Table,
@@ -27,39 +10,9 @@ import {
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
 
-export default function DataTable() {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
-  const [rowSelection, setRowSelection] = useState({})
-
-  const table = useReactTable({
-    data: ISSUES,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues(),
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
-    onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: setGlobalFilter,
-    state: {
-      sorting,
-      columnFilters,
-      globalFilter,
-      columnVisibility,
-      rowSelection,
-    },
-    filterFns: {
-      fuzzy: fuzzyFilter,
-    },
-  })
-
+export default function DataTableWrapper<TData>({
+  table,
+}: { table: TanStackTable<TData> }) {
   return (
     <div className="w-full">
       <div className="flex items-center py-4 gap-2">
@@ -105,7 +58,7 @@ export default function DataTable() {
             ) : (
               <TableRow>
                 <TableCell
-                  colSpan={columns.length}
+                  colSpan={table.getAllColumns().length}
                   className="h-24 text-center"
                 >
                   No results.
