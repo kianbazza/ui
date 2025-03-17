@@ -149,7 +149,7 @@ export default function Page() {
             <h2 className="text-5xl tracking-[-0.03em] font-semibold drop-shadow-xs">
               Powerful.
             </h2>
-            <div className="grid grid-rows-3 lg:grid-cols-3 gap-4">
+            <div className="grid grid-rows-3 lg:grid-rows-1 lg:grid-cols-3 gap-4">
               <div className="flex flex-col justify-between gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border">
                 <CodeBlock
                   lang="typescript"
@@ -217,7 +217,7 @@ export default function Page() {
                   </span>
                 </div>
               </div>
-              <div className="flex flex-col justify-between gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border overflow-clip">
+              <div className="flex flex-col justify-between gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border">
                 <FadeBlurContainer
                   lightFadeColor="#ffffff"
                   darkFadeColor="#0a0a0a"
