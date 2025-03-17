@@ -6,16 +6,16 @@ import {
 import type { BundledLanguage } from 'shiki'
 import { codeToHtml } from 'shiki'
 
-interface Props {
+interface Props extends React.HTMLAttributes<HTMLDivElement> {
+  className?: string
   children: string
-  className?: React.HTMLAttributes<HTMLDivElement>['className']
   lang: BundledLanguage
   colorReplacements?: Record<string, string>
 }
 
-export async function CodeBlock(props: Props) {
-  const out = await codeToHtml(props.children, {
-    lang: props.lang,
+export async function CodeBlock({ children, className, lang, colorReplacements, ...props }: Props) {
+  const out = await codeToHtml(children, {
+    lang,
     themes: {
       light: 'vitesse-light',
       dark: 'vitesse-dark',
@@ -23,19 +23,9 @@ export async function CodeBlock(props: Props) {
     transformers: [transformerNotationDiff(), transformerNotationHighlight()],
     colorReplacements: {
       '#121212': 'oklch(0.205 0 0)',
-      ...props.colorReplacements,
+      ...colorReplacements,
     },
   })
 
-  return (
-    <div
-      className={cn(
-        'text-sm rounded-md border border-border bg-white dark:bg-neutral-900 w-fit shadow-xs p-4',
-        props.className,
-      )}
-    >
-      {/* biome-ignore lint/security/noDangerouslySetInnerHtml: */}
-      <div dangerouslySetInnerHTML={{ __html: out }} />
-    </div>
-  )
+  return <div className={cn('text-sm rounded-md border border-border bg-white dark:bg-neutral-900 shadow-xs [&>pre]:p-4', className)} dangerouslySetInnerHTML={{ __html: out }} {...props} />
 }

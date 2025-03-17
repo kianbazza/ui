@@ -1,4 +1,5 @@
 import DataTableDemo from '@/components/data-table-filter/demo'
+import { GithubIcon } from '@/components/icons'
 import { CodeBlock } from '@/components/landing/code-block'
 import { FadeBlurContainer } from '@/components/landing/fade-blur-container'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -17,6 +18,7 @@ import {
   TagsIcon,
 } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 export default function Page() {
   return (
@@ -34,40 +36,49 @@ export default function Page() {
               <span className="text-xl text-border">/</span>
               <span>ui</span>
             </div>
-            <div>
+            <div className="flex items-center">
+              <Button variant="ghost" size="icon" asChild>
+                <Link href="https://github.com/bazzadev/ui">
+                  <GithubIcon className="size-5" />
+                </Link>
+              </Button>
               <ThemeToggle />
             </div>
           </div>
         </div>
       </div>
       <div className="border-b border-border border-dashed">
-        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed border-x flex items-center gap-4 justify-between">
+        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed border-x flex flex-col lg:flex-row items-center gap-x-4 gap-y-12 lg:justify-between">
           <div className="flex lg:flex-row flex-col gap-8">
             <div className="flex flex-col gap-8 w-full">
               <div className="flex justify-between items-center gap-4">
                 <div className="space-y-8">
-                  <h1 className="text-4xl lg:text-6xl font-[538] tracking-[-0.03em] drop-shadow-xs">
-                    Data table filters for
-                    <br />
+                  <h1 className="text-5xl lg:text-6xl font-[538] tracking-[-0.03em] drop-shadow-xs text-center lg:text-left">
+                    Data table filters for <br className="hidden lg:block" />
                     your next project.
                   </h1>
-                  <div className="*:text-lg leading-none *:lg:text-xl *:tracking-[-0.01em] *:font-[410] text-neutral-800 dark:text-neutral-300 flex flex-col gap-1">
+                  <div className="*:text-lg leading-none *:lg:text-xl *:tracking-[-0.01em] *:font-[410] text-neutral-800 dark:text-neutral-300 flex flex-col gap-1 text-center lg:text-left">
                     <span>
                       A powerful data table filter component inspired by Linear.
                     </span>
                     <span>Built with shadcn/ui and TanStack Table.</span>
-                    <span>Open source and free forever.</span>
+                    <span className="!font-[538]">
+                      Open source. Open code. Free to use.
+                    </span>
                   </div>
                 </div>
               </div>
-              <div>
-                <Button size="lg">
+              <div className="flex justify-center lg:block">
+                <Button
+                  size="lg"
+                  className="shadow-md hover:shadow-lg transition-[box-shadow,background-color]"
+                >
                   Get started <ArrowRightIcon className="translate-x-0.5" />
                 </Button>
               </div>
             </div>
           </div>
-          <div className="w-[450px]">
+          <div className="lg:w-[450px] w-full">
             <Image className="dark:hidden" src={heroLightSrc} alt="Hero" />
             <Image className="hidden dark:block" src={heroDarkSrc} alt="Hero" />
           </div>
@@ -83,7 +94,7 @@ export default function Page() {
       </div>
       <div className="border-b border-border border-dashed">
         <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed border-x">
-          <div className="flex gap-8">
+          <div className="flex lg:flex-row flex-col gap-8">
             <div className="space-y-4">
               <h2 className="text-5xl tracking-[-0.03em] font-semibold drop-shadow-xs">
                 Easy to use.
@@ -138,11 +149,11 @@ export default function Page() {
             <h2 className="text-5xl tracking-[-0.03em] font-semibold drop-shadow-xs">
               Powerful.
             </h2>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-rows-3 lg:grid-cols-3 gap-4">
               <div className="flex flex-col justify-between gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border">
                 <CodeBlock
                   lang="typescript"
-                  className="p-0 border-none shadow-none dark:bg-neutral-950"
+                  className="[&>pre]:p-0 border-none shadow-none dark:bg-neutral-950"
                   colorReplacements={{
                     '#121212': 'oklch(0.145 0 0)',
                   }}
@@ -216,7 +227,7 @@ export default function Page() {
                 >
                   <CodeBlock
                     lang="typescript"
-                    className="p-0 border-none shadow-none text-[0.6rem]"
+                    className="[&>pre]:p-0 border-none shadow-none text-[0.6rem]"
                     colorReplacements={{
                       '#121212': 'oklch(0.145 0 0)',
                     }}

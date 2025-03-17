@@ -139,7 +139,20 @@
   }
 
   .shiki {
+    overflow: auto;
+    position: relative;
+    padding: theme(spacing.4);
+
+    code {
+      display: block;
+      width: max-content;
+      min-width: 100%;
+    }
+
     .line {
+      width: 100%;
+      line-height: 1.5;
+
       @apply border-l-4 border-transparent;
 
       /*&::before {*/
@@ -165,8 +178,13 @@
           }
         }
 
+        &>span {
+          background: transparent !important;
+        }
+
+
         &.add {
-          @apply border-green-500 bg-green-500/10 dark:bg-green-500 before:text-green-500;
+          @apply border-green-500 !bg-green-500/10;
 
           span:first-child::before {
             @apply text-green-500 translate-x-0.5 content-["+"];
@@ -174,10 +192,10 @@
         }
 
         &.remove {
-          @apply border-orange-500 bg-orange-500/30 opacity-70 before:text-orange-500;
+          @apply border-red-500 !bg-red-500/10;
 
           span:first-child::before {
-            @apply text-orange-500 content-["-"];
+            @apply text-red-500 translate-x-0.5 content-["-"];
           }
         }
       }
