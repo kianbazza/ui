@@ -29,13 +29,7 @@ import {
   determineNewOperator,
   numberFilterDetails,
 } from '@/lib/filters'
-import type {
-  Column,
-  ColumnMeta,
-  Row,
-  RowData,
-  Table,
-} from '@tanstack/react-table'
+import type { Column, ColumnMeta, RowData, Table } from '@tanstack/react-table'
 import { format, isEqual } from 'date-fns'
 import { Ellipsis } from 'lucide-react'
 import { cloneElement, isValidElement, useState } from 'react'

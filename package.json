@@ -6,6 +6,7 @@
     "check": "biome check .",
     "check:fix": "biome check --fix .",
     "build": "turbo run build",
+    "registry:build": "turbo run registry:build",
     "prepare": "husky"
   },
   "devDependencies": {

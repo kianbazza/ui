@@ -31,37 +31,40 @@ export function PropertyFilterList<TData>({ table }: { table: Table<TData> }) {
         switch (meta.type) {
           case 'text':
             return renderFilter<TData, 'text'>(
-              filter as { id: string; value: FilterValue<'text'> },
+              filter as { id: string; value: FilterValue<'text', TData> },
               column,
-              meta as ColumnMeta<TData, 'text'> & { type: 'text' },
+              meta as ColumnMeta<TData, unknown> & { type: 'text' },
               table,
             )
           case 'number':
             return renderFilter<TData, 'number'>(
-              filter as { id: string; value: FilterValue<'number'> },
+              filter as { id: string; value: FilterValue<'number', TData> },
               column,
-              meta as ColumnMeta<TData, 'number'> & { type: 'number' },
+              meta as ColumnMeta<TData, unknown> & { type: 'number' },
               table,
             )
           case 'date':
             return renderFilter<TData, 'date'>(
-              filter as { id: string; value: FilterValue<'date'> },
+              filter as { id: string; value: FilterValue<'date', TData> },
               column,
-              meta as ColumnMeta<TData, 'date'> & { type: 'date' },
+              meta as ColumnMeta<TData, unknown> & { type: 'date' },
               table,
             )
           case 'option':
             return renderFilter<TData, 'option'>(
-              filter as { id: string; value: FilterValue<'option'> },
+              filter as { id: string; value: FilterValue<'option', TData> },
               column,
-              meta as ColumnMeta<TData, 'option'> & { type: 'option' },
+              meta as ColumnMeta<TData, unknown> & { type: 'option' },
               table,
             )
           case 'multiOption':
             return renderFilter<TData, 'multiOption'>(
-              filter as { id: string; value: FilterValue<'multiOption'> },
+              filter as {
+                id: string
+                value: FilterValue<'multiOption', TData>
+              },
               column,
-              meta as ColumnMeta<TData, 'multiOption'> & {
+              meta as ColumnMeta<TData, unknown> & {
                 type: 'multiOption'
               },
               table,
@@ -76,7 +79,7 @@ export function PropertyFilterList<TData>({ table }: { table: Table<TData> }) {
 
 // Generic render function for a filter with type-safe value
 function renderFilter<TData, T extends ColumnDataType>(
-  filter: { id: string; value: FilterValue<T> },
+  filter: { id: string; value: FilterValue<T, TData> },
   column: Column<TData, unknown>,
   meta: ColumnMeta<TData, unknown> & { type: T },
   table: Table<TData>,

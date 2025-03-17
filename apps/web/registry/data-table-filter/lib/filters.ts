@@ -1,6 +1,7 @@
 import '@tanstack/table-core'
 import { type RankingInfo, rankItem } from '@tanstack/match-sorter-utils'
-import type { FilterFn, Row, RowData } from '@tanstack/react-table'
+import type { Column, FilterFn, Row, RowData } from '@tanstack/react-table'
+import type { ColumnMeta } from '@tanstack/react-table'
 import {
   endOfDay,
   isAfter,
@@ -10,7 +11,9 @@ import {
   startOfDay,
 } from 'date-fns'
 import type { LucideIcon } from 'lucide-react'
-import { intersection, uniq } from '@/registry/data-table-filter/lib/array'
+import { intersection, uniq } from './array'
+
+export type ElementType<T> = T extends (infer U)[] ? U : T
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
@@ -37,8 +40,32 @@ declare module '@tanstack/react-table' {
     /* An optional function to transform the column value before filtering. */
     /* This can be used to convert the column value to the column data type's native value. */
     /* Native types for each data type are defined in the FilterTypes interface. */
-    transformFn?: (value: unknown) => FilterTypes[ColumnDataType]
+    transformFn?: (
+      value: Exclude<TValue, undefined | null>,
+    ) => FilterTypes[ColumnDataType]
+
+    /* An optional function to transform columns with type 'option' or 'multiOption'. */
+    /* This is used to convert each raw option into a ColumnOption. */
+    transformOptionFn?: (
+      value: ElementType<NonNullable<TValue>>,
+    ) => ColumnOption
   }
+}
+
+// Helper function
+export function defineMeta<
+  TData extends RowData,
+  TValue,
+  TType extends ColumnDataType,
+>(
+  meta: Omit<ColumnMeta<TData, TValue>, 'type' | 'transformFn'> & {
+    type: TType
+    transformFn?: (
+      value: Exclude<TValue, undefined | null>,
+    ) => FilterTypes[TType]
+  },
+): ColumnMeta<TData, TValue> {
+  return meta
 }
 
 declare module '@tanstack/table-core' {
@@ -158,9 +185,10 @@ export type FilterTypes = {
  * - Values: An array of values to be used for the filter.
  *
  */
-export type FilterValue<T extends ColumnDataType> = {
+export type FilterValue<T extends ColumnDataType, TData> = {
   operator: FilterOperators[T]
   values: Array<FilterTypes[T]>
+  column: Column<TData>
 }
 
 /*
@@ -617,15 +645,29 @@ export function filterFn(dataType: ColumnDataType) {
 export function optionFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: FilterValue<'option'>,
+  filterValue: FilterValue<'option', TData>,
 ) {
-  const value = row.getValue<string>(columnId)
-  return __optionFilterFn(value, filterValue)
+  const value = row.getValue(columnId)
+
+  if (!value) return false
+
+  const columnMeta = filterValue.column.columnDef.meta!
+
+  if (typeof value === 'string') {
+    return __optionFilterFn(value, filterValue)
+  }
+
+  if (isColumnOption(value)) {
+    return __optionFilterFn(value.value, filterValue)
+  }
+
+  const sanitizedValue = columnMeta.transformOptionFn!(value as never)
+  return __optionFilterFn(sanitizedValue.value, filterValue)
 }
 
-export function __optionFilterFn(
+export function __optionFilterFn<TData>(
   inputData: string,
-  filterValue: FilterValue<'option'>,
+  filterValue: FilterValue<'option', TData>,
 ) {
   if (!inputData) return false
   if (filterValue.values.length === 0) return true
@@ -644,19 +686,53 @@ export function __optionFilterFn(
   }
 }
 
+function isColumnOption(value: unknown): value is ColumnOption {
+  return typeof value === 'object' && value !== null && 'value' in value
+}
+
+function isColumnOptionArray(value: unknown): value is ColumnOption[] {
+  return Array.isArray(value) && value.every(isColumnOption)
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((v) => typeof v === 'string')
+}
+
 export function multiOptionFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: FilterValue<'multiOption'>,
+  filterValue: FilterValue<'multiOption', TData>,
 ) {
-  const value = row.getValue<string[]>(columnId)
+  const value = row.getValue(columnId)
 
-  return __multiOptionFilterFn(value, filterValue)
+  if (!value) return false
+
+  const columnMeta = filterValue.column.columnDef.meta!
+
+  if (isStringArray(value)) {
+    return __multiOptionFilterFn(value, filterValue)
+  }
+
+  if (isColumnOptionArray(value)) {
+    return __multiOptionFilterFn(
+      value.map((v) => v.value),
+      filterValue,
+    )
+  }
+
+  const sanitizedValue = (value as never[]).map((v) =>
+    columnMeta.transformOptionFn!(v),
+  )
+
+  return __multiOptionFilterFn(
+    sanitizedValue.map((v) => v.value),
+    filterValue,
+  )
 }
 
-export function __multiOptionFilterFn(
+export function __multiOptionFilterFn<TData>(
   inputData: string[],
-  filterValue: FilterValue<'multiOption'>,
+  filterValue: FilterValue<'multiOption', TData>,
 ) {
   if (!inputData) return false
 
@@ -667,8 +743,11 @@ export function __multiOptionFilterFn(
   )
     return true
 
-  const values = uniq(inputData.map((v) => v.toLowerCase()))
-  const filterValues = uniq(filterValue.values[0].map((v) => v.toLowerCase()))
+  const values = uniq(inputData)
+  const filterValues = uniq(filterValue.values[0])
+
+  // console.log('column values:', values)
+  // console.log('filter values:', filterValues)
 
   switch (filterValue.operator) {
     case 'include':
@@ -690,16 +769,16 @@ export function __multiOptionFilterFn(
 export function dateFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: FilterValue<'date'>,
+  filterValue: FilterValue<'date', TData>,
 ) {
   const valueStr = row.getValue<Date>(columnId)
 
   return __dateFilterFn(valueStr, filterValue)
 }
 
-export function __dateFilterFn(
+export function __dateFilterFn<TData>(
   inputData: Date,
-  filterValue: FilterValue<'date'>,
+  filterValue: FilterValue<'date', TData>,
 ) {
   if (!filterValue || filterValue.values.length === 0) return true
 
@@ -750,16 +829,16 @@ export function __dateFilterFn(
 export function textFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: FilterValue<'text'>,
+  filterValue: FilterValue<'text', TData>,
 ) {
   const value = row.getValue<string>(columnId) ?? ''
 
   return __textFilterFn(value, filterValue)
 }
 
-export function __textFilterFn(
+export function __textFilterFn<TData>(
   inputData: string,
-  filterValue: FilterValue<'text'>,
+  filterValue: FilterValue<'text', TData>,
 ) {
   if (!filterValue || filterValue.values.length === 0) return true
 
@@ -781,16 +860,16 @@ export function __textFilterFn(
 export function numberFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: FilterValue<'number'>,
+  filterValue: FilterValue<'number', TData>,
 ) {
   const value = row.getValue<number>(columnId)
 
   return __numberFilterFn(value, filterValue)
 }
 
-export function __numberFilterFn(
+export function __numberFilterFn<TData>(
   inputData: number,
-  filterValue: FilterValue<'number'>,
+  filterValue: FilterValue<'number', TData>,
 ) {
   if (!filterValue || !filterValue.values || filterValue.values.length === 0) {
     return true

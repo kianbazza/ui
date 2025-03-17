@@ -148,46 +148,38 @@ export function PropertyFilterOptionValueDisplay<TData, TValue>({
   columnMeta,
   table,
 }: PropertyFilterValueDisplayProps<TData, TValue>) {
-  const providedOptions = columnMeta.options
-
   let options: ColumnOption[]
+  const columnVals = table
+    .getCoreRowModel()
+    .rows.flatMap((r) => r.getValue<TValue>(id))
+    .filter((v): v is NonNullable<TValue> => v !== undefined && v !== null)
 
-  if (providedOptions) {
-    // If provided options are available for the column, use them
-    options = providedOptions
-  } else if (columnMeta.transformFn) {
-    // No provided options, we should dynamically generate them based on the column data
-    // If a transform function is provided, we use it to transform the column data into
-    // an acceptable format
-    const columnVals = table.getCoreRowModel().rows.map((r) => r.getValue(id))
-    const transformed = columnVals.map(columnMeta.transformFn) as string[]
-    const unique = uniq(transformed)
-    options = unique.map((value) => {
-      const option: ColumnOption = {
-        value: value,
-        label: value,
-        icon: undefined,
-      }
-      return option
-    })
-  } else {
-    // No provided options or transform function
-    // We should generate options based on the raw column data
-    const columnVals = table
-      .getCoreRowModel()
-      .rows.map((r) => r.getValue<string>(id))
-    const unique = uniq(columnVals)
-    options = unique.map((value) => {
-      const option: ColumnOption = {
-        value: value,
-        label: value,
-        icon: undefined,
-      }
-      return option
-    })
+  // If static options are provided, use them
+  if (columnMeta.options) {
+    options = columnMeta.options
   }
 
-  const filter = column.getFilterValue() as FilterValue<'option'>
+  // No static options provided,
+  // We should dynamically generate them based on the column data
+  else if (columnMeta.transformOptionFn) {
+    const transformOptionFn = columnMeta.transformOptionFn
+
+    const unique = uniq(columnVals)
+
+    options = unique.map((v) =>
+      transformOptionFn(v as ElementType<NonNullable<TValue>>),
+    )
+  }
+
+  // No static options provided
+  // Missing transformOptionFn - throw error
+  else {
+    throw new Error(
+      'No options provided - this is required for multiOption data type without static options',
+    )
+  }
+
+  const filter = column.getFilterValue() as FilterValue<'option', TData>
   const selected = options.filter((o) => filter?.values.includes(o.value))
 
   // We display the selected options based on how many are selected
@@ -241,49 +233,45 @@ export function PropertyFilterMultiOptionValueDisplay<TData, TValue>({
   columnMeta,
   table,
 }: PropertyFilterValueDisplayProps<TData, TValue>) {
-  const providedOptions = columnMeta.options
-
   let options: ColumnOption[]
+  const columnVals = table
+    .getCoreRowModel()
+    .rows.flatMap((r) => r.getValue<TValue>(id))
+    .filter((v): v is NonNullable<TValue> => v !== undefined && v !== null)
 
-  if (providedOptions) {
-    options = providedOptions
-  } else if (columnMeta.transformFn) {
-    const columnVals = table.getCoreRowModel().rows.map((r) => r.getValue(id))
-    const transformed = columnVals.map(columnMeta.transformFn) as string[][]
-    const flattened = flatten(transformed)
-    const unique = uniq(flattened)
-    options = unique.map((value) => {
-      const option: ColumnOption = {
-        value: value,
-        label: value,
-        icon: undefined,
-      }
-      return option
-    })
-  } else {
-    const columnVals = table
-      .getCoreRowModel()
-      .rows.map((r) => r.getValue<string[]>(id))
-    const flattened = flatten(columnVals)
-    const unique = uniq(flattened)
-    options = unique.map((value) => {
-      const option: ColumnOption = {
-        value: value,
-        label: value,
-        icon: undefined,
-      }
-      return option
-    })
+  // If static options are provided, use them
+  if (columnMeta.options) {
+    options = columnMeta.options
   }
 
-  const filter = column.getFilterValue() as FilterValue<'multiOption'>
+  // No static options provided,
+  // We should dynamically generate them based on the column data
+  else if (columnMeta.transformOptionFn) {
+    const transformOptionFn = columnMeta.transformOptionFn
+
+    const unique = uniq(columnVals)
+
+    options = unique.map((v) =>
+      transformOptionFn(v as ElementType<NonNullable<TValue>>),
+    )
+  }
+
+  // No static options provided
+  // Missing transformOptionFn - throw error
+  else {
+    throw new Error(
+      'No options provided - this is required for multiOption data type without static options',
+    )
+  }
+
+  const filter = column.getFilterValue() as FilterValue<'multiOption', TData>
   const selected = options.filter((o) => filter?.values[0].includes(o.value))
 
   if (selected.length === 1) {
     const { label, icon: Icon } = selected[0]
     const hasIcon = !!Icon
     return (
-      <span className="inline-flex items-center gap-1">
+      <span className="inline-flex items-center gap-1.5">
         {hasIcon &&
           (isValidElement(Icon) ? (
             Icon
@@ -303,11 +291,11 @@ export function PropertyFilterMultiOptionValueDisplay<TData, TValue>({
   return (
     <div className="inline-flex items-center gap-1.5">
       {hasOptionIcons && (
-        <div className="inline-flex items-center gap-0.5">
+        <div key="icons" className="inline-flex items-center gap-0.5">
           {take(selected, 3).map(({ value, icon }) => {
             const Icon = icon!
             return isValidElement(Icon) ? (
-              Icon
+              cloneElement(Icon, { key: value })
             ) : (
               <Icon key={value} className="size-4" />
             )
@@ -340,7 +328,7 @@ export function PropertyFilterDateValueDisplay<TData, TValue>({
   column,
 }: PropertyFilterValueDisplayProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'date'>)
+    ? (column.getFilterValue() as FilterValue<'date', TData>)
     : undefined
 
   if (!filter) return null
@@ -362,7 +350,7 @@ export function PropertyFilterTextValueDisplay<TData, TValue>({
   column,
 }: PropertyFilterValueDisplayProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'text'>)
+    ? (column.getFilterValue() as FilterValue<'text', TData>)
     : undefined
 
   if (!filter) return null
@@ -382,7 +370,7 @@ export function PropertyFilterNumberValueDisplay<TData, TValue>({
   const cappedMax = maxFromMeta ?? 2147483647
 
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'number'>)
+    ? (column.getFilterValue() as FilterValue<'number', TData>)
     : undefined
 
   if (!filter) return null
@@ -394,7 +382,7 @@ export function PropertyFilterNumberValueDisplay<TData, TValue>({
     const minValue = filter.values[0]
     const maxValue =
       filter.values[1] === Number.POSITIVE_INFINITY ||
-        filter.values[1] >= cappedMax
+      filter.values[1] >= cappedMax
         ? `${cappedMax}+`
         : filter.values[1]
 
@@ -489,49 +477,85 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
   table,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'option'>)
+    ? (column.getFilterValue() as FilterValue<'option', TData>)
     : undefined
 
-  const options = columnMeta.options
-    ? columnMeta.options
-    : uniq(table.getCoreRowModel().rows.map((r) => r.getValue<string>(id))).map(
-      (value) => {
-        const option: ColumnOption = {
-          value: value,
-          label: value,
-          icon: undefined,
-        }
+  let options: ColumnOption[]
+  const columnVals = table
+    .getCoreRowModel()
+    .rows.flatMap((r) => r.getValue<TValue>(id))
+    .filter((v): v is NonNullable<TValue> => v !== undefined && v !== null)
 
-        return option
-      },
+  // If static options are provided, use them
+  if (columnMeta.options) {
+    options = columnMeta.options
+  }
+
+  // No static options provided,
+  // We should dynamically generate them based on the column data
+  else if (columnMeta.transformOptionFn) {
+    const transformOptionFn = columnMeta.transformOptionFn
+
+    const unique = uniq(columnVals)
+
+    options = unique.map((v) =>
+      transformOptionFn(v as ElementType<NonNullable<TValue>>),
     )
+  }
+
+  // No static options provided
+  // Missing transformOptionFn - throw error
+  else {
+    throw new Error(
+      'No options provided - this is required for multiOption data type without static options',
+    )
+  }
+
+  const optionsCount: Record<ColumnOption['value'], number> = columnVals.reduce(
+    (acc, curr) => {
+      const { value } = columnMeta.transformOptionFn
+        ? columnMeta.transformOptionFn(curr as ElementType<NonNullable<TValue>>)
+        : { value: curr as string }
+
+      acc[value] = (acc[value] ?? 0) + 1
+      return acc
+    },
+    {} as Record<ColumnOption['value'], number>,
+  )
 
   function handleOptionSelect(value: string, check: boolean) {
     if (check)
-      column?.setFilterValue((old: undefined | FilterValue<'option'>) => {
-        if (!old || old.values.length === 0)
+      column?.setFilterValue(
+        (old: undefined | FilterValue<'option', TData>) => {
+          if (!old || old.values.length === 0)
+            return {
+              operator: 'is',
+              values: [value],
+              column,
+            } satisfies FilterValue<'option', TData>
+
+          const newValues = [...old.values, value]
+
           return {
-            operator: 'is',
-            values: [value],
-          } satisfies FilterValue<'option'>
-
-        const newValues = [...old.values, value]
-
-        return {
-          operator: 'is any of',
-          values: newValues,
-        } satisfies FilterValue<'option'>
-      })
+            operator: 'is any of',
+            values: newValues,
+            column,
+          } satisfies FilterValue<'option', TData>
+        },
+      )
     else
-      column?.setFilterValue((old: undefined | FilterValue<'option'>) => {
-        if (!old || old.values.length <= 1) return undefined
+      column?.setFilterValue(
+        (old: undefined | FilterValue<'option', TData>) => {
+          if (!old || old.values.length <= 1) return undefined
 
-        const newValues = old.values.filter((v) => v !== value)
-        return {
-          operator: newValues.length > 1 ? 'is any of' : 'is',
-          values: newValues,
-        } satisfies FilterValue<'option'>
-      })
+          const newValues = old.values.filter((v) => v !== value)
+          return {
+            operator: newValues.length > 1 ? 'is any of' : 'is',
+            values: newValues,
+            column,
+          } satisfies FilterValue<'option', TData>
+        },
+      )
   }
 
   return (
@@ -542,17 +566,7 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
         <CommandGroup>
           {options.map((v) => {
             const checked = Boolean(filter?.values.includes(v.value))
-            let data = table.getCoreRowModel().rows.map((r: Row<TData>) => {
-              const original = r.original as Record<string, unknown>
-              const value = original[id]
-              return value
-            })
-
-            if (columnMeta.transformFn) {
-              data = data.map(columnMeta.transformFn)
-            }
-
-            const count = data.filter((d) => d === v.value).length ?? 0
+            const count = optionsCount[v.value] ?? 0
 
             return (
               <CommandItem
@@ -594,97 +608,114 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
   )
 }
 
-export function PropertyFilterMultiOptionValueMenu<TData, TValue>({
+export function PropertyFilterMultiOptionValueMenu<
+  TData extends RowData,
+  TValue,
+>({
   id,
   column,
   columnMeta,
   table,
 }: ProperFilterValueMenuProps<TData, TValue>) {
-  const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'multiOption'>)
-    : undefined
+  const filter = column.getFilterValue() as
+    | FilterValue<'multiOption', TData>
+    | undefined
 
   let options: ColumnOption[]
+  const columnVals = table
+    .getCoreRowModel()
+    .rows.flatMap((r) => r.getValue<TValue>(id))
+    .filter((v): v is NonNullable<TValue> => v !== undefined && v !== null)
 
+  // If static options are provided, use them
   if (columnMeta.options) {
     options = columnMeta.options
-  } else if (columnMeta.transformFn) {
-    const columnVals = table
-      .getCoreRowModel()
-      .rows.flatMap((r) => r.getValue(id))
-    const transformed = columnVals.map(columnMeta.transformFn) as string[]
-    // const flattened = flatten(transformed)
-    // TODO: Do we need to flatten?
-    const flattened = transformed
-    const unique = uniq(flattened)
-    options = unique.map((value) => {
-      const option: ColumnOption = {
-        value: value,
-        label: value,
-        icon: undefined,
-      }
-      return option
-    })
-  } else {
-    const columnVals = table
-      .getCoreRowModel()
-      .rows.flatMap((r) => r.getValue<string[]>(id))
-    const unique = uniq(columnVals)
-    options = unique.map((value) => {
-      const option: ColumnOption = {
-        value: value,
-        label: value,
-        icon: undefined,
-      }
-      return option
-    })
   }
+
+  // No static options provided,
+  // We should dynamically generate them based on the column data
+  else if (columnMeta.transformOptionFn) {
+    const transformOptionFn = columnMeta.transformOptionFn
+
+    const unique = uniq(columnVals)
+
+    options = unique.map((v) =>
+      transformOptionFn(v as ElementType<NonNullable<TValue>>),
+    )
+  }
+
+  // No static options provided
+  // Missing transformOptionFn - throw error
+  else {
+    throw new Error(
+      'No options provided - this is required for multiOption data type without static options',
+    )
+  }
+
+  const optionsCount: Record<ColumnOption['value'], number> = columnVals.reduce(
+    (acc, curr) => {
+      const { value } = columnMeta.transformOptionFn!(
+        curr as ElementType<NonNullable<TValue>>,
+      )
+
+      acc[value] = (acc[value] ?? 0) + 1
+      return acc
+    },
+    {} as Record<ColumnOption['value'], number>,
+  )
 
   // Handles the selection/deselection of an option
   function handleOptionSelect(value: string, check: boolean) {
     if (check) {
-      column.setFilterValue((old: undefined | FilterValue<'multiOption'>) => {
-        if (
-          !old ||
-          old.values.length === 0 ||
-          !old.values[0] ||
-          old.values[0].length === 0
-        )
+      column.setFilterValue(
+        (old: undefined | FilterValue<'multiOption', TData>) => {
+          if (
+            !old ||
+            old.values.length === 0 ||
+            !old.values[0] ||
+            old.values[0].length === 0
+          )
+            return {
+              operator: 'include',
+              values: [[value]],
+              column,
+            } satisfies FilterValue<'multiOption', TData>
+
+          const newValues = [uniq([...old.values[0], value])]
+
           return {
-            operator: 'include',
-            values: [[value]],
-          } satisfies FilterValue<'multiOption'>
-
-        const newValues = [uniq([...old.values[0], value])]
-
-        return {
-          operator: determineNewOperator(
-            'multiOption',
-            old.values,
-            newValues,
-            old.operator,
-          ),
-          values: newValues,
-        } satisfies FilterValue<'multiOption'>
-      })
+            operator: determineNewOperator(
+              'multiOption',
+              old.values,
+              newValues,
+              old.operator,
+            ),
+            values: newValues,
+            column,
+          } satisfies FilterValue<'multiOption', TData>
+        },
+      )
     } else
-      column.setFilterValue((old: undefined | FilterValue<'multiOption'>) => {
-        if (!old?.values[0] || old.values[0].length <= 1) return undefined
+      column.setFilterValue(
+        (old: undefined | FilterValue<'multiOption', TData>) => {
+          if (!old?.values[0] || old.values[0].length <= 1) return undefined
 
-        const newValues = [
-          uniq([...old.values[0], value]).filter((v) => v !== value),
-        ]
+          const newValues = [
+            uniq([...old.values[0], value]).filter((v) => v !== value),
+          ]
 
-        return {
-          operator: determineNewOperator(
-            'multiOption',
-            old.values,
-            newValues,
-            old.operator,
-          ),
-          values: newValues,
-        } satisfies FilterValue<'multiOption'>
-      })
+          return {
+            operator: determineNewOperator(
+              'multiOption',
+              old.values,
+              newValues,
+              old.operator,
+            ),
+            values: newValues,
+            column,
+          } satisfies FilterValue<'multiOption', TData>
+        },
+      )
   }
 
   return (
@@ -695,17 +726,7 @@ export function PropertyFilterMultiOptionValueMenu<TData, TValue>({
         <CommandGroup>
           {options.map((v) => {
             const checked = Boolean(filter?.values[0]?.includes(v.value))
-            let data = table
-              .getCoreRowModel()
-              .rows.map((r) => r.original as Record<string, unknown>)
-              .map((d) => d[id])
-
-            if (columnMeta.transformFn) {
-              data = data.map(columnMeta.transformFn)
-            }
-
-            const count =
-              data.filter((d) => (d as unknown[]).includes(v.value)).length ?? 0
+            const count = optionsCount[v.value] ?? 0
 
             return (
               <CommandItem
@@ -751,7 +772,7 @@ export function PropertyFilterDateValueMenu<TData, TValue>({
   column,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'date'>)
+    ? (column.getFilterValue() as FilterValue<'date', TData>)
     : undefined
 
   const [date, setDate] = useState<DateRange | undefined>({
@@ -772,12 +793,13 @@ export function PropertyFilterDateValueMenu<TData, TValue>({
 
     const newValues = isRange ? [start, end] : start ? [start] : []
 
-    column.setFilterValue((old: undefined | FilterValue<'date'>) => {
+    column.setFilterValue((old: undefined | FilterValue<'date', TData>) => {
       if (!old || old.values.length === 0)
         return {
           operator: newValues.length > 1 ? 'is between' : 'is',
           values: newValues,
-        } satisfies FilterValue<'date'>
+          column,
+        } satisfies FilterValue<'date', TData>
 
       return {
         operator:
@@ -787,7 +809,8 @@ export function PropertyFilterDateValueMenu<TData, TValue>({
               ? 'is'
               : old.operator,
         values: newValues,
-      } satisfies FilterValue<'date'>
+        column,
+      } satisfies FilterValue<'date', TData>
     })
   }
 
@@ -817,16 +840,17 @@ export function PropertyFilterTextValueMenu<TData, TValue>({
   column,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'text'>)
+    ? (column.getFilterValue() as FilterValue<'text', TData>)
     : undefined
 
   const changeText = (value: string | number) => {
-    column.setFilterValue((old: undefined | FilterValue<'text'>) => {
+    column.setFilterValue((old: undefined | FilterValue<'text', TData>) => {
       if (!old || old.values.length === 0)
         return {
           operator: 'contains',
           values: [String(value)],
-        } satisfies FilterValue<'text'>
+          column,
+        } satisfies FilterValue<'text', TData>
       return { operator: old.operator, values: [String(value)] }
     })
   }
@@ -858,7 +882,7 @@ export function PropertyFilterNumberValueMenu<TData, TValue>({
   const cappedMax = maxFromMeta ?? Number.MAX_SAFE_INTEGER
 
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as FilterValue<'number'>)
+    ? (column.getFilterValue() as FilterValue<'number', TData>)
     : undefined
 
   const isNumberRange =
@@ -880,7 +904,7 @@ export function PropertyFilterNumberValueMenu<TData, TValue>({
   const changeNumber = (value: number[]) => {
     const sortedValues = [...value].sort((a, b) => a - b)
 
-    column.setFilterValue((old: undefined | FilterValue<'number'>) => {
+    column.setFilterValue((old: undefined | FilterValue<'number', TData>) => {
       if (!old || old.values.length === 0) {
         return {
           operator: 'is',
@@ -929,7 +953,7 @@ export function PropertyFilterNumberValueMenu<TData, TValue>({
   }
 
   const changeType = (type: 'single' | 'range') => {
-    column.setFilterValue((old: undefined | FilterValue<'number'>) => {
+    column.setFilterValue((old: undefined | FilterValue<'number', TData>) => {
       if (type === 'single') {
         return {
           operator: 'is',

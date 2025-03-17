@@ -39,7 +39,7 @@ export function PropertyFilterOperatorController<
 }: {
   column: Column<TData, unknown>
   columnMeta: ColumnMeta<TData, unknown>
-  filter: FilterValue<T>
+  filter: FilterValue<T, TData>
 }) {
   const [open, setOpen] = useState<boolean>(false)
 
@@ -77,11 +77,11 @@ export function PropertyFilterOperatorController<
   )
 }
 
-export function PropertyFilterOperatorDisplay<T extends ColumnDataType>({
+export function PropertyFilterOperatorDisplay<TData, T extends ColumnDataType>({
   filter,
   filterType,
 }: {
-  filter: FilterValue<T>
+  filter: FilterValue<T, TData>
   filterType: T
 }) {
   const details = filterTypeOperatorDetails[filterType][filter.operator]
@@ -145,7 +145,7 @@ function PropertyFilterOptionOperatorMenu<TData>({
   column,
   closeController,
 }: PropertyFilterOperatorMenuProps<TData>) {
-  const filter = column.getFilterValue() as FilterValue<'option'>
+  const filter = column.getFilterValue() as FilterValue<'option', TData>
   const filterDetails = optionFilterDetails[filter.operator]
 
   const relatedFilters = Object.values(optionFilterDetails).filter(
@@ -174,7 +174,7 @@ function PropertyFilterMultiOptionOperatorMenu<TData>({
   column,
   closeController,
 }: PropertyFilterOperatorMenuProps<TData>) {
-  const filter = column.getFilterValue() as FilterValue<'multiOption'>
+  const filter = column.getFilterValue() as FilterValue<'multiOption', TData>
   const filterDetails = multiOptionFilterDetails[filter.operator]
 
   const relatedFilters = Object.values(multiOptionFilterDetails).filter(
@@ -203,7 +203,7 @@ function PropertyFilterDateOperatorMenu<TData>({
   column,
   closeController,
 }: PropertyFilterOperatorMenuProps<TData>) {
-  const filter = column.getFilterValue() as FilterValue<'date'>
+  const filter = column.getFilterValue() as FilterValue<'date', TData>
   const filterDetails = dateFilterDetails[filter.operator]
 
   const relatedFilters = Object.values(dateFilterDetails).filter(
@@ -232,7 +232,7 @@ export function PropertyFilterTextOperatorMenu<TData>({
   column,
   closeController,
 }: PropertyFilterOperatorMenuProps<TData>) {
-  const filter = column.getFilterValue() as FilterValue<'text'>
+  const filter = column.getFilterValue() as FilterValue<'text', TData>
   const filterDetails = textFilterDetails[filter.operator]
 
   const relatedFilters = Object.values(textFilterDetails).filter(
@@ -261,7 +261,7 @@ function PropertyFilterNumberOperatorMenu<TData>({
   column,
   closeController,
 }: PropertyFilterOperatorMenuProps<TData>) {
-  const filter = column.getFilterValue() as FilterValue<'number'>
+  const filter = column.getFilterValue() as FilterValue<'number', TData>
 
   // Show all related operators
   const relatedFilters = Object.values(numberFilterDetails)
