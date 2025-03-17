@@ -23,16 +23,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { DebouncedInput } from '@/registry/data-table-filter/components/debounced-input'
 import { flatten, take, uniq } from '@/registry/data-table-filter/lib/array'
-import type { ColumnOption } from '@/registry/data-table-filter/lib/filters'
+import type {
+  ColumnOption,
+  ElementType,
+} from '@/registry/data-table-filter/lib/filters'
 import {
   type FilterValue,
   determineNewOperator,
   numberFilterDetails,
 } from '@/registry/data-table-filter/lib/filters'
-import type { Column, ColumnMeta, Row, Table } from '@tanstack/react-table'
+import type {
+  Column,
+  ColumnMeta,
+  Row,
+  RowData,
+  Table,
+} from '@tanstack/react-table'
 import { format, isEqual } from 'date-fns'
 import { Ellipsis } from 'lucide-react'
-import { isValidElement, useState } from 'react'
+import { cloneElement, isValidElement, useState } from 'react'
 import type { DateRange } from 'react-day-picker'
 
 export function PropertyFilterValueController<TData, TValue>({
@@ -382,7 +391,7 @@ export function PropertyFilterNumberValueDisplay<TData, TValue>({
     const minValue = filter.values[0]
     const maxValue =
       filter.values[1] === Number.POSITIVE_INFINITY ||
-      filter.values[1] >= cappedMax
+        filter.values[1] >= cappedMax
         ? `${cappedMax}+`
         : filter.values[1]
 
