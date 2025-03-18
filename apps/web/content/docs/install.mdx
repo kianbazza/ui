@@ -1,261 +1,114 @@
 ---
-title: How to set up a new Next.js project
-published_at: 2023-04-08
+title: Installation
+section: Basics
 summary: Create a new Next.js application with the `create-next-app` CLI, and set up TypeScript, ESLint, and Module Path Aliases
 ---
 
-## System requirements
-
-- [Node.js 18.18](https://nodejs.org/) or later.
-- macOS, Windows (including WSL), and Linux are supported.
-
-## Automatic installation
-
-We recommend starting a new Next.js app using [`create-next-app`](/docs/app/api-reference/cli/create-next-app), which sets up everything automatically for you. To create a project, run:
-
-```bash filename="Terminal"
-npx create-next-app@latest
-```
-
-On installation, you'll see the following prompts:
-
-```txt filename="Terminal"
-What is your project named? my-app
-Would you like to use TypeScript? No / Yes
-Would you like to use ESLint? No / Yes
-Would you like to use Tailwind CSS? No / Yes
-Would you like your code inside a `src/` directory? No / Yes
-Would you like to use App Router? (recommended) No / Yes
-Would you like to use Turbopack for `next dev`?  No / Yes
-Would you like to customize the import alias (`@/*` by default)? No / Yes
-What import alias would you like configured? @/*
-```
-
-### Table
-
-| Question | Answer |
-| -------- | ------ |
-| Would you like to use TypeScript? | No |
-| Would you like to use ESLint? | No |
-| Would you like to use Tailwind CSS? | No |
-| Would you like your code inside a `src/` directory? | No |
-| Would you like to use App Router? (recommended) | No |
-| Would you like to use Turbopack for `next dev`? | No |
-| Would you like to customize the import alias (`@/*` by default)? | Yes |
-| What import alias would you like configured? | `@/*` |
+## Installing SampleSoft
 
-After the prompts, [`create-next-app`](/docs/app/api-reference/cli/create-next-app) will create a folder with your project name and install the required dependencies.
+This document provides a detailed guide to installing SampleSoft on your system. Follow these steps to get started.
 
-## Manual installation
+### Prerequisites
 
-To manually create a new Next.js app, install the required packages:
+Before you begin, ensure your system is ready for SampleSoft.
 
-```bash filename="Terminal"
-npm install next@latest react@latest react-dom@latest
-```
+#### System Requirements
 
-Open your `package.json` file and add the following `scripts`:
+- Operating System: Windows 10 or later
+- RAM: 4 GB minimum
+- Disk Space: 500 MB free
 
-```json filename="package.json"
-{
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
-    "lint": "next lint"
-  }
-}
-```
+#### Required Tools
 
-These scripts refer to the different stages of developing an application:
+- Internet connection for downloading
+- Administrator privileges on your machine
 
-- `dev`: runs [`next dev`](/docs/app/api-reference/cli/next#next-dev-options) to start Next.js in development mode.
-- `build`: runs [`next build`](/docs/app/api-reference/cli/next#next-build-options) to build the application for production usage.
-- `start`: runs [`next start`](/docs/app/api-reference/cli/next#next-start-options) to start a Next.js production server.
-- `lint`: runs [`next lint`](/docs/app/api-reference/cli/next#next-lint-options) to set up Next.js' built-in ESLint configuration.
+### Download Process
 
-### Create the `app` directory
+The first major phase is obtaining the installer.
 
-Next.js uses file-system routing, which means the routes in your application are determined by how you structure your files.
+#### Visit the Website
 
-Create an `app` folder, then add a `layout.tsx` and `page.tsx` file. These will be rendered when the user visits the root of your application (`/`).
+- Open your browser
+- Navigate to the SampleSoft official site
+- Locate the download section
 
-Create a [root layout](/docs/app/building-your-application/routing/layouts-and-templates#root-layout-required) inside `app/layout.tsx` with the required `<html>` and `<body>` tags:
+#### Save the File
 
-```tsx filename="app/layout.tsx" switcher
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  )
-}
-```
+- Click the "Download" button
+- Choose a save location
+- Wait for the download to complete
 
-```jsx filename="app/layout.js" switcher
-export default function RootLayout({ children }) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  )
-}
-```
+## Running the Installation
 
-Finally, create a home page `app/page.tsx` with some initial content:
+Once downloaded, proceed with the installation steps.
 
-```tsx filename="app/page.tsx" switcher
-export default function Page() {
-  return <h1>Hello, Next.js!</h1>
-}
-```
+### Installation Steps
 
-```jsx filename="app/page.js" switcher
-export default function Page() {
-  return <h1>Hello, Next.js!</h1>
-}
-```
+Follow these instructions to install the software.
 
-> **Good to know**:
->
-> - If you forget to create `layout.tsx`, Next.js will automatically create this file when running the development server with `next dev`.
-> - You can optionally use a [`src` directory](/docs/app/building-your-application/configuring/src-directory) in the root of your project to separate your application's code from configuration files.
+#### Launch the Installer
 
-### Create the `public` folder (optional)
+- Find the downloaded file
+- Double-click to start
+- Allow permissions if prompted
 
-You can optionally create a [`public` folder](/docs/app/building-your-application/optimizing/static-assets) at the root of your project to store static assets such as images, fonts, etc. Files inside `public` can then be referenced by your code starting from the base URL (`/`).
+#### Follow the Wizard
 
-## Run the development server
+- Select language
+- Agree to terms and conditions
+- Click "Next" through prompts
 
-1. Run `npm run dev` to start the development server.
-2. Visit `http://localhost:3000` to view your application.
+### Configuration
 
-## Set up TypeScript
+Customize the installation to your needs.
 
-> Minimum TypeScript version: `v4.5.2`
+#### Choose Directory
 
-Next.js comes with built-in TypeScript support. To add TypeScript to your project, rename a file to `.ts` / `.tsx`. Run `next dev`, Next.js will automatically install the necessary dependencies and add a `tsconfig.json` file with the recommended config options.
+- Select install location
+- Ensure sufficient space
+- Confirm selection
 
-### IDE Plugin
+#### Select Components
 
-Next.js includes a custom TypeScript plugin and type checker, which VSCode and other code editors can use for advanced type-checking and auto-completion.
+- Choose optional features
+- Review selections
+- Proceed with installation
 
-You can enable the plugin in VS Code by:
+## Finalizing Setup
 
-1. Opening the command palette (`Ctrl/⌘` + `Shift` + `P`)
-2. Searching for "TypeScript: Select TypeScript Version"
-3. Selecting "Use Workspace Version"
+Complete these steps after installation.
 
-Now, when editing files, the custom plugin will be enabled. When running `next build`, the custom type checker will be used.
+### Verification
 
-See the [TypeScript configuration](/docs/app/api-reference/config/next-config-js/typescript) page for more information on how to use TypeScript in your project.
+Ensure everything works as expected.
 
-## Set up ESLint
+#### Launch the Program
 
-Next.js comes with built-in ESLint, automatically installing the necessary packages and configuring the proper settings when you create a new project with `create-next-app`.
+- Open SampleSoft from Start menu
+- Check for main screen
+- Test basic functions
 
-To add ESLint to an existing project, add `next lint` as a script to `package.json`:
+#### Check Version
 
-```json filename="package.json"
-{
-  "scripts": {
-    "lint": "next lint"
-  }
-}
-```
+- Go to "Help" > "About"
+- Verify version number
+- Ensure it’s the latest
 
-Then, run `npm run lint` and you will be guided through the installation and configuration process.
+### Updates
 
-```bash filename="Terminal"
-pnpm lint
-```
+Keep SampleSoft current.
 
-You'll see a prompt like this:
+#### Check for Updates
 
-> ? How would you like to configure ESLint?
->
-> ❯ Strict (recommended)  
-> Base  
-> Cancel
+- Navigate to "Settings"
+- Click "Check for Updates"
+- Install any available patches
 
-- **Strict**: Includes Next.js' base ESLint configuration along with a stricter Core Web Vitals rule-set. This is the recommended configuration for developers setting up ESLint for the first time.
-- **Base**: Includes Next.js' base ESLint configuration.
-- **Cancel**: Does not include any ESLint configuration. Only select this option if you plan on setting up your own custom ESLint configuration.
+#### Restart if Needed
 
-If either of the two configuration options are selected, Next.js will automatically install `eslint` and `eslint-config-next` as dependencies in your application and create an `.eslintrc.json` file in the root of your project that includes your selected configuration.
+- Save any work
+- Restart SampleSoft
+- Confirm update success
 
-You can now run `next lint` every time you want to run ESLint to catch errors. Once ESLint has been set up, it will also automatically run during every build (`next build`). Errors will fail the build, while warnings will not.
-
-See the [ESLint Plugin](/docs/app/api-reference/config/next-config-js/eslint) page for more information on how to configure ESLint in your project.
-
-## Set up Absolute Imports and Module Path Aliases
-
-Next.js has in-built support for the `"paths"` and `"baseUrl"` options of `tsconfig.json` and `jsconfig.json` files. These options allow you to alias project directories to absolute paths, making it easier to import modules. For example:
-
-```jsx
-// Before
-import { Button } from '../../../components/button'
-
-// After
-import { Button } from '@/components/button'
-```
-
-To configure absolute imports, add the `baseUrl` configuration option to your `tsconfig.json` or `jsconfig.json` file. For example:
-
-```json filename="tsconfig.json or jsconfig.json"
-{
-  "compilerOptions": {
-    "baseUrl": "src/"
-  }
-}
-```
-
-In addition to configuring the `baseUrl` path, you can use the `"paths"` option to `"alias"` module paths.
-
-For example, the following configuration maps `@/components/*` to `components/*`:
-
-```json filename="tsconfig.json or jsconfig.json"
-{
-  "compilerOptions": {
-    "baseUrl": "src/",
-    "paths": {
-      "@/styles/*": ["styles/*"],
-      "@/components/*": ["components/*"]
-    }
-  }
-}
-```
-
-Each of the `"paths"` are relative to the `baseUrl` location. For example:
-
-```tsx filename="src/app/page.tsx" switcher
-import Button from '@/components/button'
-import '@/styles/styles.css'
-
-export default function HomePage() {
-  return (
-    <div>
-      <h1>Hello World</h1>
-      <Button />
-    </div>
-  )
-}
-```
-
-```jsx filename="src/app/page.js" switcher
-import Button from '@/components/button'
-import '@/styles/styles.css'
-
-export default function HomePage() {
-  return (
-    <div>
-      <h1>Hello World</h1>
-      <Button />
-    </div>
-  )
-}
-```
+Congratulations! SampleSoft is now fully installed and updated.

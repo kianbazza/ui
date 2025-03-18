@@ -10,8 +10,7 @@ export default function RootLayout({
     <SidebarProvider>
       <div className="grid grid-cols-3 w-full h-full">
         <AppSidebar />
-        <main>{children}</main>
-        <div></div>
+        <main className="grid grid-cols-subgrid col-span-2">{children}</main>
       </div>
     </SidebarProvider>
   )

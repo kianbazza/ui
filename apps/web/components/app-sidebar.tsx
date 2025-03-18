@@ -1,58 +1,68 @@
-import { Calendar, Home, Inbox, Search, Settings } from 'lucide-react'
+'use client'
 
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
+  SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
 } from '@/components/ui/sidebar'
+import bazzadevIcon from '@/public/bazzadev.png'
+import { usePathname, useRouter } from 'next/navigation'
+import Image from 'next/image'
+import { ThemeToggle } from './theme-toggle'
 
-// Menu items.
 const items = [
   {
-    title: 'Home',
-    url: '#',
-    icon: Home,
+    title: 'Introduction',
+    url: '/docs/intro',
   },
   {
-    title: 'Inbox',
-    url: '#',
-    icon: Inbox,
-  },
-  {
-    title: 'Calendar',
-    url: '#',
-    icon: Calendar,
-  },
-  {
-    title: 'Search',
-    url: '#',
-    icon: Search,
-  },
-  {
-    title: 'Settings',
-    url: '#',
-    icon: Settings,
+    title: 'Installation',
+    url: '/docs/install',
   },
 ]
 
 export function AppSidebar() {
+  const pathname = usePathname()
+
   return (
     <Sidebar>
       <SidebarContent>
+        <SidebarHeader className="px-4 text-sm pt-4">
+          <SidebarMenu>
+            <SidebarMenuItem>
+              <div className="inline-flex items-center gap-0.5 font-medium font-mono tracking-tight">
+                <Image
+                  className="size-5 mr-1.5"
+                  src={bazzadevIcon}
+                  alt="BazzaDEV"
+                />
+                <span>bazza</span>
+                <span className="text-xl text-border">/</span>
+                <span>ui</span>
+              </div>
+            </SidebarMenuItem>
+          </SidebarMenu>
+        </SidebarHeader>
         <SidebarGroup>
-          <SidebarGroupLabel>Application</SidebarGroupLabel>
+          <SidebarGroupLabel>Basics</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {items.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={item.url === pathname}
+                    className="font-medium text-muted-foreground"
+                  >
                     <a href={item.url}>
-                      <item.icon />
                       <span>{item.title}</span>
                     </a>
                   </SidebarMenuButton>
@@ -61,7 +71,15 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+        <SidebarSeparator />
       </SidebarContent>
+      <SidebarFooter>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <ThemeToggle />
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
     </Sidebar>
   )
 }

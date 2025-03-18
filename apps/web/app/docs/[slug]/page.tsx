@@ -7,11 +7,24 @@ import { compileMDX } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
 import rehypeHighlight from 'rehype-highlight'
 import rehypeMdxCodeProps from 'rehype-mdx-code-props'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
+import rehypeSlug from 'rehype-slug'
+import { getTableOfContents } from '@/lib/toc'
+import { DashboardTableOfContents } from '@/components/toc'
+import Link from 'next/link'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 
 export type MDXMetadata = {
   title: string
-  published_at: string
   summary: string
+  section: string
   image?: string
 }
 
@@ -33,19 +46,56 @@ export default async function Page({
       parseFrontmatter: true,
       mdxOptions: {
         remarkPlugins: [remarkGfm],
+        rehypePlugins: [
+          rehypeHighlight,
+          rehypeMdxCodeProps,
+          rehypeSlug,
+          rehypeAutolinkHeadings,
+        ],
+      },
+    },
+  })
+
+  const { content: summary } = await compileMDX<MDXMetadata>({
+    source: metadata.summary,
+    components,
+    options: {
+      parseFrontmatter: true,
+      mdxOptions: {
+        remarkPlugins: [remarkGfm],
         rehypePlugins: [rehypeHighlight, rehypeMdxCodeProps],
       },
     },
   })
 
+  const toc = await getTableOfContents(rawContent)
+
   return (
-    <div className="mt-16 flex flex-col gap-8 max-w-screen-md mx-auto">
-      <span className="text-4xl font-bold">{metadata.title}</span>
-      <div>{metadata.published_at}</div>
-      <div className="border-l-2 border-border pl-4 py-1">
-        {metadata.summary}
+    <div className="col-span-2 grid grid-cols-subgrid gap-4">
+      <div className="flex flex-col gap-8 max-w-screen-md mx-auto col-span-1 mt-16 mb-16">
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem>Docs</BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>{metadata.section}</BreadcrumbItem>
+            <BreadcrumbSeparator />
+            <BreadcrumbItem>
+              <BreadcrumbPage>{metadata.title}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+
+        <div className="flex flex-col gap-4">
+          <span className="text-5xl font-[550] tracking-[-0.025em]">
+            {metadata.title}
+          </span>
+          <div className="text-muted-foreground">{summary}</div>
+        </div>
+        <div>{content}</div>
       </div>
-      <div>{content}</div>
+      <div className="col-span-1 justify-self-end px-24 sticky mt-16 top-16 h-[calc(100vh-8rem)]">
+        {toc && <DashboardTableOfContents toc={toc} />}
+      </div>
     </div>
   )
 }
