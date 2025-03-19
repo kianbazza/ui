@@ -72,8 +72,11 @@ export default function Page() {
                 <Button
                   size="lg"
                   className="shadow-md hover:shadow-lg transition-[box-shadow,background-color]"
+                  asChild
                 >
-                  Get started <ArrowRightIcon className="translate-x-0.5" />
+                  <Link href="/docs/intro">
+                    Get started <ArrowRightIcon className="translate-x-0.5" />
+                  </Link>
                 </Button>
               </div>
             </div>

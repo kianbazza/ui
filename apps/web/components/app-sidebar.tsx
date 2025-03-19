@@ -25,8 +25,8 @@ const items = [
     url: '/docs/intro',
   },
   {
-    title: 'Installation',
-    url: '/docs/install',
+    title: 'Getting Started',
+    url: '/docs/getting-started',
   },
 ]
 
@@ -73,7 +73,24 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        <SidebarSeparator />
+        <SidebarGroup>
+          <SidebarGroupLabel>Components</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  isActive={'/docs/data-table-filter' === pathname}
+                  className="font-medium text-muted-foreground"
+                >
+                  <a href={'/docs/data-table-filter'}>
+                    <span>Data Table Filter</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>

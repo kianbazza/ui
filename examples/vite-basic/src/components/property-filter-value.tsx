@@ -207,7 +207,7 @@ export function PropertyFilterOptionValueDisplay<TData, TValue>({
   const name = columnMeta.displayName.toLowerCase()
   const pluralName = name.endsWith('s') ? `${name}es` : `${name}s`
 
-  const hasOptionIcons = !!columnMeta.options
+  const hasOptionIcons = !options.some((o) => !o.icon)
 
   return (
     <div className="inline-flex items-center gap-0.5">
