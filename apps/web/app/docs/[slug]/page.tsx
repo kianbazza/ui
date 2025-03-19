@@ -11,15 +11,14 @@ import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypeSlug from 'rehype-slug'
 import { getTableOfContents } from '@/lib/toc'
 import { DashboardTableOfContents } from '@/components/toc'
-import Link from 'next/link'
 import {
   Breadcrumb,
   BreadcrumbItem,
-  BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
+import { SidebarTrigger } from '@/components/ui/sidebar'
 
 export type MDXMetadata = {
   title: string
@@ -71,19 +70,22 @@ export default async function Page({
   const toc = await getTableOfContents(rawContent)
 
   return (
-    <div className="col-span-2 grid grid-cols-subgrid gap-4">
-      <div className="flex flex-col gap-8 max-w-screen-md mx-auto col-span-1 mt-16 mb-16">
-        <Breadcrumb>
-          <BreadcrumbList>
-            <BreadcrumbItem>Docs</BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>{metadata.section}</BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{metadata.title}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
+    <div className="md:col-span-1 xl:col-span-2 md:grid md:grid-cols-subgrid xl:gap-4 px-4 xl:p-0">
+      <div className="flex flex-col gap-8 max-w-screen-md mx-auto col-span-1 my-4 md:my-8 xl:my-16">
+        <div className="flex items-center gap-2">
+          <SidebarTrigger className="md:hidden" />
+          <Breadcrumb>
+            <BreadcrumbList>
+              <BreadcrumbItem>Docs</BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>{metadata.section}</BreadcrumbItem>
+              <BreadcrumbSeparator />
+              <BreadcrumbItem>
+                <BreadcrumbPage>{metadata.title}</BreadcrumbPage>
+              </BreadcrumbItem>
+            </BreadcrumbList>
+          </Breadcrumb>
+        </div>
 
         <div className="flex flex-col gap-4">
           <span className="text-5xl font-[550] tracking-[-0.025em]">
@@ -93,7 +95,7 @@ export default async function Page({
         </div>
         <div>{content}</div>
       </div>
-      <div className="col-span-1 justify-self-end px-24 sticky mt-16 top-16 h-[calc(100vh-8rem)]">
+      <div className="hidden lg:block col-span-1 px-24 sticky mt-16 top-16 h-[calc(100vh-8rem)]">
         {toc && <DashboardTableOfContents toc={toc} />}
       </div>
     </div>

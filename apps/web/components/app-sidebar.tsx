@@ -12,9 +12,10 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarSeparator,
+  SidebarTrigger,
 } from '@/components/ui/sidebar'
 import bazzadevIcon from '@/public/bazzadev.png'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { ThemeToggle } from './theme-toggle'
 
@@ -37,7 +38,7 @@ export function AppSidebar() {
       <SidebarContent>
         <SidebarHeader className="px-4 text-sm pt-4">
           <SidebarMenu>
-            <SidebarMenuItem>
+            <SidebarMenuItem className="inline-flex justify-between items-center">
               <div className="inline-flex items-center gap-0.5 font-medium font-mono tracking-tight">
                 <Image
                   className="size-5 mr-1.5"
@@ -48,6 +49,7 @@ export function AppSidebar() {
                 <span className="text-xl text-border">/</span>
                 <span>ui</span>
               </div>
+              <SidebarTrigger />
             </SidebarMenuItem>
           </SidebarMenu>
         </SidebarHeader>

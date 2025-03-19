@@ -26,7 +26,7 @@ export const components: Readonly<MDXComponents> = {
   h4: (props) => (
     <h4
       className={cn(
-        'text-xl font-semibold tracking-[-0.02em] mt-8 mb-4',
+        'text-xl font-semibold tracking-[-0.02em] mt-6 mb-4',
         props.className,
       )}
       {...props}

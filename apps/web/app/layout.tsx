@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Geist_Mono, Inter } from 'next/font/google'
 import './globals.css'
 import { ThemeProvider } from '@/providers/theme-provider'
+import type { Viewport } from 'next'
 
 const inter = Inter({
   axes: ['opsz'],
@@ -20,6 +21,13 @@ export const metadata: Metadata = {
   title: 'Data table filters | bazza/ui',
   description:
     'A powerful data table filter component inspired by Linear. Open source and free forever.',
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { color: 'var(--site-background)', media: '(prefers-color-scheme: light)' },
+    { color: 'var(--site-background)', media: '(prefers-color-scheme: dark)' },
+  ],
 }
 
 export default function RootLayout({
