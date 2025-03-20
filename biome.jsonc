@@ -38,7 +38,10 @@
         "noSvgWithoutTitle": "off",
         "useKeyWithClickEvents": "off"
       }
-    }
+    },
+    "ignore": [
+      "./apps/web/lib/rehype-npm-command.ts"
+    ]
   },
   "javascript": {
     "formatter": {

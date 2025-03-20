@@ -41,6 +41,7 @@ import {
 } from 'lucide-react'
 import { issues, users } from './data'
 import { type Issue, issueStatuses } from './types'
+import { cn } from '@/lib/utils'
 
 export const columns: ColumnDef<Issue>[] = [
   {
@@ -220,7 +221,13 @@ export const columns: ColumnDef<Issue>[] = [
   },
 ]
 
-export default function DataTableDemo() {
+interface DataTableDemoProps {
+  hideTable?: boolean
+}
+
+export default function DataTableDemo({
+  hideTable = false,
+}: DataTableDemoProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     [],
@@ -261,7 +268,12 @@ export default function DataTableDemo() {
       <div className="flex items-center py-4 gap-2">
         <DataTableFilter table={table} />
       </div>
-      <div className="rounded-md border bg-white dark:bg-inherit">
+      <div
+        className={cn(
+          'rounded-md border bg-white dark:bg-inherit',
+          hideTable && 'hidden',
+        )}
+      >
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -272,9 +284,9 @@ export default function DataTableDemo() {
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext(),
-                          )}
+                          header.column.columnDef.header,
+                          header.getContext(),
+                        )}
                     </TableHead>
                   )
                 })}

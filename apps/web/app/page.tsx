@@ -62,7 +62,7 @@ export default function Page() {
                       A powerful data table filter component inspired by Linear.
                     </span>
                     <span>Built with shadcn/ui and TanStack Table.</span>
-                    <span className="!font-[538]">
+                    <span className="!font-[538] dark:text-primary">
                       Open source. Open code. Free to use.
                     </span>
                   </div>

@@ -19,11 +19,15 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { SidebarTrigger } from '@/components/ui/sidebar'
+import { Badge } from '@/components/ui/badge'
+import { rehypeNpmCommand } from '@/lib/rehype-npm-command'
+import { visit } from 'unist-util-visit'
 
 export type MDXMetadata = {
   title: string
   summary: string
   section: string
+  badge?: string
   image?: string
 }
 
@@ -49,6 +53,19 @@ export default async function Page({
           rehypeHighlight,
           rehypeMdxCodeProps,
           rehypeSlug,
+          () => (tree) => {
+            visit(tree, (node) => {
+              if (node?.type === 'element' && node?.tagName === 'pre') {
+                const [codeEl] = node.children
+                if (codeEl.tagName !== 'code') {
+                  return
+                }
+
+                node.properties.__rawString__ = codeEl.children?.[0].value
+              }
+            })
+          },
+          rehypeNpmCommand,
           rehypeAutolinkHeadings,
         ],
       },
@@ -71,7 +88,7 @@ export default async function Page({
 
   return (
     <div className="md:col-span-1 xl:col-span-2 md:grid md:grid-cols-subgrid xl:gap-4 px-4 xl:p-0">
-      <div className="flex flex-col gap-8 max-w-screen-md mx-auto col-span-1 my-4 md:my-8 xl:my-16">
+      <div className="flex flex-col gap-8 w-full max-w-screen-md mx-auto col-span-1 my-4 md:my-8 xl:my-16">
         <div className="flex items-center gap-2">
           <SidebarTrigger className="md:hidden" />
           <Breadcrumb>
@@ -88,9 +105,16 @@ export default async function Page({
         </div>
 
         <div className="flex flex-col gap-4">
-          <span className="text-5xl font-[550] tracking-[-0.025em]">
-            {metadata.title}
-          </span>
+          <div className="flex items-start gap-2">
+            <span className="text-5xl font-[550] tracking-[-0.025em]">
+              {metadata.title}
+            </span>
+            {metadata.badge && (
+              <Badge className="bg-pink-500 text-primary">
+                {metadata.badge}
+              </Badge>
+            )}
+          </div>
           <div className="text-muted-foreground">{summary}</div>
         </div>
         <div>{content}</div>

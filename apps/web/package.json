@@ -33,6 +33,7 @@
     "clsx": "^2.1.1",
     "cmdk": "1.0.0",
     "date-fns": "^4.1.0",
+    "jotai": "^2.12.2",
     "lucide-react": "^0.482.0",
     "nanoid": "^5.1.2",
     "next": "15.2.3",
@@ -54,6 +55,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/unist": "^3.0.3",
     "husky": "^9.1.7",
     "mdast-util-toc": "^7.1.0",
     "rehype-autolink-headings": "^7.1.0",
@@ -65,6 +67,7 @@
     "shiki": "^3.2.1",
     "tailwindcss": "^4",
     "typescript": "^5",
+    "unist-builder": "^3.0.0",
     "unist-util-visit": "^5.0.0"
   }
 }
