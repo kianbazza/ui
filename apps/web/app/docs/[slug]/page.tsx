@@ -88,7 +88,7 @@ export default async function Page({
 
   return (
     <div className="md:col-span-1 xl:col-span-2 md:grid md:grid-cols-subgrid xl:gap-4 px-4 xl:p-0">
-      <div className="flex flex-col gap-8 w-full max-w-screen-md mx-auto col-span-1 my-4 md:my-8 xl:my-16">
+      <div className="flex flex-col gap-8 w-full max-w-screen-md mx-auto col-span-1 my-4 md:my-8 xl:my-16 overflow-scroll">
         <div className="flex items-center gap-2">
           <SidebarTrigger className="md:hidden" />
           <Breadcrumb>
@@ -109,9 +109,9 @@ export default async function Page({
             <span className="text-5xl font-[550] tracking-[-0.025em]">
               {metadata.title}
             </span>
-            {metadata.badge && (
-              <Badge className="bg-pink-500 text-primary">
-                {metadata.badge}
+            {metadata.badge === 'alpha' && (
+              <Badge className="bg-pink-400 dark:bg-pink-500 text-white leading-none h-5 [&>span]:translate-y-[-0.5px]">
+                <span>{metadata.badge}</span>
               </Badge>
             )}
           </div>
@@ -119,6 +119,7 @@ export default async function Page({
         </div>
         <div>{content}</div>
       </div>
+
       <div className="hidden lg:block col-span-1 px-24 sticky mt-16 top-16 h-[calc(100vh-8rem)]">
         {toc && <DashboardTableOfContents toc={toc} />}
       </div>

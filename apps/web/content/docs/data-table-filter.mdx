@@ -5,7 +5,7 @@ summary: A powerful data table filter for client-side filtering with TanStack Ta
 badge: alpha
 ---
 
-<div className='py-8 px-16 border border-border rounded-lg bg-black'>
+<div className='py-8 px-16 border border-border rounded-lg bg-white dark:bg-black'>
 <DataTableDemo />
 </div>
 
@@ -27,7 +27,53 @@ Before you begin:
 From the command line, install the component into your project:
 
 ```bash
-npx shadcn@latest add alert-dialog
+npx shadcn@latest add https://ui.bazza.dev/r/data-table-filter.json
 ```
 
 ## Walkthrough
+
+### File structure
+
+The data table filter component is composed of several files.
+
+Components are placed in the `@/components` directory and broken up into several files for better organization and readability:
+
+- `data-table-filter.tsx`: The main component file.
+- `property-filter-list.tsx`: Renders the applied filters.
+- `property-filter-subject.tsx`: Renders the **subject** of a filter, which shows the property name and (optionally) icon.
+- `property-filter-operator.tsx`: Renders the filter **operator** controller, which handles how the filter value is applied to the property.
+- `property-filter-value.tsx`: Renders the filter **value** controller, which is the actual value that is being filtered on.
+- `table-filter-actions.tsx`: The actions that can be performed on the filter, such as clearing the filter.
+- `table-filter-menu.tsx`: The filter menu, which is a dropdown menu that appears when clicking on the filter icon. This allows the user to initially start filtering on a property.
+- `debounced-input.tsx`: A custom input component that uses the `useDebounce` hook from the `react-use` library.
+
+Types, interfaces, and utilities are placed in the `@/lib` directory:
+
+- `array.ts`: Utility functions for working with arrays.
+- `filters.ts`: All TypeScript types, interfaces, and constants related to the data table filter component. Also includes the filter functions `filterFn()` for each column type.
+- `table.ts`: Utility functions for working with the TanStack Table library.
+
+### Component structure
+
+A `PropertyFilterItem` component is composed of the following parts:
+
+- `PropertyFilterSubject` shows the name and *(optionally)* icon of the property being filtered on.
+- `PropertyFilterOperator` shows the operator used to filter on the property.
+- `PropertyFilterValue` shows the actual filter value.
+
+<ResponsiveImage
+  lightSrc='/docs/data-table-filter/property-filter-item-composition-light.png'
+  darkSrc='/docs/data-table-filter/property-filter-item-composition-dark.png'
+  caption='The composition of a property filter item.'
+/>
+
+The `PropertyFilterOperator` and `PropertyFilterValue` components are internally represented by a `Controller`, which has two components:
+
+- `Display` is the component rendering the visible UI of the controller.
+- `Menu` is the component rendering the menu UI of the controller, including the trigger and content for the dropdown menu.
+
+<ResponsiveImage
+  lightSrc='/docs/data-table-filter/property-filter-value-composition-light.png'
+  darkSrc='/docs/data-table-filter/property-filter-value-composition-dark.png'
+  caption='The composition of a property filter value controller.'
+/>

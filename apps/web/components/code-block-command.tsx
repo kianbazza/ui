@@ -9,6 +9,16 @@ import { copyToClipboardWithMeta } from '@/components/copy-button'
 import { Tabs } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { PnpmIcon, NpmIcon, YarnIcon, BunIcon } from './icons'
+
+type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun'
+
+const packageManagerIcons = {
+  pnpm: PnpmIcon,
+  npm: NpmIcon,
+  yarn: YarnIcon,
+  bun: BunIcon,
+} as const
 
 export function CodeBlockCommand({
   __npmCommand__,
@@ -48,25 +58,27 @@ export function CodeBlockCommand({
   }, [packageManager, tabs])
 
   return (
-    <div className="relative mt-6 max-h-[650px] overflow-x-auto rounded-xl bg-zinc-950 dark:bg-zinc-900">
+    <div className="relative mt-6 max-h-[650px] overflow-x-auto rounded-md bg-white dark:bg-black border border-border">
       <Tabs
         value={packageManager}
         onValueChange={(value) => {
           setConfig({
             ...config,
-            packageManager: value as 'pnpm' | 'npm' | 'yarn' | 'bun',
+            packageManager: value as PackageManager,
           })
         }}
       >
-        <div className="flex items-center justify-between border-b border-zinc-800 bg-zinc-900 px-3 pt-2.5">
+        <div className="flex items-center justify-between border-b border-neutral-150 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900 px-3 pt-2.5">
           <TabsList className="h-7 translate-y-[2px] gap-3 bg-transparent p-0 pl-1">
             {Object.entries(tabs).map(([key, value]) => {
+              const Icon = packageManagerIcons[key as PackageManager]
               return (
                 <TabsTrigger
                   key={key}
                   value={key}
-                  className="rounded-none border-b border-transparent bg-transparent p-0 pb-1.5 font-mono text-zinc-400 data-[state=active]:border-b-zinc-50 data-[state=active]:bg-transparent data-[state=active]:text-zinc-50"
+                  className="flex items-center gap-1.5 rounded-none border-b border-transparent bg-transparent text-[13px] p-0 pb-1.5 dark:text-neutral-400 text-neutral-600 data-[state=active]:border-neutral-950 dark:data-[state=active]:border-neutral-50 data-[state=active]:shadow-none outline-none data-[state=active]:bg-transparent data-[state=active]:text-neutral-950 dark:data-[state=active]:text-neutral-50"
                 >
+                  <Icon className="size-3.5" />
                   {key}
                 </TabsTrigger>
               )

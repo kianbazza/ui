@@ -100,7 +100,7 @@ function Tree({ tree, level = 1, activeItem }: TreeProps) {
               className={cn(
                 'inline-block no-underline transition-colors hover:text-foreground',
                 item.url === `#${activeItem}`
-                  ? 'font-[410] text-foreground'
+                  ? 'font-medium text-foreground'
                   : 'font-[410] text-muted-foreground',
               )}
             >

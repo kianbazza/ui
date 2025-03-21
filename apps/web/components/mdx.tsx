@@ -3,6 +3,8 @@ import type { MDXComponents } from 'mdx/types'
 import DataTableDemo from './data-table-filter/demo'
 import { CodeBlockCommand } from './code-block-command'
 import type { NpmCommands } from '@/types/unist'
+import Image from 'next/image'
+import { ResponsiveImage } from './responsive-image'
 
 export const components: Readonly<MDXComponents> = {
   h1: (props) => (
@@ -37,7 +39,7 @@ export const components: Readonly<MDXComponents> = {
   ),
   h5: (props) => <h5 {...props} />,
   h6: (props) => <h6 {...props} />,
-  p: (props) => <p className="mb-4 last:mb-0" {...props} />,
+  p: (props) => <p className="mb-4 last:mb-0 leading-7" {...props} />,
   a: (props) => <a className="underline underline-offset-2" {...props} />,
   strong: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
     <strong className={cn('font-semibold', className)} {...props} />
@@ -103,7 +105,15 @@ export const components: Readonly<MDXComponents> = {
       {...props}
     />
   ),
-  code: (props) => <code className="font-mono" {...props} />,
+  code: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
+    <code
+      className={cn(
+        'relative rounded-sm bg-muted px-[0.3rem] py-[0.2rem] font-mono text-sm',
+        className,
+      )}
+      {...props}
+    />
+  ),
   pre: ({
     className,
     __rawString__,
@@ -144,4 +154,11 @@ export const components: Readonly<MDXComponents> = {
     )
   },
   DataTableDemo,
+  Image,
+  ResponsiveImage: (props) => (
+    <ResponsiveImage
+      wrapperClassName={cn('my-6', props.wrapperClassName)}
+      {...props}
+    />
+  ),
 }
