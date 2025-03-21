@@ -13,7 +13,13 @@ interface Props extends React.HTMLAttributes<HTMLDivElement> {
   colorReplacements?: Record<string, string>
 }
 
-export async function CodeBlock({ children, className, lang, colorReplacements, ...props }: Props) {
+export async function CodeBlock({
+  children,
+  className,
+  lang,
+  colorReplacements,
+  ...props
+}: Props) {
   const out = await codeToHtml(children, {
     lang,
     themes: {
@@ -27,5 +33,15 @@ export async function CodeBlock({ children, className, lang, colorReplacements, 
     },
   })
 
-  return <div className={cn('text-sm rounded-md border border-border bg-white dark:bg-neutral-900 shadow-xs [&>pre]:p-4', className)} dangerouslySetInnerHTML={{ __html: out }} {...props} />
+  return (
+    <div
+      className={cn(
+        '**:font-mono text-sm rounded-md border border-border bg-white dark:bg-neutral-900 shadow-xs [&>pre]:p-4',
+        className,
+      )}
+      // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+      dangerouslySetInnerHTML={{ __html: out }}
+      {...props}
+    />
+  )
 }

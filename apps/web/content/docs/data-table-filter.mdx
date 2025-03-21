@@ -30,7 +30,13 @@ From the command line, install the component into your project:
 npx shadcn@latest add https://ui.bazza.dev/r/data-table-filter.json
 ```
 
-## Walkthrough
+## Usage
+
+## Overview
+
+Let's take a high-level look at how we've created the data table filter component.
+
+This will help you understand what each file contains and the general component composition.
 
 ### File structure
 
@@ -67,13 +73,39 @@ A `PropertyFilterItem` component is composed of the following parts:
   caption='The composition of a property filter item.'
 />
 
-The `PropertyFilterOperator` and `PropertyFilterValue` components are internally represented by a `Controller`, which has two components:
+The `PropertyFilterOperator` and `PropertyFilterValue` components are represented by a `Controller` which is essentially a `Popover` with an associated trigger and content.
 
-- `Display` is the component rendering the visible UI of the controller.
-- `Menu` is the component rendering the menu UI of the controller, including the trigger and content for the dropdown menu.
+We can break down the `PropertyFilterValueController` as an example:
+
+- `PropertyFilterValueDisplay` is the popover **trigger**. This displays the filter value for the associated property.
+- `PropertyFilterValueMenu` is the popover **content**. This renders the menu for modifying the filter value.
 
 <ResponsiveImage
   lightSrc='/docs/data-table-filter/property-filter-value-composition-light.png'
   darkSrc='/docs/data-table-filter/property-filter-value-composition-dark.png'
   caption='The composition of a property filter value controller.'
 />
+
+The `PropertyFilterOperatorController` has a similar composition and can be inferred from the above description and image.
+
+## Walkthough
+
+Let's walk through a simple example of how we can use the data table filter component to add client-side filtering to our shadcn/ui data table.
+
+### Scenario
+
+Let's build a data table for an issue tracker. We can define the shape of an `Issue` as follows:
+
+```ts
+export type Issue = {
+  id: string
+  title: string
+  description?: string
+  status: IssueStatus
+  labels?: IssueLabel[]
+  assigneeId?: string
+  startDate?: Date
+  endDate?: Date
+  estimatedHours?: number
+}
+```

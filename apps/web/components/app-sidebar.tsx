@@ -18,6 +18,7 @@ import bazzadevIcon from '@/public/bazzadev.png'
 import { usePathname } from 'next/navigation'
 import Image from 'next/image'
 import { ThemeToggle } from './theme-toggle'
+import Link from 'next/link'
 
 const items = [
   {
@@ -39,16 +40,19 @@ export function AppSidebar() {
         <SidebarHeader className="px-4 text-sm pt-4">
           <SidebarMenu>
             <SidebarMenuItem className="inline-flex justify-between items-center">
-              <div className="inline-flex items-center gap-0.5 font-medium font-mono tracking-tight">
+              <Link
+                href="/"
+                className="inline-flex items-center gap-0.5 font-medium font-mono tracking-tight"
+              >
                 <Image
-                  className="size-5 mr-1.5"
+                  className="size-5 mr-1.5 translate-y-[-0.5px]"
                   src={bazzadevIcon}
                   alt="BazzaDEV"
                 />
                 <span>bazza</span>
                 <span className="text-xl text-border">/</span>
                 <span>ui</span>
-              </div>
+              </Link>
               <SidebarTrigger />
             </SidebarMenuItem>
           </SidebarMenu>
