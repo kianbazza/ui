@@ -8,6 +8,8 @@ import {
   type LucideIcon,
   CircleCheckIcon,
   Heading1Icon,
+  CalendarIcon,
+  ClockIcon,
 } from 'lucide-react'
 
 const columnHelper = createColumnHelper<Issue>()
@@ -41,7 +43,7 @@ export const columns = [
     meta: defineMeta('dueDate', {
       displayName: 'Due Date',
       type: 'date',
-      icon: CircleDotDashedIcon,
+      icon: CalendarIcon,
     }),
   }),
   columnHelper.accessor('estimatedHours', {
@@ -51,7 +53,7 @@ export const columns = [
     meta: defineMeta('estimatedHours', {
       displayName: 'Estimated Hours',
       type: 'number',
-      icon: CircleDotDashedIcon,
+      icon: ClockIcon,
     }),
   }),
   columnHelper.accessor('status', {

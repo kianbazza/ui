@@ -60,8 +60,6 @@ export default async function Page({
                   return
                 }
 
-                console.log(node)
-
                 node.__rawString__ = codeEl.children?.[0].value
               }
             })
@@ -88,8 +86,6 @@ export default async function Page({
                 if (preElement.tagName !== 'pre') {
                   return
                 }
-
-                console.log('here!')
 
                 preElement.properties.__rawString__ = node.__rawString__
               }

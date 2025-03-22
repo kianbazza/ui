@@ -96,7 +96,7 @@ Let's walk through a simple example of how we can use the data table filter comp
 
 Let's build a data table for an issue tracker. We can define the shape of an `Issue` as follows:
 
-```ts
+```ts title="@/components/ex1/types.ts"
 export type IssueStatus = 'backlog' | 'todo' | 'in-progress' | 'done'
 
 export type Issue = {
@@ -136,7 +136,13 @@ type ColumnDataType =
 
 It's pretty obvious that we want to use the `text` column data type for this column, so let's go ahead with this:
 
-```ts
+```ts {3,7-18}
+import { createColumnHelper } from '@tanstack/react-table'
+import type { Issue } from './types'
+import { Heading1Icon } from 'lucide-react'
+
+const columnHelper = createColumnHelper<Issue>()
+
 export const columns = [
   columnHelper.accessor('title', {
     id: 'title',
@@ -163,7 +169,17 @@ Additionally, we're using the `defineMeta` helper function when we define the co
 
 Let's get the other "easy" columns done in one swoop:
 
-```ts {2-4}
+```ts {3-7,22-41}
+import { createColumnHelper } from '@tanstack/react-table'
+import type { Issue } from './types'
+import {
+  Heading1Icon,
+  CalendarIcon,
+  ClockIcon,
+} from 'lucide-react'
+
+const columnHelper = createColumnHelper<Issue>()
+
 export const columns = [
   columnHelper.accessor('title', {
     id: 'title',
@@ -182,7 +198,7 @@ export const columns = [
     meta: defineMeta('dueDate', {
       displayName: 'Due Date',
       type: 'date',
-      icon: CircleDotDashedIcon,
+      icon: CalendarIcon,
     }),
   }),
   columnHelper.accessor('estimatedHours', {
@@ -192,7 +208,7 @@ export const columns = [
     meta: defineMeta('estimatedHours', {
       displayName: 'Estimated Hours',
       type: 'number',
-      icon: CircleDotDashedIcon,
+      icon: ClockIcon,
     }),
   }),
 ]
