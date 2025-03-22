@@ -97,15 +97,103 @@ Let's walk through a simple example of how we can use the data table filter comp
 Let's build a data table for an issue tracker. We can define the shape of an `Issue` as follows:
 
 ```ts
+export type IssueStatus = 'backlog' | 'todo' | 'in-progress' | 'done'
+
 export type Issue = {
   id: string
   title: string
-  description?: string
   status: IssueStatus
-  labels?: IssueLabel[]
-  assigneeId?: string
-  startDate?: Date
-  endDate?: Date
+  dueDate?: Date
   estimatedHours?: number
 }
+```
+
+### Columns
+
+We can start creating the columns for the data table using the `createColumnHelper` function. This ensures we create columns with full type safety.
+
+```ts
+import { createColumnHelper } from '@tanstack/react-table'
+import type { Issue } from './types'
+
+const columnHelper = createColumnHelper<Issue>()
+```
+
+#### Title
+
+Let's start with the `title` column, which displays the issue title.
+
+Let's refer back to the column data types we can pick from:
+
+```ts
+type ColumnDataType =
+  | 'text'
+  | 'number'
+  | 'date'
+  | 'option'
+  | 'multiOption'
+```
+
+It's pretty obvious that we want to use the `text` column data type for this column, so let's go ahead with this:
+
+```ts
+export const columns = [
+  columnHelper.accessor('title', {
+    id: 'title',
+    header: 'Title',
+    filterFn: filterFn('text'),
+    meta: defineMeta('title', {
+      displayName: 'Title',
+      type: 'text',
+      icon: Heading1Icon,
+    }),
+  }),
+]
+```
+
+Note that we're using the `filterFn` function to define the filter function for this column. We provide this out-of-the-box to ensure your column data is properly filtered. All you have to do is pass in the column data type as an argument.
+
+Additionally, we're using the `defineMeta` helper function when we define the column metadata. This is the recommended way to define the column metadata, as it ensures type safety.
+
+- `displayName` is used when showing the property in various filter-related interfaces, such as the filter menu.
+- `type` is the column data type (as defined above).
+- `icon` is displayed alongside the `displayName`.
+
+#### Due date, estimated hours
+
+Let's get the other "easy" columns done in one swoop:
+
+```ts
+export const columns = [
+  columnHelper.accessor('title', {
+    id: 'title',
+    header: 'Title',
+    filterFn: filterFn('text'),
+    meta: defineMeta('title', {
+      displayName: 'Title',
+      type: 'text',
+      icon: Heading1Icon,
+    }),
+  }),
+  columnHelper.accessor('dueDate', {
+    id: 'dueDate',
+    header: 'Due Date',
+    filterFn: filterFn('date'),
+    meta: defineMeta('dueDate', {
+      displayName: 'Due Date',
+      type: 'date',
+      icon: CircleDotDashedIcon,
+    }),
+  }),
+  columnHelper.accessor('estimatedHours', {
+    id: 'estimatedHours',
+    header: 'Estimated Hours',
+    filterFn: filterFn('number'),
+    meta: defineMeta('estimatedHours', {
+      displayName: 'Estimated Hours',
+      type: 'number',
+      icon: CircleDotDashedIcon,
+    }),
+  }),
+]
 ```

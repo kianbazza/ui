@@ -1,9 +1,8 @@
-import { createColumnHelper, type ColumnDef } from '@tanstack/react-table'
-import type { IssueLabel } from '../shared/types'
+import { createColumnHelper } from '@tanstack/react-table'
 import type { Issue } from './types'
 import { Checkbox } from '@/components/ui/checkbox'
-import { USERS, ISSUE_STATUSES, ISSUE_LABELS } from '../shared/data'
-import { ColumnOption, defineMeta, filterFn } from '@/lib/filters'
+import { USERS } from '../shared/data'
+import { defineMeta, filterFn } from '@/lib/filters'
 import {
   CalendarArrowDownIcon,
   CalendarArrowUpIcon,
@@ -101,11 +100,11 @@ export const columns = [
     },
     filterFn: filterFn('text'),
   }),
-  columnHelper.accessor('assigneeId', {
-    id: 'assigneeId',
+  columnHelper.accessor('assignee', {
+    id: 'assignee',
     header: 'Assignee',
     cell: ({ row }) => {
-      const user = USERS.find((x) => x.id === row.getValue('assigneeId'))
+      const user = row.getValue<Issue['assignee']>('assignee')
 
       if (!user) {
         return <CircleDashedIcon className="size-5 text-border" />
@@ -129,15 +128,14 @@ export const columns = [
       displayName: 'Assignee',
       type: 'option',
       icon: UserCheckIcon,
-      // transformFn: (u: User) => u.id,
-      options: USERS.map((x) => ({
-        value: x.id,
-        label: x.name,
+      transformOptionFn: ({ id, name, picture }) => ({
+        value: id,
+        label: name,
         icon: (
           <Avatar className="size-4">
-            <AvatarImage src={x.picture} />
+            <AvatarImage src={picture} />
             <AvatarFallback>
-              {x.name
+              {name
                 .split(' ')
                 .map((x) => x[0])
                 .join('')
@@ -145,7 +143,7 @@ export const columns = [
             </AvatarFallback>
           </Avatar>
         ),
-      })),
+      }),
     },
   }),
   columnHelper.accessor((row) => row.estimatedHours, {
@@ -243,7 +241,7 @@ export const columns = [
       )
     },
     filterFn: filterFn('multiOption'),
-    meta: defineMeta<Issue, Issue['labels'], 'multiOption'>({
+    meta: defineMeta('labels', {
       displayName: 'Labels',
       type: 'multiOption',
       icon: TagsIcon,
@@ -251,7 +249,6 @@ export const columns = [
         return {
           value: data.id,
           label: data.name,
-          // icon: undefined,
           icon: (
             <div
               className={cn(

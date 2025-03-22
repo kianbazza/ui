@@ -52,31 +52,31 @@ declare module '@tanstack/react-table' {
   }
 }
 
-// Helper function
 export function defineMeta<
-  TData extends RowData,
-  TValue,
+  TData,
+  TKey extends keyof TData,
   TType extends ColumnDataType,
 >(
-  meta: Omit<ColumnMeta<TData, TValue>, 'type' | 'transformFn'> & {
+  key: TKey,
+  meta: Omit<ColumnMeta<TData, TData[TKey]>, 'type' | 'transformFn'> & {
     type: TType
     transformFn?: (
-      value: Exclude<TValue, undefined | null>,
+      value: Exclude<TData[TKey], undefined | null>,
     ) => FilterTypes[TType]
   },
-): ColumnMeta<TData, TValue> {
+): ColumnMeta<TData, TData[TKey]> {
   return meta
 }
 
-declare module '@tanstack/table-core' {
-  interface FilterFns {
-    fuzzy: FilterFn<unknown>
-  }
-
-  interface FilterMeta {
-    itemRank: RankingInfo
-  }
-}
+// declare module '@tanstack/table-core' {
+//   interface FilterFns {
+//     fuzzy: FilterFn<unknown>
+//   }
+//
+//   interface FilterMeta {
+//     itemRank: RankingInfo
+//   }
+// }
 
 export const fuzzyFilter: FilterFn<unknown> = (
   row,

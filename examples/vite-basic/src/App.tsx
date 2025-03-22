@@ -8,10 +8,13 @@ export default function App() {
         <TabsList className="w-[300px]">
           <TabsTrigger value="dynamic">Dynamic</TabsTrigger>
           <TabsTrigger value="static">Static</TabsTrigger>
+          <TabsTrigger value="ex1">Example 1</TabsTrigger>
         </TabsList>
         <TabsContent value="dynamic">
           <DataTableDynamic />
         </TabsContent>
+        {/* <TabsContent value="ex1"> */}
+        {/* </TabsContent> */}
       </Tabs>
     </div>
   )

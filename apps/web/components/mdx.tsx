@@ -5,6 +5,7 @@ import { CodeBlockCommand } from './code-block-command'
 import type { NpmCommands } from '@/types/unist'
 import Image from 'next/image'
 import { ResponsiveImage } from './responsive-image'
+import CollapsibleCodeBlock from './collapsible-code-block'
 
 export const components: Readonly<MDXComponents> = {
   h1: (props) => (
@@ -146,7 +147,7 @@ export const components: Readonly<MDXComponents> = {
 
     return (
       <pre
-        className="rounded-xl text-sm border border-sand-4 py-4 px-4 bg-white dark:bg-black my-6 whitespace-pre-wrap font-mono"
+        className="rounded-xl text-sm border [&>code]:bg-transparent [&>code]:p-0 border-sand-4 py-4 px-4 bg-white dark:bg-black my-6 whitespace-pre-wrap font-mono"
         {...props}
       >
         {props.children}
@@ -161,4 +162,5 @@ export const components: Readonly<MDXComponents> = {
       {...props}
     />
   ),
+  CollapsibleCodeBlock,
 }

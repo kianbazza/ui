@@ -1,7 +1,6 @@
 import '@tanstack/table-core'
 import { type RankingInfo, rankItem } from '@tanstack/match-sorter-utils'
 import type { Column, FilterFn, Row, RowData } from '@tanstack/react-table'
-import type { ColumnMeta } from '@tanstack/react-table'
 import {
   endOfDay,
   isAfter,
@@ -12,11 +11,15 @@ import {
 } from 'date-fns'
 import type { LucideIcon } from 'lucide-react'
 import { intersection, uniq } from './array'
+import type { ColumnMeta } from '@tanstack/react-table'
 
 export type ElementType<T> = T extends (infer U)[] ? U : T
 
 declare module '@tanstack/react-table' {
   interface ColumnMeta<TData extends RowData, TValue> {
+    // _inferData?: TData
+    // _inferValue?: TValue
+
     /* The display name of the column. */
     displayName: string
 
@@ -52,19 +55,19 @@ declare module '@tanstack/react-table' {
   }
 }
 
-// Helper function
 export function defineMeta<
-  TData extends RowData,
-  TValue,
+  TData,
+  TKey extends keyof TData,
   TType extends ColumnDataType,
 >(
-  meta: Omit<ColumnMeta<TData, TValue>, 'type' | 'transformFn'> & {
+  key: TKey,
+  meta: Omit<ColumnMeta<TData, TData[TKey]>, 'type' | 'transformFn'> & {
     type: TType
     transformFn?: (
-      value: Exclude<TValue, undefined | null>,
+      value: Exclude<TData[TKey], undefined | null>,
     ) => FilterTypes[TType]
   },
-): ColumnMeta<TData, TValue> {
+): ColumnMeta<TData, TData[TKey]> {
   return meta
 }
 

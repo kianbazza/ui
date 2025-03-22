@@ -1,4 +1,4 @@
-import type { IssueLabel, IssueStatus } from '../shared/types'
+import type { IssueLabel, IssueStatus, User } from '../shared/types'
 
 export type Issue = {
   id: string
@@ -6,7 +6,7 @@ export type Issue = {
   description?: string
   status: IssueStatus
   labels?: IssueLabel[]
-  assigneeId?: string
+  assignee?: User
   startDate?: Date
   endDate?: Date
   estimatedHours?: number

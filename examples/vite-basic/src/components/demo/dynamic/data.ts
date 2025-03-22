@@ -27,7 +27,6 @@ export function generateSampleIssue(): Issue {
   let [assignee] = sample(USERS, 1)
   if (!assignee) throw new Error('No assignee found')
   assignee = Math.random() > 0.5 ? assignee : undefined
-  const assigneeId = assignee?.id
 
   const [status] = sample(ISSUE_STATUSES, 1)
   if (!status) throw new Error('No status found')
@@ -47,7 +46,7 @@ export function generateSampleIssue(): Issue {
     description,
     status,
     labels,
-    assigneeId,
+    assignee,
     startDate,
     endDate,
     estimatedHours,
@@ -64,4 +63,6 @@ export function generateIssues(count: number) {
   return arr
 }
 
-export const ISSUES = generateIssues(1000)
+export const ISSUES = generateIssues(30)
+
+console.log('ISSUES', JSON.stringify(ISSUES, null, 2))
