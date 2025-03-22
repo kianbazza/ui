@@ -1,6 +1,6 @@
 @import "tailwindcss";
-@import '../styles/highlight-js/github-light.css';
-@import '../styles/highlight-js/github-dark.css';
+@import "../styles/highlight-js/github-light.css";
+@import "../styles/highlight-js/github-dark.css";
 
 @plugin "tailwindcss-animate";
 
@@ -57,7 +57,7 @@
 }
 
 .dark {
-  --site-background: oklch(.145 0 0);
+  --site-background: oklch(0.145 0 0);
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
   --card: oklch(0.145 0 0);
@@ -182,7 +182,6 @@
       }
 
       &.diff {
-
         &.add,
         &.remove {
           span:first-child::before {
@@ -190,7 +189,7 @@
           }
         }
 
-        &>span {
+        & > span {
           background: transparent !important;
         }
 
@@ -214,6 +213,129 @@
   }
 }
 
+@layer base {
+  html.light {
+    code[data-theme*=" "],
+    code[data-theme*=" "] span {
+      color: var(--shiki-light);
+      background-color: var(--shiki-light-bg);
+    }
+
+  }
+
+
+  html.dark {
+    code[data-theme*=" "]:not([data-highlighted-line]),
+    code[data-theme*=" "]:not([data-highlighted-line]) span {
+      color: var(--shiki-dark);
+      background-color: var(--shiki-dark-bg);
+    }
+  }
+
+  figure[data-rehype-pretty-code-figure] {
+    @apply my-6;
+
+    & > pre {
+      @apply bg-white dark:bg-black;
+      @apply max-h-[650px] overflow-x-auto rounded-xl border border-border;
+      @apply py-4;
+
+      [data-line] {
+        @apply px-6 py-0.5;
+      }
+
+      & > code {
+        @apply grid min-w-full break-words rounded-none border-0 bg-transparent !p-0;
+        @apply !bg-white dark:!bg-black text-sm;
+      }
+
+      [data-highlighted-line] {
+        @apply !bg-neutral-100 dark:!bg-neutral-900;
+
+        &::before {
+          @apply border-l-3 border-neutral-400;
+          position: absolute;
+          margin-left: calc(var(--spacing) * -6);
+          margin-top: calc(var(--spacing) * -0.5);
+          height: calc(var(--spacing) * 6);
+          content: '';
+        }
+
+      }
+
+      [data-line].diff.add {
+        @apply bg-green-500/15;
+
+        &::before {
+          @apply border-l-3 border-green-500;
+          position: absolute;
+          margin-left: calc(var(--spacing) * -6);
+          margin-top: calc(var(--spacing) * -0.5);
+          height: calc(var(--spacing) * 6);
+          content: '';
+        }
+
+        &:after {
+          position: absolute;
+          left: calc(var(--spacing) * 2.5);
+          color: var(--color-green-500);
+          font-size: var(--text-base);
+          content: '+';
+        }
+      }
+
+      [data-line].diff.remove {
+        @apply bg-red-500/15;
+
+        &::before {
+          @apply border-l-3 border-red-500;
+          position: absolute;
+          margin-left: calc(var(--spacing) * -6);
+          margin-top: calc(var(--spacing) * -0.5);
+          height: calc(var(--spacing) * 6);
+          content: '';
+        }
+
+        &:after {
+          position: absolute;
+          left: calc(var(--spacing) * 2.5);
+          color: var(--color-red-500);
+          font-size: var(--text-base);
+          content: '-';
+        }
+      }
+
+      code[data-line-numbers] {
+        counter-reset: line;
+      }
+
+      code[data-line-numbers] > [data-line]::before {
+        counter-increment: line;
+        content: counter(line);
+
+        display: inline-block;
+        width: 0.75rem;
+        margin-right: 2rem;
+        text-align: right;
+        @apply text-xs text-muted-foreground/50 tracking-tight;
+      }
+
+      code[data-line-numbers-max-digits="2"] > [data-line]::before {
+        /*width: 1rem;*/
+        width: calc(var(--spacing) * 4);
+      }
+
+      code[data-line-numbers-max-digits="3"] > [data-line]::before {
+        width: 1.25rem;
+      }
+
+      code[data-line-numbers-max-digits="4"] > [data-line]::before {
+        width: 1.75rem;
+      }
+    }
+  }
+}
+
 @layer utilities {
   .border-grid {
     @apply border-border/50 dark:border-border border-dashed;
@@ -229,5 +351,5 @@
 }
 
 @utility max-w-screen-* {
-  max-width: --value(--breakpoint-*);
+  max-width: --value(--breakpoint- *);
 }

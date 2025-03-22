@@ -147,7 +147,7 @@ export const components: Readonly<MDXComponents> = {
 
     return (
       <pre
-        className="rounded-xl text-sm border [&>code]:bg-transparent [&>code]:p-0 border-sand-4 py-4 px-4 bg-white dark:bg-black my-6 whitespace-pre-wrap font-mono"
+        // className="rounded-xl text-sm border [&>code]:bg-transparent [&>code]:p-0 border-border py-4 px-4 bg-white dark:bg-black my-6 font-mono"
         {...props}
       >
         {props.children}

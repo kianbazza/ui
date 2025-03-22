@@ -5,8 +5,8 @@ import path from 'node:path'
 import { components } from '@/components/mdx'
 import { compileMDX } from 'next-mdx-remote/rsc'
 import remarkGfm from 'remark-gfm'
-import rehypeHighlight from 'rehype-highlight'
-import rehypeMdxCodeProps from 'rehype-mdx-code-props'
+import rehypePrettyCode from 'rehype-pretty-code'
+import type { Options as RehypePrettyCodeOptions } from 'rehype-pretty-code'
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypeSlug from 'rehype-slug'
 import { getTableOfContents } from '@/lib/toc'
@@ -22,6 +22,7 @@ import { SidebarTrigger } from '@/components/ui/sidebar'
 import { Badge } from '@/components/ui/badge'
 import { rehypeNpmCommand } from '@/lib/rehype-npm-command'
 import { visit } from 'unist-util-visit'
+import { transformerNotationDiff } from '@shikijs/transformers'
 
 export type MDXMetadata = {
   title: string
@@ -50,8 +51,6 @@ export default async function Page({
       mdxOptions: {
         remarkPlugins: [remarkGfm],
         rehypePlugins: [
-          rehypeHighlight,
-          rehypeMdxCodeProps,
           rehypeSlug,
           () => (tree) => {
             visit(tree, (node) => {
@@ -61,7 +60,38 @@ export default async function Page({
                   return
                 }
 
-                node.properties.__rawString__ = codeEl.children?.[0].value
+                console.log(node)
+
+                node.__rawString__ = codeEl.children?.[0].value
+              }
+            })
+          },
+          [
+            rehypePrettyCode,
+            {
+              theme: {
+                light: 'github-light',
+                dark: 'github-dark',
+              },
+              keepBackground: false,
+              transformers: [transformerNotationDiff()],
+            } satisfies RehypePrettyCodeOptions,
+          ],
+          () => (tree) => {
+            visit(tree, (node) => {
+              if (node?.type === 'element' && node?.tagName === 'figure') {
+                if (!('data-rehype-pretty-code-figure' in node.properties)) {
+                  return
+                }
+
+                const preElement = node.children.at(-1)
+                if (preElement.tagName !== 'pre') {
+                  return
+                }
+
+                console.log('here!')
+
+                preElement.properties.__rawString__ = node.__rawString__
               }
             })
           },
@@ -79,7 +109,7 @@ export default async function Page({
       parseFrontmatter: true,
       mdxOptions: {
         remarkPlugins: [remarkGfm],
-        rehypePlugins: [rehypeHighlight, rehypeMdxCodeProps],
+        // rehypePlugins: [rehypeHighlight, rehypeMdxCodeProps],
       },
     },
   })

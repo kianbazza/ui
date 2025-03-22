@@ -8,7 +8,8 @@
   "files": {
     "ignoreUnknown": false,
     "ignore": [
-      "node_modules"
+      "node_modules",
+      "./apps/web/app/globals.css"
     ]
   },
   "formatter": {
@@ -63,6 +64,9 @@
     },
     "formatter": {
       "enabled": true
+    },
+    "linter": {
+      "enabled": false
     }
   }
 }

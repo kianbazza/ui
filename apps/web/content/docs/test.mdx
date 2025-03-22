@@ -1,0 +1,43 @@
+---
+title: Data table filter
+section: Components
+summary: A powerful data table filter for client-side filtering with TanStack Table.
+badge: alpha
+---
+
+```ts {1-4}
+export const columns = [
+  // A comment here!
+  columnHelper.accessor('title', {
+    id: 'title',
+    header: 'Title',
+    filterFn: filterFn('text'),
+    meta: defineMeta('title', {
+      displayName: 'Title',
+      type: 'text',
+      icon: Heading1Icon,
+    }),
+  }),
+  // Another comment here, this time with a longer line!
+  columnHelper.accessor('dueDate', {
+    id: 'dueDate', // [!code ++]
+    header: 'Due Date', // [!code ++]
+    filterFn: filterFn('date'),
+    meta: defineMeta('dueDate', { // [!code --]
+      displayName: 'Due Date', // [!code --]
+      type: 'date', // [!code --]
+      icon: CircleDotDashedIcon,
+    }),
+  }),
+  columnHelper.accessor('estimatedHours', {
+    id: 'estimatedHours', 
+    header: 'Estimated Hours',
+    filterFn: filterFn('number'),
+    meta: defineMeta('estimatedHours', {
+      displayName: 'Estimated Hours',
+      type: 'number',
+      icon: CircleDotDashedIcon,
+    }),
+  }),
+]
+```
