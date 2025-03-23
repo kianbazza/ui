@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
+    "vercel:install": "./vercel-submodule.sh && bun install",
     "start": "next start",
     "lint": "next lint",
     "prepare": "husky",
