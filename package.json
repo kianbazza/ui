@@ -5,6 +5,7 @@
     "dev": "turbo run dev",
     "check": "biome check .",
     "check:fix": "biome check --fix .",
+    "vercel:install": "turbo run vercel:install",
     "build": "turbo run build",
     "registry:build": "turbo run registry:build",
     "prepare": "husky"

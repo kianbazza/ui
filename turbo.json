@@ -2,6 +2,9 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "tasks": {
+    "vercel:install": {
+      "cache": false
+    },
     "build": {
       "dependsOn": [
         "^build"
