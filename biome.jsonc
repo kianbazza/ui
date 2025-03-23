@@ -41,7 +41,8 @@
       }
     },
     "ignore": [
-      "./apps/web/lib/rehype-npm-command.ts"
+      "./apps/web/lib/rehype-npm-command.ts",
+      "./examples/vite-basic/**"
     ]
   },
   "javascript": {

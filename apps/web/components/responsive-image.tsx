@@ -33,7 +33,7 @@ export function ResponsiveImage({
   return (
     <div
       className={cn(
-        'aspect-video flex flex-col gap-10 p-8 rounded-md border border-border dark:bg-black bg-white',
+        'aspect-video flex flex-col gap-10 p-8 rounded-xl border border-border dark:bg-black bg-white',
         wrapperClassName,
       )}
     >

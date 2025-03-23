@@ -64,5 +64,3 @@ export function generateIssues(count: number) {
 }
 
 export const ISSUES = generateIssues(30)
-
-console.log('ISSUES', JSON.stringify(ISSUES, null, 2))

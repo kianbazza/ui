@@ -6,6 +6,7 @@ import type { NpmCommands } from '@/types/unist'
 import Image from 'next/image'
 import { ResponsiveImage } from './responsive-image'
 import CollapsibleCodeBlock from './collapsible-code-block'
+import { TypeTable } from '@/components/type-table'
 
 export const components: Readonly<MDXComponents> = {
   h1: (props) => (
@@ -14,7 +15,8 @@ export const components: Readonly<MDXComponents> = {
   h2: (props) => (
     <h2
       className={cn(
-        'text-3xl font-semibold tracking-[-0.02em] drop-shadow-xs first:mt-0 mt-10 mb-8',
+        'text-3xl font-semibold tracking-[-0.02em] drop-shadow-xs first:mt-0 mt-12 mb-8',
+        '[&>code]:text-2xl',
         props.className,
       )}
       {...props}
@@ -23,7 +25,8 @@ export const components: Readonly<MDXComponents> = {
   h3: (props) => (
     <h3
       className={cn(
-        'text-2xl font-semibold tracking-[-0.02em] mt-8 mb-6',
+        'text-2xl font-semibold tracking-[-0.02em] mt-10 mb-6',
+        '[&>code]:text-xl',
         props.className,
       )}
       {...props}
@@ -32,7 +35,8 @@ export const components: Readonly<MDXComponents> = {
   h4: (props) => (
     <h4
       className={cn(
-        'text-xl font-semibold tracking-[-0.02em] mt-6 mb-4',
+        'text-xl font-semibold tracking-[-0.02em] mt-8 mb-4',
+        '[&>code]:text-lg',
         props.className,
       )}
       {...props}
@@ -42,6 +46,7 @@ export const components: Readonly<MDXComponents> = {
   h6: (props) => <h6 {...props} />,
   p: (props) => <p className="mb-4 last:mb-0 leading-7" {...props} />,
   a: (props) => <a className="underline underline-offset-2" {...props} />,
+  u: (props) => <u className="underline underline-offset-2" {...props} />,
   strong: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
     <strong className={cn('font-semibold', className)} {...props} />
   ),
@@ -163,4 +168,5 @@ export const components: Readonly<MDXComponents> = {
     />
   ),
   CollapsibleCodeBlock,
+  TypeTable,
 }

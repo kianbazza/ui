@@ -1,11 +1,10 @@
-import { createColumnHelper } from '@tanstack/react-table'
+import { ColumnDef, createColumnHelper } from '@tanstack/react-table'
 import type { Issue, IssueStatus } from './types'
-import { defineMeta, filterFn } from '@/lib/filters'
+import { type ColumnOption, defineMeta, filterFn } from '@/lib/filters'
 import {
   CircleDashedIcon,
   CircleDotIcon,
   CircleDotDashedIcon,
-  type LucideIcon,
   CircleCheckIcon,
   Heading1Icon,
   CalendarIcon,
@@ -14,18 +13,14 @@ import {
 
 const columnHelper = createColumnHelper<Issue>()
 
-const ISSUE_STATUSES: Array<{
-  value: IssueStatus
-  label: string
-  icon: LucideIcon
-}> = [
-    { value: 'backlog', label: 'Backlog', icon: CircleDashedIcon },
-    { value: 'todo', label: 'Todo', icon: CircleDotIcon },
-    { value: 'in-progress', label: 'In Progress', icon: CircleDotDashedIcon },
-    { value: 'done', label: 'Done', icon: CircleCheckIcon },
-  ]
+const ISSUE_STATUSES: Array<ColumnOption & { value: IssueStatus }> = [
+  { value: 'backlog', label: 'Backlog', icon: CircleDashedIcon },
+  { value: 'todo', label: 'Todo', icon: CircleDotIcon },
+  { value: 'in-progress', label: 'In Progress', icon: CircleDotDashedIcon },
+  { value: 'done', label: 'Done', icon: CircleCheckIcon },
+] as const
 
-export const columns = [
+export const columns: ColumnDef<Issue, any>[] = [
   columnHelper.accessor('title', {
     id: 'title',
     header: 'Title',

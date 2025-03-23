@@ -2,11 +2,14 @@
 
 import {
   type ColumnDef,
+  type ColumnFiltersState,
   flexRender,
   getCoreRowModel,
+  getFacetedMinMaxValues,
+  getFacetedRowModel,
+  getFilteredRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-
 import {
   Table,
   TableBody,
@@ -16,20 +19,30 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTableFilter } from '@/components/data-table-filter'
+import { useState } from 'react'
 
-interface DataTableProps<TData, TValue> {
-  columns: ColumnDef<TData, TValue>[]
+interface DataTableProps<TData> {
+  columns: ColumnDef<TData>[]
   data: TData[]
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData>({
   columns,
   data,
-}: DataTableProps<TData, TValue>) {
+}: DataTableProps<TData>) {
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getFacetedRowModel: getFacetedRowModel(),
+    getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    onColumnFiltersChange: setColumnFilters,
+    state: {
+      columnFilters,
+    },
   })
 
   return (

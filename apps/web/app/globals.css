@@ -236,8 +236,8 @@
     @apply my-6 relative;
 
     figcaption[data-rehype-pretty-code-title] {
-      @apply relative text-xs text-muted-foreground font-mono w-fit border-x border-t border-border rounded-t-md px-4 pt-1.5 translate-y-[1px];
-      @apply bg-black;
+      @apply relative text-xs text-muted-foreground font-mono w-fit border-x border-t border-border rounded-t-md px-4 py-1.5 translate-y-[1px] select-none;
+      @apply bg-white dark:bg-black;
 
       & + pre {
         @apply rounded-tl-none;
@@ -262,7 +262,7 @@
         @apply !bg-neutral-100 dark:!bg-neutral-900;
 
         &::before {
-          @apply border-l-3 border-neutral-500;
+          @apply border-l-3 border-neutral-400 dark:border-neutral-500;
           position: absolute;
           margin-left: calc(var(--spacing) * -6);
           margin-top: calc(var(--spacing) * -0.5);
