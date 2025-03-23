@@ -215,8 +215,8 @@
 
 @layer base {
   html.light {
-    code[data-theme*=" "],
-    code[data-theme*=" "] span {
+    code[data-theme],
+    code[data-theme] span {
       color: var(--shiki-light);
       background-color: var(--shiki-light-bg);
     }
@@ -225,8 +225,8 @@
 
 
   html.dark {
-    code[data-theme*=" "]:not([data-highlighted-line]),
-    code[data-theme*=" "]:not([data-highlighted-line]) span {
+    code[data-theme]:not([data-highlighted-line]),
+    code[data-theme]:not([data-highlighted-line]) span {
       color: var(--shiki-dark);
       background-color: var(--shiki-dark-bg);
     }
