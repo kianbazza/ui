@@ -46,7 +46,7 @@ export function CodeBlockCommand({
     }
   }, [__npmCommand__, __pnpmCommand__, __yarnCommand__, __bunCommand__])
 
-  const copyCommand = React.useCallback(() => {
+  const copyCommand = React.useCallback(async () => {
     const command = tabs[packageManager]
 
     if (!command) {
@@ -54,10 +54,12 @@ export function CodeBlockCommand({
     }
 
     // @ts-ignore
-    window.stonks.event('Copied component installation command', {
+    await window.stonks.event('Copied component installation command', {
       packageManager,
       component: 'data-table-filter',
     })
+
+    console.log('Copied component installation command', command)
 
     copyToClipboardWithMeta(command)
     setHasCopied(true)
