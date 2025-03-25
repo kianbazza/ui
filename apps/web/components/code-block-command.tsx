@@ -1,15 +1,15 @@
 'use client'
 
-import * as React from 'react'
 import { CheckIcon, ClipboardIcon } from 'lucide-react'
+import * as React from 'react'
 
-import type { NpmCommands } from '@/types/unist'
-import { useConfig } from '@/hooks/use-config'
 import { copyToClipboardWithMeta } from '@/components/copy-button'
-import { Tabs } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
+import { Tabs } from '@/components/ui/tabs'
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { PnpmIcon, NpmIcon, YarnIcon, BunIcon } from './icons'
+import { useConfig } from '@/hooks/use-config'
+import type { NpmCommands } from '@/types/unist'
+import { BunIcon, NpmIcon, PnpmIcon, YarnIcon } from './icons'
 
 type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun'
 

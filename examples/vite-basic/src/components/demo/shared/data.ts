@@ -1,11 +1,11 @@
-import { nanoid } from 'nanoid'
-import type { IssueLabel, IssueStatus, User } from './types'
 import {
   CircleCheckIcon,
   CircleDashedIcon,
   CircleDotIcon,
   CircleIcon,
 } from 'lucide-react'
+import { nanoid } from 'nanoid'
+import type { IssueLabel, IssueStatus, User } from './types'
 
 export const USERS: User[] = [
   {

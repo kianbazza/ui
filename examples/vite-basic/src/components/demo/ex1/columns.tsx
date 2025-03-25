@@ -1,15 +1,15 @@
-import { ColumnDef, createColumnHelper } from '@tanstack/react-table'
-import type { Issue, IssueStatus } from './types'
 import { type ColumnOption, defineMeta, filterFn } from '@/lib/filters'
+import { ColumnDef, createColumnHelper } from '@tanstack/react-table'
 import {
-  CircleDashedIcon,
-  CircleDotIcon,
-  CircleDotDashedIcon,
-  CircleCheckIcon,
-  Heading1Icon,
   CalendarIcon,
+  CircleCheckIcon,
+  CircleDashedIcon,
+  CircleDotDashedIcon,
+  CircleDotIcon,
   ClockIcon,
+  Heading1Icon,
 } from 'lucide-react'
+import type { Issue, IssueStatus } from './types'
 
 const columnHelper = createColumnHelper<Issue>()
 

@@ -12,10 +12,10 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
+import DataTableWrapper from '../shared/data-table'
 import { columns } from './columns'
 // import { fuzzyFilter } from '@/lib/filters'
 import { ISSUES } from './data'
-import DataTableWrapper from '../shared/data-table'
 
 export default function DataTable() {
   const [sorting, setSorting] = useState<SortingState>([])

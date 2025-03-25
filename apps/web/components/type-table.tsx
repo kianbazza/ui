@@ -1,15 +1,11 @@
 'use client'
 
-import { InfoIcon } from 'lucide-react'
-import Link from 'next/link'
-import { cva } from 'class-variance-authority'
-import { cn } from '@/lib/utils'
+import { buttonVariants } from '@/components/ui/button'
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import type { ReactNode } from 'react'
 import {
   Table,
   TableBody,
@@ -18,7 +14,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
+import { cva } from 'class-variance-authority'
+import { InfoIcon } from 'lucide-react'
+import Link from 'next/link'
+import type { ReactNode } from 'react'
 
 export function Info({ children }: { children: ReactNode }): ReactNode {
   return (

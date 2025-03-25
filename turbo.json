@@ -6,29 +6,14 @@
       "cache": false
     },
     "build": {
-      "dependsOn": [
-        "^build",
-        "registry:build"
-      ],
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        ".env*"
-      ],
-      "outputs": [
-        ".next/**",
-        "!.next/cache/**",
-        "dist/**"
-      ]
+      "dependsOn": ["^build", "registry:build"],
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },
     "registry:build": {
       "cache": true,
-      "inputs": [
-        "$TURBO_DEFAULT$",
-        ".env*"
-      ],
-      "outputs": [
-        "registry/**"
-      ]
+      "inputs": ["$TURBO_DEFAULT$", ".env*"],
+      "outputs": ["registry/**"]
     },
     "dev": {
       "cache": false,

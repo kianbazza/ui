@@ -1,12 +1,12 @@
-import { cn } from '@/lib/utils'
-import type { MDXComponents } from 'mdx/types'
-import DataTableDemo from './data-table-filter/demo'
-import { CodeBlockCommand } from './code-block-command'
-import type { NpmCommands } from '@/types/unist'
-import Image from 'next/image'
-import { ResponsiveImage } from './responsive-image'
-import CollapsibleCodeBlock from './collapsible-code-block'
 import { TypeTable } from '@/components/type-table'
+import { cn } from '@/lib/utils'
+import type { NpmCommands } from '@/types/unist'
+import type { MDXComponents } from 'mdx/types'
+import Image from 'next/image'
+import { CodeBlockCommand } from './code-block-command'
+import CollapsibleCodeBlock from './collapsible-code-block'
+import DataTableDemo from './data-table-filter/demo'
+import { ResponsiveImage } from './responsive-image'
 
 export const components: Readonly<MDXComponents> = {
   h1: (props) => (
