@@ -6,6 +6,10 @@ export const env = createEnv({
     NEXT_PUBLIC_APP_URL: z.string().min(1),
   },
   runtimeEnv: {
-    NEXT_PUBLIC_APP_URL: process.env.NEXT_PUBLIC_APP_URL,
+    NEXT_PUBLIC_APP_URL:
+      process.env.NEXT_PUBLIC_VERCEL_ENV === 'production'
+        ? process.env.NEXT_PUBLIC_VERCEL_PROJECT_PRODUCTION_URL
+        : (process.env.NEXT_PUBLIC_VERCEL_BRANCH_URL ??
+          process.env.NEXT_PUBLIC_APP_URL),
   },
 })
