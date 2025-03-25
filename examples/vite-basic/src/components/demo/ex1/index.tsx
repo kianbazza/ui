@@ -1,5 +1,5 @@
-import { issues } from './data'
 import { columns } from './columns'
+import { issues } from './data'
 import { DataTable } from './data-table'
 
 export default function Example1() {

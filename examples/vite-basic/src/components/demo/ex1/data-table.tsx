@@ -1,5 +1,14 @@
 'use client'
 
+import { DataTableFilter } from '@/components/data-table-filter'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import {
   type ColumnDef,
   type ColumnFiltersState,
@@ -10,15 +19,6 @@ import {
   getFilteredRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table'
-import { DataTableFilter } from '@/components/data-table-filter'
 import { useState } from 'react'
 
 interface DataTableProps<TData> {
@@ -26,10 +26,7 @@ interface DataTableProps<TData> {
   data: TData[]
 }
 
-export function DataTable<TData>({
-  columns,
-  data,
-}: DataTableProps<TData>) {
+export function DataTable<TData>({ columns, data }: DataTableProps<TData>) {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
   const table = useReactTable({
@@ -59,9 +56,9 @@ export function DataTable<TData>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                     </TableHead>
                   )
                 })}

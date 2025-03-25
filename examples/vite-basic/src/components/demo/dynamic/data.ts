@@ -1,11 +1,11 @@
-import type { IssueLabel } from '../shared/types'
 import { lorem } from '@ndaidong/txtgen'
-import { sample, randomInteger } from 'remeda'
-import { nanoid } from 'nanoid'
-import { isAnyOf } from '../shared/utils'
 import { add, differenceInDays, sub } from 'date-fns'
-import type { Issue } from './types'
+import { nanoid } from 'nanoid'
+import { randomInteger, sample } from 'remeda'
 import { ISSUE_LABELS, ISSUE_STATUSES, USERS } from '../shared/data'
+import type { IssueLabel } from '../shared/types'
+import { isAnyOf } from '../shared/utils'
+import type { Issue } from './types'
 
 export const calculateEndDate = (start: Date) => {
   const diff = differenceInDays(new Date(), start)

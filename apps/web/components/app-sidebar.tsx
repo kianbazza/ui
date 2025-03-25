@@ -15,10 +15,10 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import bazzadevIcon from '@/public/bazzadev.png'
-import { usePathname } from 'next/navigation'
 import Image from 'next/image'
-import { ThemeToggle } from './theme-toggle'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { ThemeToggle } from './theme-toggle'
 
 const items = [
   {

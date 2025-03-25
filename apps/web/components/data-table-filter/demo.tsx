@@ -27,6 +27,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { cn } from '@/lib/utils'
 import { DataTableFilter } from '@/registry/data-table-filter/components/data-table-filter'
 import { filterFn } from '@/registry/data-table-filter/lib/filters'
 import { format } from 'date-fns'
@@ -41,7 +42,6 @@ import {
 } from 'lucide-react'
 import { issues, users } from './data'
 import { type Issue, issueStatuses } from './types'
-import { cn } from '@/lib/utils'
 
 export const columns: ColumnDef<Issue>[] = [
   {
@@ -284,9 +284,9 @@ export default function DataTableDemo({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                     </TableHead>
                   )
                 })}

@@ -1,8 +1,9 @@
-import { createColumnHelper } from '@tanstack/react-table'
-import type { Issue } from './types'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
-import { USERS } from '../shared/data'
 import { defineMeta, filterFn } from '@/lib/filters'
+import { cn } from '@/lib/utils'
+import { createColumnHelper } from '@tanstack/react-table'
+import { format } from 'date-fns'
 import {
   CalendarArrowDownIcon,
   CalendarArrowUpIcon,
@@ -13,9 +14,8 @@ import {
   TagsIcon,
   UserCheckIcon,
 } from 'lucide-react'
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { format } from 'date-fns'
-import { cn } from '@/lib/utils'
+import { USERS } from '../shared/data'
+import type { Issue } from './types'
 
 const columnHelper = createColumnHelper<Issue>()
 

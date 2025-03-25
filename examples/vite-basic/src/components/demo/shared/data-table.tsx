@@ -1,5 +1,5 @@
-import { type Table as TanStackTable, flexRender } from '@tanstack/react-table'
 import { DataTableFilter } from '@/components/data-table-filter'
+import { Button } from '@/components/ui/button'
 import {
   Table,
   TableBody,
@@ -8,7 +8,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
+import { type Table as TanStackTable, flexRender } from '@tanstack/react-table'
 
 export default function DataTableWrapper<TData>({
   table,
@@ -29,9 +29,9 @@ export default function DataTableWrapper<TData>({
                       {header.isPlaceholder
                         ? null
                         : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext(),
-                        )}
+                            header.column.columnDef.header,
+                            header.getContext(),
+                          )}
                     </TableHead>
                   )
                 })}

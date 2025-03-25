@@ -1,5 +1,6 @@
 import '@tanstack/table-core'
 import type { Column, Row, RowData } from '@tanstack/react-table'
+import type { ColumnMeta, Table } from '@tanstack/react-table'
 import {
   endOfDay,
   isAfter,
@@ -10,7 +11,6 @@ import {
 } from 'date-fns'
 import type { LucideIcon } from 'lucide-react'
 import { intersection, uniq } from './array'
-import type { ColumnMeta, Table } from '@tanstack/react-table'
 
 export type ElementType<T> = T extends (infer U)[] ? U : T
 

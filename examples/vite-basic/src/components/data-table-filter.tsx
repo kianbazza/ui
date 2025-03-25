@@ -1,15 +1,6 @@
-import type { Column, ColumnMeta, RowData, Table } from '@tanstack/react-table'
 import { Button } from '@/components/ui/button'
-import { FilterXIcon } from 'lucide-react'
-import { Input } from '@/components/ui/input'
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  cloneElement,
-  isValidElement,
-} from 'react'
+import { Calendar } from '@/components/ui/calendar'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Command,
   CommandEmpty,
@@ -18,38 +9,47 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
+import { Input } from '@/components/ui/input'
 import {
   Popover,
   PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { cn } from '@/lib/utils'
-import { ArrowRight, Filter } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
-import { X } from 'lucide-react'
+import { Slider } from '@/components/ui/slider'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { take, uniq } from '@/lib/array'
 import {
-  getColumn,
-  getColumnMeta,
   type ColumnDataType,
   type FilterValue,
   createNumberRange,
   dateFilterDetails,
   determineNewOperator,
   filterTypeOperatorDetails,
+  getColumn,
+  getColumnMeta,
   multiOptionFilterDetails,
   numberFilterDetails,
   optionFilterDetails,
   textFilterDetails,
 } from '@/lib/filters'
-import { Calendar } from '@/components/ui/calendar'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Slider } from '@/components/ui/slider'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { take, uniq } from '@/lib/array'
 import type { ColumnOption, ElementType } from '@/lib/filters'
+import { cn } from '@/lib/utils'
+import type { Column, ColumnMeta, RowData, Table } from '@tanstack/react-table'
 import { format, isEqual } from 'date-fns'
+import { FilterXIcon } from 'lucide-react'
+import { ArrowRight, Filter } from 'lucide-react'
+import { X } from 'lucide-react'
 import { Ellipsis } from 'lucide-react'
+import {
+  cloneElement,
+  isValidElement,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import type { DateRange } from 'react-day-picker'
 
 export function DataTableFilter<TData, TValue>({
@@ -968,7 +968,7 @@ export function PropertyFilterNumberValueDisplay<TData, TValue>({
     const minValue = filter.values[0]
     const maxValue =
       filter.values[1] === Number.POSITIVE_INFINITY ||
-        filter.values[1] >= cappedMax
+      filter.values[1] >= cappedMax
         ? `${cappedMax}+`
         : filter.values[1]
 

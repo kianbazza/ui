@@ -6,8 +6,8 @@ import * as React from 'react'
 import { useMounted } from '@/hooks/use-mounted'
 import type { TableOfContents } from '@/lib/toc'
 import { cn } from '@/lib/utils'
-import { Separator } from './ui/separator'
 import { ListIcon } from 'lucide-react'
+import { Separator } from './ui/separator'
 
 interface TocProps {
   toc: TableOfContents
@@ -18,10 +18,10 @@ export function DashboardTableOfContents({ toc }: TocProps) {
     () =>
       toc.items
         ? toc.items
-          .flatMap((item) => [item.url, item?.items?.map((item) => item.url)])
-          .flat()
-          .filter(Boolean)
-          .map((id) => id?.split('#')[1])
+            .flatMap((item) => [item.url, item?.items?.map((item) => item.url)])
+            .flat()
+            .filter(Boolean)
+            .map((id) => id?.split('#')[1])
         : [],
     [toc],
   )

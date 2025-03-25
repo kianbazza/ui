@@ -4,15 +4,15 @@ import { promises as fs } from 'node:fs'
 import path from 'node:path'
 import { components } from '@/components/mdx'
 import { compileMDX } from 'next-mdx-remote/rsc'
-import remarkGfm from 'remark-gfm'
+import rehypeAutolinkHeadings from 'rehype-autolink-headings'
+import rehypeCallouts from 'rehype-callouts'
 import rehypePrettyCode from 'rehype-pretty-code'
 import type { Options as RehypePrettyCodeOptions } from 'rehype-pretty-code'
-import rehypeAutolinkHeadings from 'rehype-autolink-headings'
 import rehypeSlug from 'rehype-slug'
-import rehypeCallouts from 'rehype-callouts'
+import remarkGfm from 'remark-gfm'
 import 'rehype-callouts/theme/github'
-import { getTableOfContents } from '@/lib/toc'
 import { DashboardTableOfContents } from '@/components/toc'
+import { Badge } from '@/components/ui/badge'
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -21,10 +21,65 @@ import {
   BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { SidebarTrigger } from '@/components/ui/sidebar'
-import { Badge } from '@/components/ui/badge'
 import { rehypeNpmCommand } from '@/lib/rehype-npm-command'
-import { visit } from 'unist-util-visit'
+import { getTableOfContents } from '@/lib/toc'
 import { transformerNotationDiff } from '@shikijs/transformers'
+import type { Metadata } from 'next'
+import { visit } from 'unist-util-visit'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const slug = (await params).slug
+  const rawContent = await fs.readFile(
+    path.join(process.cwd(), 'content/docs', `${slug}.mdx`),
+    'utf-8',
+  )
+
+  const { frontmatter: metadata } = await compileMDX<MDXMetadata>({
+    source: rawContent,
+    options: {
+      parseFrontmatter: true,
+    },
+  })
+
+  if (!metadata) {
+    return {}
+  }
+
+  return {
+    title: metadata.title,
+    description: metadata.summary,
+    openGraph: {
+      title: `${metadata.title} — bazza/ui`,
+      description: metadata.summary,
+      type: 'article',
+      url: `https://ui.bazza.dev/docs/${slug}`,
+      images: [
+        {
+          url: `/og?title=${encodeURIComponent(
+            metadata.title,
+          )}&description=${encodeURIComponent(metadata.summary)}`,
+        },
+      ],
+    },
+    twitter: {
+      title: `${metadata.title} — bazza/ui`,
+      description: metadata.summary,
+      creator: '@kianbazza',
+      card: 'summary_large_image',
+      images: [
+        {
+          url: `/og?title=${encodeURIComponent(
+            metadata.title,
+          )}&description=${encodeURIComponent(metadata.summary)}`,
+        },
+      ],
+    },
+  }
+}
 
 export type MDXMetadata = {
   title: string

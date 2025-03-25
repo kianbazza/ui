@@ -1,14 +1,57 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import OneDollarStatsScript from '@/app/stats'
+import { env } from '@/lib/env'
+import { berkeleyMono, inter } from '@/lib/fonts'
 import { ThemeProvider } from '@/providers/theme-provider'
 import type { Viewport } from 'next'
-import { berkeleyMono, inter } from '@/lib/fonts'
-import OneDollarStatsScript from '@/app/stats'
+
+const title = 'bazza/ui — Hand-crafted, modern React components'
+const description =
+  'A collection of beautiful, modern React components. Open source. Open code. Free to use.'
 
 export const metadata: Metadata = {
-  title: 'Data table filters | bazza/ui',
+  title: {
+    default: `${title}`,
+    template: '%s — bazza/ui',
+  },
+  metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
   description:
-    'A powerful data table filter component inspired by Linear. Open source and free forever.',
+    'A collection of beautiful, modern React components. Open source. Open code. Free to use.',
+  keywords: [
+    'React',
+    'shadcn/ui',
+    'Next.js',
+    'Tailwind CSS',
+    'TypeScript',
+    'Radix UI',
+  ],
+  authors: [
+    {
+      name: 'Kian Bazza',
+      url: 'https://bazza.dev',
+    },
+  ],
+  creator: 'Kian Bazza',
+  openGraph: {
+    images: [
+      {
+        url: `/og?title=${encodeURIComponent(
+          title,
+        )}&description=${encodeURIComponent(description)}`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: [
+      {
+        url: `/og?title=${encodeURIComponent(
+          title,
+        )}&description=${encodeURIComponent(description)}`,
+      },
+    ],
+  },
 }
 
 export const viewport: Viewport = {
@@ -24,10 +67,10 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en" className="dark" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <OneDollarStatsScript />
       <body
-        className={`${inter.variable} ${berkeleyMono.variable} font-sans antialiased bg-neutral-50/25 dark:bg-neutral-950 h-screen w-screen`}
+        className={`${inter.variable} ${berkeleyMono.variable} font-sans antialiased bg-site-background h-screen w-screen`}
       >
         <ThemeProvider
           attribute="class"
