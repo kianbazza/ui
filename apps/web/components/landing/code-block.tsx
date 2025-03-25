@@ -23,12 +23,12 @@ export async function CodeBlock({
   const out = await codeToHtml(children, {
     lang,
     themes: {
-      light: 'vitesse-light',
-      dark: 'vitesse-dark',
+      light: 'github-light',
+      dark: 'github-dark',
     },
     transformers: [transformerNotationDiff(), transformerNotationHighlight()],
     colorReplacements: {
-      '#121212': 'oklch(0.205 0 0)',
+      '#24292e': 'oklch(0.205 0 0)',
       ...colorReplacements,
     },
   })
@@ -36,7 +36,7 @@ export async function CodeBlock({
   return (
     <div
       className={cn(
-        '**:font-mono text-sm rounded-md border border-border bg-white dark:bg-neutral-900 shadow-xs [&>pre]:p-4',
+        '**:font-mono text-sm rounded-2xl *:rounded-2xl border border-border bg-white dark:bg-neutral-900 shadow-xs',
         className,
       )}
       // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>

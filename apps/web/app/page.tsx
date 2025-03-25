@@ -1,5 +1,5 @@
 import DataTableDemo from '@/components/data-table-filter/demo'
-import { GithubIcon } from '@/components/icons'
+import { GithubIcon, XIcon } from '@/components/icons'
 import { CodeBlock } from '@/components/landing/code-block'
 import { FadeBlurContainer } from '@/components/landing/fade-blur-container'
 import { ThemeToggle } from '@/components/theme-toggle'
@@ -23,8 +23,8 @@ import Link from 'next/link'
 export default function Page() {
   return (
     <div className="flex flex-col h-full">
-      <div className="border-b border-border border-dashed">
-        <div className="px-4 py-2 max-w-screen-xl w-full mx-auto border-border border-dashed border-l border-r">
+      <div className="border-b border-border border-dashed sticky">
+        <div className="px-4 py-2 max-w-screen-xl w-full mx-auto border-border border-dashed xl:border-x">
           <div className="flex items-center gap-4 justify-between h-8">
             <Link
               href="/"
@@ -41,6 +41,11 @@ export default function Page() {
             </Link>
             <div className="flex items-center">
               <Button variant="ghost" size="icon" asChild>
+                <Link href="https://x.com/kianbazza">
+                  <XIcon className="size-3.5" />
+                </Link>
+              </Button>
+              <Button variant="ghost" size="icon" asChild>
                 <Link href="https://github.com/bazzadev/ui">
                   <GithubIcon className="size-5" />
                 </Link>
@@ -51,7 +56,7 @@ export default function Page() {
         </div>
       </div>
       <div className="border-b border-border border-dashed">
-        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed border-x flex flex-col lg:flex-row items-center gap-x-4 gap-y-12 lg:justify-between">
+        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed xl:border-x flex flex-col lg:flex-row items-center gap-x-4 gap-y-12 lg:justify-between">
           <div className="flex lg:flex-row flex-col gap-8">
             <div className="flex flex-col gap-8 w-full">
               <div className="flex justify-between items-center gap-4">
@@ -91,7 +96,7 @@ export default function Page() {
         </div>
       </div>
       <div className="border-b border-border border-dashed">
-        <div className="border-x border-border border-dashed px-4 py-24 max-w-screen-xl w-full mx-auto space-y-4">
+        <div className="xl:border-x border-border border-dashed px-4 py-24 max-w-screen-xl w-full mx-auto space-y-4">
           <h2 className="text-5xl tracking-[-0.03em] font-semibold drop-shadow-xs text-center">
             Check out the demo.
           </h2>
@@ -99,7 +104,7 @@ export default function Page() {
         </div>
       </div>
       <div className="border-b border-border border-dashed">
-        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed border-x">
+        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed xl:border-x">
           <div className="flex lg:flex-row flex-col gap-8">
             <div className="space-y-4">
               <h2 className="text-5xl tracking-[-0.03em] font-semibold drop-shadow-xs">
@@ -112,7 +117,13 @@ export default function Page() {
               </span>
             </div>
             <div>
-              <CodeBlock lang="typescript">
+              <CodeBlock
+                lang="tsx"
+                className="bg-surface rounded-2xl"
+                colorReplacements={{
+                  '#24292e': '#010101FF',
+                }}
+              >
                 {[
                   'export const columns: ColumnDef<Issue>[] = [',
                   '  /* ..other columns */',
@@ -135,18 +146,18 @@ export default function Page() {
         </div>
       </div>
       <div className="border-b border-border border-dashed">
-        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed border-x">
+        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed xl:border-x">
           <div className="flex flex-col gap-8">
             <h2 className="text-5xl tracking-[-0.03em] font-semibold drop-shadow-xs">
               Powerful.
             </h2>
-            <div className="grid grid-rows-3 lg:grid-rows-1 lg:grid-cols-3 gap-4">
-              <div className="flex flex-col justify-between gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border">
+            <div className="grid grid-rows-3 lg:grid-rows-1 lg:grid-cols-3 gap-4 *:bg-background dark:*:bg-surface">
+              <div className="flex flex-col justify-between gap-8 rounded-2xl bg-background dark:bg-surface p-6 shadow-xs border border-border">
                 <CodeBlock
                   lang="typescript"
-                  className="[&>pre]:p-0 border-none shadow-none dark:bg-neutral-950"
+                  className="[&>pre]:p-0 border-none shadow-none dark:bg-surface"
                   colorReplacements={{
-                    '#121212': 'oklch(0.145 0 0)',
+                    '#24292e': 'transparent',
                   }}
                 >
                   {[
@@ -187,16 +198,22 @@ export default function Page() {
                 </div>
               </div>
               <div className="flex flex-col justify-between gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border">
-                <Image
-                  className="dark:hidden"
-                  alt="Filter operators"
-                  src={filterOperatorsLightSrc}
-                />
-                <Image
-                  className="hidden dark:block"
-                  alt="Filter operators"
-                  src={filterOperatorsDarkSrc}
-                />
+                <div className="relative h-full w-full">
+                  <Image
+                    className="dark:hidden"
+                    alt="Filter operators"
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    src={filterOperatorsLightSrc}
+                  />
+                  <Image
+                    className="hidden dark:block"
+                    alt="Filter operators"
+                    fill
+                    style={{ objectFit: 'contain' }}
+                    src={filterOperatorsDarkSrc}
+                  />
+                </div>
 
                 <div className="space-y-4">
                   <h3 className="text-2xl tracking-[-0.02em] font-[510] drop-shadow-xs">
@@ -208,19 +225,19 @@ export default function Page() {
                   </span>
                 </div>
               </div>
-              <div className="flex flex-col justify-between gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border">
+              <div className="flex flex-col justify-between gap-8 rounded-2xl bg-background p-6 shadow-xs border border-border overflow-hidden">
                 <FadeBlurContainer
                   lightFadeColor="#ffffff"
-                  darkFadeColor="#0a0a0a"
+                  darkFadeColor="#010101FF"
                   fadeStart={75}
                   fadeDirection={['right', 'bottom']}
                   className="h-[200px]"
                 >
                   <CodeBlock
                     lang="typescript"
-                    className="[&>pre]:p-0 border-none shadow-none text-[0.6rem]"
+                    className="[&>pre]:p-0 border-none shadow-none text-[0.6rem] dark:bg-surface"
                     colorReplacements={{
-                      '#121212': 'oklch(0.145 0 0)',
+                      '#24292e': 'transparent',
                     }}
                   >
                     {[

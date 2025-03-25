@@ -17,10 +17,14 @@
   --color-sidebar-primary: var(--sidebar-primary);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar: var(--sidebar);
+
+  --color-surface: var(--surface);
+  --color-site-background: var(--site-background);
 }
 
 :root {
   --site-background: oklab(0.985 0 0 / 0.25);
+  --surface: oklch(1 0 0);
   --background: oklch(1 0 0);
   --foreground: oklch(0.145 0 0);
   --card: oklch(1 0 0);
@@ -57,6 +61,7 @@
 }
 
 .dark {
+  --surface: oklch(0.0725 0 0);
   --site-background: oklch(0.145 0 0);
   --background: oklch(0.145 0 0);
   --foreground: oklch(0.985 0 0);
@@ -175,14 +180,9 @@
 
       @apply border-l-4 border-transparent;
 
-      /*&::before {*/
-      /*  counter-increment: step;*/
-      /*  @apply mr-6 inline-block w-4 border-transparent text-right text-neutral-600 content-[counter(step)];*/
-      /*}*/
-
       &.highlighted,
       &.diff {
-        @apply -ml-4 -mr-5 inline-block w-[calc(100%+(theme(spacing.4)+theme(spacing.4)))] pl-4 pr-5;
+        @apply -ml-4 -mr-4 inline-block w-[calc(100%+(theme(spacing.4)+theme(spacing.4)))] pl-4 pr-4;
       }
 
       &.highlighted {
