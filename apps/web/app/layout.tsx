@@ -1,14 +1,33 @@
 import type { Metadata } from 'next'
 import './globals.css'
+import OneDollarStatsScript from '@/app/stats'
+import { berkeleyMono, inter } from '@/lib/fonts'
 import { ThemeProvider } from '@/providers/theme-provider'
 import type { Viewport } from 'next'
-import { berkeleyMono, inter } from '@/lib/fonts'
-import OneDollarStatsScript from '@/app/stats'
 
 export const metadata: Metadata = {
-  title: 'Data table filters | bazza/ui',
+  title: {
+    default: 'bazza/ui — Hand-crafted, modern React components',
+    template: '%s — bazza/ui',
+  },
+  metadataBase: new URL('https://ui.bazza.dev'),
   description:
-    'A powerful data table filter component inspired by Linear. Open source and free forever.',
+    'A collection of beautiful, modern React components. Open source. Open code. Free to use.',
+  keywords: [
+    'React',
+    'shadcn/ui',
+    'Next.js',
+    'Tailwind CSS',
+    'TypeScript',
+    'Radix UI',
+  ],
+  authors: [
+    {
+      name: 'Kian Bazza',
+      url: 'https://bazza.dev',
+    },
+  ],
+  creator: 'Kian Bazza',
 }
 
 export const viewport: Viewport = {
