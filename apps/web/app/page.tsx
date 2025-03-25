@@ -22,8 +22,8 @@ import Link from 'next/link'
 
 export default function Page() {
   return (
-    <div className="flex flex-col h-full ">
-      <div className="border-b border-border border-dashed sticky">
+    <div className="flex flex-col h-full">
+      <div className="border-b border-border border-dashed sticky top-0 bg-site-background/75 backdrop-blur-sm z-50">
         <div className="px-4 py-2 max-w-screen-xl w-full mx-auto border-border border-dashed xl:border-x">
           <div className="flex items-center gap-4 justify-between h-8">
             <Link
