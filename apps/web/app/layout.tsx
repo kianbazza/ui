@@ -1,16 +1,21 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import OneDollarStatsScript from '@/app/stats'
+import { env } from '@/lib/env'
 import { berkeleyMono, inter } from '@/lib/fonts'
 import { ThemeProvider } from '@/providers/theme-provider'
 import type { Viewport } from 'next'
 
+const title = 'bazza/ui — Hand-crafted, modern React components'
+const description =
+  'A collection of beautiful, modern React components. Open source. Open code. Free to use.'
+
 export const metadata: Metadata = {
   title: {
-    default: 'bazza/ui — Hand-crafted, modern React components',
+    default: `${title}`,
     template: '%s — bazza/ui',
   },
-  metadataBase: new URL('https://ui.bazza.dev'),
+  metadataBase: new URL(env.NEXT_PUBLIC_APP_URL),
   description:
     'A collection of beautiful, modern React components. Open source. Open code. Free to use.',
   keywords: [
@@ -28,6 +33,25 @@ export const metadata: Metadata = {
     },
   ],
   creator: 'Kian Bazza',
+  openGraph: {
+    images: [
+      {
+        url: `/og?title=${encodeURIComponent(
+          title,
+        )}&description=${encodeURIComponent(description)}`,
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    images: [
+      {
+        url: `/og?title=${encodeURIComponent(
+          title,
+        )}&description=${encodeURIComponent(description)}`,
+      },
+    ],
+  },
 }
 
 export const viewport: Viewport = {

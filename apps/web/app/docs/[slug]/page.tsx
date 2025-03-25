@@ -53,15 +53,30 @@ export async function generateMetadata({
     title: metadata.title,
     description: metadata.summary,
     openGraph: {
-      title: metadata.title,
+      title: `${metadata.title} — bazza/ui`,
       description: metadata.summary,
       type: 'article',
       url: `https://ui.bazza.dev/docs/${slug}`,
+      images: [
+        {
+          url: `/og?title=${encodeURIComponent(
+            metadata.title,
+          )}&description=${encodeURIComponent(metadata.summary)}`,
+        },
+      ],
     },
     twitter: {
-      title: metadata.title,
+      title: `${metadata.title} — bazza/ui`,
       description: metadata.summary,
       creator: '@kianbazza',
+      card: 'summary_large_image',
+      images: [
+        {
+          url: `/og?title=${encodeURIComponent(
+            metadata.title,
+          )}&description=${encodeURIComponent(metadata.summary)}`,
+        },
+      ],
     },
   }
 }
