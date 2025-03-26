@@ -18,6 +18,11 @@ const nextConfig: NextConfig = {
       destination: '/r/data-table-filter.json',
       permanent: false,
     },
+    {
+      source: '/r/data-table-filter',
+      destination: '/r/data-table-filter.json',
+      permanent: false,
+    },
   ],
 }
 
