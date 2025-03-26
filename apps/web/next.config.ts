@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
       permanent: false,
     },
     {
+      source: '/feedback',
+      destination: 'https://bazzaui.userjot.com',
+      permanent: false,
+    },
+    {
       source: '/filters',
       destination: '/docs/data-table-filter',
       permanent: false,
