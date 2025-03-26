@@ -151,6 +151,14 @@
     &[data-callout="tip"] {
       @apply bg-green-500/10;
     }
+
+    &[data-callout="note"] {
+      @apply bg-blue-500/10;
+    }
+
+    &[data-callout="warning"] {
+      @apply bg-orange-500/10;
+    }
   }
 
   html.dark .shiki,

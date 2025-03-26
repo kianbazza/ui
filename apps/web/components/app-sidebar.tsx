@@ -29,6 +29,10 @@ const items = [
     title: 'Getting Started',
     url: '/docs/getting-started',
   },
+  {
+    title: 'Feedback',
+    url: '/docs/feedback',
+  },
 ]
 
 export function AppSidebar() {
