@@ -8,8 +8,8 @@ export default function OneDollarStatsScript() {
       defer
       src="https://assets.onedollarstats.com/stonks.js"
       id="stonks"
-      data-debug="https://ui.bazza.dev"
       onLoad={() => console.log('Loaded OneDollarStats script')}
+      data-debug="ui.bazza.dev"
     />
   )
 }
