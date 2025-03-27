@@ -33,7 +33,9 @@ export async function GET(request: Request) {
 
   const [fonts] = await Promise.all([loadAssets()])
 
-  const logoData = await readFile(join(process.cwd(), 'public/bazzadev.png'))
+  const logoData = await readFile(
+    join(process.cwd(), 'public/bazzaui-v3-color.png'),
+  )
   const logoSrc = Uint8Array.from(logoData).buffer
 
   return new ImageResponse(
