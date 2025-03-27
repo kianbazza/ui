@@ -11,10 +11,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarSeparator,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
-import bazzadevIcon from '@/public/bazzadev.png'
+import logoSrc from '@/public/bazzaui-v3-color.png'
 import Image from 'next/image'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -50,8 +49,8 @@ export function AppSidebar() {
               >
                 <Image
                   className="size-5 mr-1.5 translate-y-[-0.5px]"
-                  src={bazzadevIcon}
-                  alt="BazzaDEV"
+                  src={logoSrc}
+                  alt="bazza/ui"
                 />
                 <span>bazza</span>
                 <span className="text-xl text-border">/</span>
