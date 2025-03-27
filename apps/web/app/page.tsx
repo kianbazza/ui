@@ -4,7 +4,7 @@ import { CodeBlock } from '@/components/landing/code-block'
 import { FadeBlurContainer } from '@/components/landing/fade-blur-container'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
-import bazzadevIcon from '@/public/bazzadev.png'
+import logoSrc from '@/public/bazzaui-v3-color.png'
 import filterOperatorsDarkSrc from '@/public/filter-operators-dark.png'
 import filterOperatorsLightSrc from '@/public/filter-operators-light.png'
 import heroDarkSrc from '@/public/hero-dark.png'
@@ -32,8 +32,8 @@ export default function Page() {
             >
               <Image
                 className="size-6 mr-1 translate-y-[-0.75px]"
-                src={bazzadevIcon}
-                alt="BazzaDEV"
+                src={logoSrc}
+                alt="bazza/ui"
               />
               <span>bazza</span>
               <span className="text-xl text-border">/</span>
