@@ -9,7 +9,8 @@ import { Tabs } from '@/components/ui/tabs'
 import { TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useConfig } from '@/hooks/use-config'
 import type { NpmCommands } from '@/types/unist'
-import { BunIcon, NpmIcon, PnpmIcon, YarnIcon } from './icons'
+import Link from 'next/link'
+import { BunIcon, NpmIcon, PnpmIcon, XIcon, YarnIcon } from './icons'
 
 type PackageManager = 'pnpm' | 'npm' | 'yarn' | 'bun'
 
@@ -95,16 +96,46 @@ export function CodeBlockCommand({
         </div>
         {Object.entries(tabs).map(([key, value]) => {
           return (
-            <TabsContent key={key} value={key} className="mt-0">
-              <pre className="px-4 py-5">
-                <code
-                  className="relative font-mono text-sm leading-none"
-                  data-language="bash"
-                >
-                  {value}
-                </code>
-              </pre>
-            </TabsContent>
+            <>
+              <TabsContent
+                key={key}
+                value={key}
+                className="mt-0 relative flex flex-col my-8"
+              >
+                <pre className="px-4 py-5 select-none">
+                  <code
+                    className="relative font-mono text-sm leading-none"
+                    data-language="bash"
+                  >
+                    {value}
+                  </code>
+                </pre>
+                <div className="absolute w-full h-full flex flex-col gap-2 items-center justify-center backdrop-blur-lg">
+                  <span className="font-medium text-lg">
+                    We're launching soon —{' '}
+                    <XIcon className="inline translate-y-[-1px]" />{' '}
+                    <Link
+                      href="https://x.com/kianbazza"
+                      className="underline underline-offset-2"
+                    >
+                      @kianbazza
+                    </Link>{' '}
+                    for updates.
+                  </span>
+                  <span>You can browse the docs and explore the examples.</span>
+                </div>
+              </TabsContent>
+              {/* <TabsContent key={key} value={key} className="mt-0"> */}
+              {/*   <pre className="px-4 py-5"> */}
+              {/*     <code */}
+              {/*       className="relative font-mono text-sm leading-none" */}
+              {/*       data-language="bash" */}
+              {/*     > */}
+              {/*       {value} */}
+              {/*     </code> */}
+              {/*   </pre> */}
+              {/* </TabsContent> */}
+            </>
           )
         })}
       </Tabs>
