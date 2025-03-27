@@ -142,6 +142,7 @@ export function CodeBlockCommand({
       <Button
         size="icon"
         variant="ghost"
+        disabled
         className="absolute right-2.5 top-2 z-10 h-6 w-6 dark:text-neutral-50 dark:hover:bg-neutral-700 dark:hover:text-neutral-50 hover:bg-neutral-200"
         onClick={copyCommand}
       >
