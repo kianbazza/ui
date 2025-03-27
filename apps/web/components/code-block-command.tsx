@@ -110,8 +110,8 @@ export function CodeBlockCommand({
                     {value}
                   </code>
                 </pre>
-                <div className="absolute w-full h-full flex flex-col gap-2 items-center justify-center backdrop-blur-lg">
-                  <span className="font-medium text-lg">
+                <div className="absolute w-full h-full flex flex-col gap-2 items-center justify-center backdrop-blur-lg *:text-center px-4">
+                  <span className="font-medium md:text-lg">
                     We're launching soon —{' '}
                     <XIcon className="inline translate-y-[-1px]" />{' '}
                     <Link
