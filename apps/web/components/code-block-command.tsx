@@ -100,7 +100,7 @@ export function CodeBlockCommand({
               <TabsContent
                 key={key}
                 value={key}
-                className="mt-0 relative flex flex-col my-8"
+                className="mt-0 relative flex flex-col py-8 h-full w-full"
               >
                 <pre className="px-4 py-5 select-none">
                   <code
@@ -110,7 +110,7 @@ export function CodeBlockCommand({
                     {value}
                   </code>
                 </pre>
-                <div className="absolute w-full h-full flex flex-col gap-2 items-center justify-center backdrop-blur-lg *:text-center px-4">
+                <div className="absolute top-0 left-0 w-full h-full flex flex-col justify-center gap-2 backdrop-blur-lg *:text-center px-4">
                   <span className="font-medium md:text-lg">
                     We're launching soon —{' '}
                     <XIcon className="inline translate-y-[-1px]" />{' '}
