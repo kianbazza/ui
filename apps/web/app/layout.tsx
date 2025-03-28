@@ -76,7 +76,7 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       <OneDollarStatsScript />
       <body
-        className={`${inter.variable} ${berkeleyMono.variable} font-sans antialiased bg-site-background h-screen w-screen`}
+        className={`${inter.variable} ${berkeleyMono.variable} font-sans antialiased bg-site-background min-h-svh`}
       >
         <ThemeProvider
           attribute="class"

@@ -141,8 +141,32 @@
     @apply border-border outline-ring/50;
   }
 
+  /* Credit to shadcn ui monorepo */
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground overscroll-none;
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
+  }
+
+  html {
+    @apply scroll-smooth;
+  }
+
+  /* Custom scrollbar styling. Thanks @pranathiperii. */
+  ::-webkit-scrollbar {
+    width: 5px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 5px;
+  }
+
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
   }
 
   .callout {
