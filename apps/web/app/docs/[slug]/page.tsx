@@ -172,7 +172,7 @@ export default async function Page({
 
   return (
     <div className="md:col-span-1 xl:col-span-2 md:grid md:grid-cols-subgrid xl:gap-4 px-4 xl:p-0">
-      <div className="flex flex-col gap-8 w-full max-w-screen-md mx-auto col-span-1 my-4 md:my-8 xl:my-16 overflow-scroll">
+      <div className="flex flex-col gap-8 w-full max-w-screen-md mx-auto col-span-1 my-4 md:my-8 xl:my-16 no-scrollbar">
         <div className="flex items-center gap-2">
           <SidebarTrigger className="md:hidden" />
           <Breadcrumb>
