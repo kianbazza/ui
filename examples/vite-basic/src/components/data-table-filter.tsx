@@ -19,6 +19,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { take, uniq } from '@/lib/array'
 import {
   type ColumnDataType,
@@ -55,13 +56,98 @@ import type { DateRange } from 'react-day-picker'
 export function DataTableFilter<TData, TValue>({
   table,
 }: { table: Table<TData> }) {
+  const isMobile = useIsMobile()
+
+  if (isMobile) {
+    return (
+      <div className="flex w-full items-start justify-between gap-2">
+        <div className="flex gap-1">
+          <TableFilter table={table} />
+          <TableFilterActions table={table} />
+        </div>
+        <DataTableFilterMobileContainer>
+          <PropertyFilterList table={table} />
+        </DataTableFilterMobileContainer>
+      </div>
+    )
+  }
+
   return (
     <div className="flex w-full items-start justify-between gap-2">
-      <div className="flex h-full w-full items-stretch gap-2">
+      <div className="flex md:flex-wrap gap-1 w-full flex-1">
         <TableFilter table={table} />
         <PropertyFilterList table={table} />
       </div>
       <TableFilterActions table={table} />
+    </div>
+  )
+}
+
+export function DataTableFilterMobileContainer({
+  children,
+}: { children: React.ReactNode }) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [showLeftBlur, setShowLeftBlur] = useState(false)
+  const [showRightBlur, setShowRightBlur] = useState(true)
+
+  // Check if there's content to scroll and update blur states
+  const checkScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } =
+        scrollContainerRef.current
+
+      // Show left blur if scrolled to the right
+      setShowLeftBlur(scrollLeft > 0)
+
+      // Show right blur if there's more content to scroll to the right
+      // Add a small buffer (1px) to account for rounding errors
+      setShowRightBlur(scrollLeft + clientWidth < scrollWidth - 1)
+    }
+  }
+
+  // Log blur states for debugging
+  // useEffect(() => {
+  //   console.log('left:', showLeftBlur, '  right:', showRightBlur)
+  // }, [showLeftBlur, showRightBlur])
+
+  // Set up ResizeObserver to monitor container size
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const resizeObserver = new ResizeObserver(() => {
+        checkScroll()
+      })
+      resizeObserver.observe(scrollContainerRef.current)
+      return () => {
+        resizeObserver.disconnect()
+      }
+    }
+  }, [])
+
+  // Update blur states when children change
+  useEffect(() => {
+    checkScroll()
+  }, [children])
+
+  return (
+    <div className="relative w-full overflow-x-hidden">
+      {/* Left blur effect */}
+      {showLeftBlur && (
+        <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-r from-background to-transparent" />
+      )}
+
+      {/* Scrollable container */}
+      <div
+        ref={scrollContainerRef}
+        className="flex gap-2 overflow-x-scroll no-scrollbar"
+        onScroll={checkScroll}
+      >
+        {children}
+      </div>
+
+      {/* Right blur effect */}
+      {showRightBlur && (
+        <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-l from-background to-transparent" />
+      )}
     </div>
   )
 }
@@ -76,12 +162,12 @@ export function TableFilterActions<TData>({ table }: { table: Table<TData> }) {
 
   return (
     <Button
-      className={cn('h-7', !hasFilters && 'hidden')}
+      className={cn('h-7 !px-2', !hasFilters && 'hidden')}
       variant="destructive"
       onClick={clearFilters}
     >
       <FilterXIcon />
-      Clear
+      <span className="hidden md:block">Clear</span>
     </Button>
   )
 }
@@ -156,13 +242,17 @@ export function TableFilter<TData>({ table }: { table: Table<TData> }) {
       }}
     >
       <PopoverTrigger asChild>
-        <Button variant="outline" className={cn('h-7', hasFilters && 'w-fit')}>
+        <Button
+          variant="outline"
+          className={cn('h-7', hasFilters && 'w-fit !px-2')}
+        >
           <Filter className="size-4" />
           {!hasFilters && <span>Filter</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent
         align="start"
+        side="bottom"
         className="w-fit p-0 origin-(--radix-popover-content-transform-origin)"
       >
         {content}
@@ -230,7 +320,7 @@ export function PropertyFilterList<TData>({ table }: { table: Table<TData> }) {
   const filters = table.getState().columnFilters
 
   return (
-    <div className="flex flex-wrap items-center gap-2 text-xs">
+    <>
       {filters.map((filter) => {
         const { id } = filter
 
@@ -286,7 +376,7 @@ export function PropertyFilterList<TData>({ table }: { table: Table<TData> }) {
             return null // Handle unknown types gracefully
         }
       })}
-    </div>
+    </>
   )
 }
 
@@ -302,7 +392,7 @@ function renderFilter<TData, T extends ColumnDataType>(
   return (
     <div
       key={`filter-${filter.id}`}
-      className="flex h-7 items-center rounded-2xl border border-border bg-background shadow-xs"
+      className="flex h-7 items-center rounded-2xl border border-border bg-background shadow-xs text-xs"
     >
       <PropertyFilterSubject meta={meta} />
       <Separator orientation="vertical" />
