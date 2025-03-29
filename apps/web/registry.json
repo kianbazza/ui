@@ -22,7 +22,8 @@
         "separator",
         "slider",
         "table",
-        "tabs"
+        "tabs",
+        "use-mobile"
       ],
       "files": [
         {
