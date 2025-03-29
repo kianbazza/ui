@@ -74,7 +74,7 @@ export function DataTableFilter<TData, TValue>({
 
   return (
     <div className="flex w-full items-start justify-between gap-2">
-      <div className="flex md:flex-wrap gap-1 w-full flex-1">
+      <div className="flex md:flex-wrap gap-2 w-full flex-1">
         <TableFilter table={table} />
         <PropertyFilterList table={table} />
       </div>
@@ -132,7 +132,7 @@ export function DataTableFilterMobileContainer({
     <div className="relative w-full overflow-x-hidden">
       {/* Left blur effect */}
       {showLeftBlur && (
-        <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-r from-background to-transparent" />
+        <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-r from-background to-transparent animate-in fade-in-0" />
       )}
 
       {/* Scrollable container */}
@@ -146,7 +146,7 @@ export function DataTableFilterMobileContainer({
 
       {/* Right blur effect */}
       {showRightBlur && (
-        <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-l from-background to-transparent" />
+        <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-l from-background to-transparent animate-in fade-in-0 " />
       )}
     </div>
   )
