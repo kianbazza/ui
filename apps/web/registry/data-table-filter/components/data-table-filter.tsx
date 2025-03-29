@@ -110,15 +110,31 @@ export function DataTableFilterMobileContainer({
     }
   }
 
-  // Initialize and check on resize
+  // Log blur states for debugging
+  // useEffect(() => {
+  //   console.log('left:', showLeftBlur, '  right:', showRightBlur)
+  // }, [showLeftBlur, showRightBlur])
+
+  // Set up ResizeObserver to monitor container size
   useEffect(() => {
-    checkScroll()
-    window.addEventListener('resize', checkScroll)
-    return () => window.removeEventListener('resize', checkScroll)
+    if (scrollContainerRef.current) {
+      const resizeObserver = new ResizeObserver(() => {
+        checkScroll()
+      })
+      resizeObserver.observe(scrollContainerRef.current)
+      return () => {
+        resizeObserver.disconnect()
+      }
+    }
   }, [])
 
+  // Update blur states when children change
+  useEffect(() => {
+    checkScroll()
+  }, [children])
+
   return (
-    <div className="relative w-full overflow-x-auto">
+    <div className="relative w-full overflow-x-hidden">
       {/* Left blur effect */}
       {showLeftBlur && (
         <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-r from-background to-transparent" />
