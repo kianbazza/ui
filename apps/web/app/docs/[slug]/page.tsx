@@ -163,7 +163,6 @@ export default async function Page({
       parseFrontmatter: true,
       mdxOptions: {
         remarkPlugins: [remarkGfm],
-        // rehypePlugins: [rehypeHighlight, rehypeMdxCodeProps],
       },
     },
   })
@@ -204,7 +203,7 @@ export default async function Page({
         <div>{content}</div>
       </div>
 
-      <div className="hidden xl:block col-span-1 px-24 sticky mt-16 top-16 h-[calc(100vh-8rem)]">
+      <div className="hidden xl:block col-span-1 max-w-sm sticky mt-16 ml-16 min-2xl:ml-8 top-16 h-[calc(100vh-8rem)]">
         {toc && <DashboardTableOfContents toc={toc} />}
       </div>
     </div>
