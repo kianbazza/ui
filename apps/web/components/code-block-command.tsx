@@ -66,6 +66,9 @@ export function CodeBlockCommand({
     setHasCopied(true)
   }, [packageManager, tabs])
 
+  const isComponentInstallCommand =
+    __npmCommand__?.includes('shadcn@latest add')
+
   return (
     <div className="relative mt-6 max-h-[650px] overflow-x-auto rounded-md bg-white dark:bg-black border border-border">
       <Tabs
@@ -95,8 +98,8 @@ export function CodeBlockCommand({
           </TabsList>
         </div>
         {Object.entries(tabs).map(([key, value]) => {
-          return (
-            <>
+          if (isComponentInstallCommand) {
+            return (
               <TabsContent
                 key={key}
                 value={key}
@@ -125,24 +128,26 @@ export function CodeBlockCommand({
                   <span>You can browse the docs and explore the examples.</span>
                 </div>
               </TabsContent>
-              {/* <TabsContent key={key} value={key} className="mt-0"> */}
-              {/*   <pre className="px-4 py-5"> */}
-              {/*     <code */}
-              {/*       className="relative font-mono text-sm leading-none" */}
-              {/*       data-language="bash" */}
-              {/*     > */}
-              {/*       {value} */}
-              {/*     </code> */}
-              {/*   </pre> */}
-              {/* </TabsContent> */}
-            </>
+            )
+          }
+          return (
+            <TabsContent key={key} value={key} className="mt-0">
+              <pre className="px-4 py-5">
+                <code
+                  className="relative font-mono text-sm leading-none"
+                  data-language="bash"
+                >
+                  {value}
+                </code>
+              </pre>
+            </TabsContent>
           )
         })}
       </Tabs>
       <Button
         size="icon"
         variant="ghost"
-        disabled
+        disabled={isComponentInstallCommand}
         className="absolute right-2.5 top-2 z-10 h-6 w-6 dark:text-neutral-50 dark:hover:bg-neutral-700 dark:hover:text-neutral-50 hover:bg-neutral-200"
         onClick={copyCommand}
       >
