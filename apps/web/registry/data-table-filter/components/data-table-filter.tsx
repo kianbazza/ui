@@ -861,13 +861,7 @@ export function PropertyFilterOptionValueDisplay<TData, TValue>({
   }
 
   const filter = column.getFilterValue() as FilterValue<'option', TData>
-  console.log('filter.values ', filter.values)
-  console.log(
-    'option values ',
-    options.map((o) => o.value),
-  )
   const selected = options.filter((o) => filter?.values.includes(o.value))
-  console.log('selected:', selected)
 
   // We display the selected options based on how many are selected
   //
