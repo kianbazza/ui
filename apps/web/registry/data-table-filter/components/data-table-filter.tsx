@@ -861,7 +861,13 @@ export function PropertyFilterOptionValueDisplay<TData, TValue>({
   }
 
   const filter = column.getFilterValue() as FilterValue<'option', TData>
+  console.log('filter.values ', filter.values)
+  console.log(
+    'option values ',
+    options.map((o) => o.value),
+  )
   const selected = options.filter((o) => filter?.values.includes(o.value))
+  console.log('selected:', selected)
 
   // We display the selected options based on how many are selected
   //
@@ -1212,7 +1218,7 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
             return {
               operator: 'is',
               values: [value],
-              column,
+              columnMeta: column.columnDef.meta,
             } satisfies FilterValue<'option', TData>
 
           const newValues = [...old.values, value]
@@ -1220,7 +1226,7 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
           return {
             operator: 'is any of',
             values: newValues,
-            column,
+            columnMeta: column.columnDef.meta,
           } satisfies FilterValue<'option', TData>
         },
       )
@@ -1233,7 +1239,7 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
           return {
             operator: newValues.length > 1 ? 'is any of' : 'is',
             values: newValues,
-            column,
+            columnMeta: column.columnDef.meta,
           } satisfies FilterValue<'option', TData>
         },
       )
@@ -1359,7 +1365,7 @@ export function PropertyFilterMultiOptionValueMenu<
             return {
               operator: 'include',
               values: [[value]],
-              column,
+              columnMeta: column.columnDef.meta,
             } satisfies FilterValue<'multiOption', TData>
 
           const newValues = [uniq([...old.values[0], value])]
@@ -1372,7 +1378,7 @@ export function PropertyFilterMultiOptionValueMenu<
               old.operator,
             ),
             values: newValues,
-            column,
+            columnMeta: column.columnDef.meta,
           } satisfies FilterValue<'multiOption', TData>
         },
       )
@@ -1393,7 +1399,7 @@ export function PropertyFilterMultiOptionValueMenu<
               old.operator,
             ),
             values: newValues,
-            column,
+            columnMeta: column.columnDef.meta,
           } satisfies FilterValue<'multiOption', TData>
         },
       )
@@ -1479,7 +1485,7 @@ export function PropertyFilterDateValueMenu<TData, TValue>({
         return {
           operator: newValues.length > 1 ? 'is between' : 'is',
           values: newValues,
-          column,
+          columnMeta: column.columnDef.meta,
         } satisfies FilterValue<'date', TData>
 
       return {
@@ -1490,7 +1496,7 @@ export function PropertyFilterDateValueMenu<TData, TValue>({
               ? 'is'
               : old.operator,
         values: newValues,
-        column,
+        columnMeta: column.columnDef.meta,
       } satisfies FilterValue<'date', TData>
     })
   }
@@ -1530,7 +1536,7 @@ export function PropertyFilterTextValueMenu<TData, TValue>({
         return {
           operator: 'contains',
           values: [String(value)],
-          column,
+          columnMeta: column.columnDef.meta,
         } satisfies FilterValue<'text', TData>
       return { operator: old.operator, values: [String(value)] }
     })

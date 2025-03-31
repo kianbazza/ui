@@ -151,7 +151,7 @@ export type FilterTypes = {
 export type FilterValue<T extends ColumnDataType, TData> = {
   operator: FilterOperators[T]
   values: Array<FilterTypes[T]>
-  column: Column<TData>
+  columnMeta: Column<TData>['columnDef']['meta']
 }
 
 /*
@@ -614,7 +614,7 @@ export function optionFilterFn<TData>(
 
   if (!value) return false
 
-  const columnMeta = filterValue.column.columnDef.meta!
+  const columnMeta = filterValue.columnMeta!
 
   if (typeof value === 'string') {
     return __optionFilterFn(value, filterValue)
@@ -670,7 +670,7 @@ export function multiOptionFilterFn<TData>(
 
   if (!value) return false
 
-  const columnMeta = filterValue.column.columnDef.meta!
+  const columnMeta = filterValue.columnMeta!
 
   if (isStringArray(value)) {
     return __multiOptionFilterFn(value, filterValue)

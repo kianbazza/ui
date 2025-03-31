@@ -40,6 +40,8 @@ import {
   Heading1Icon,
   UserCheckIcon,
 } from 'lucide-react'
+import { parseAsJson, useQueryState } from 'nuqs'
+import { z } from 'zod'
 import { issues, users } from './data'
 import { type Issue, issueStatuses } from './types'
 
@@ -67,6 +69,7 @@ export const columns: ColumnDef<Issue>[] = [
     enableHiding: false,
   },
   {
+    id: 'status',
     accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
@@ -92,6 +95,7 @@ export const columns: ColumnDef<Issue>[] = [
     },
   },
   {
+    id: 'title',
     accessorKey: 'title',
     header: 'Title',
     cell: ({ row }) => <div>{row.getValue('title')}</div>,
@@ -103,6 +107,7 @@ export const columns: ColumnDef<Issue>[] = [
     filterFn: filterFn('text'),
   },
   {
+    id: 'assignee',
     accessorKey: 'assignee',
     header: 'Assignee',
     cell: ({ row }) => {
@@ -136,7 +141,7 @@ export const columns: ColumnDef<Issue>[] = [
         value: x.id,
         label: x.name,
         icon: (
-          <Avatar className="size-4">
+          <Avatar key={x.id} className="size-4">
             <AvatarImage src={x.picture} />
             <AvatarFallback>
               {x.name
@@ -151,6 +156,7 @@ export const columns: ColumnDef<Issue>[] = [
     },
   },
   {
+    id: 'estimatedHours',
     accessorKey: 'estimatedHours',
     header: 'Estimated Hours',
     cell: ({ row }) => {
@@ -178,6 +184,7 @@ export const columns: ColumnDef<Issue>[] = [
     filterFn: filterFn('number'),
   },
   {
+    id: 'startDate',
     accessorKey: 'startDate',
     header: 'Start Date',
     cell: ({ row }) => {
@@ -199,6 +206,7 @@ export const columns: ColumnDef<Issue>[] = [
     filterFn: filterFn('date'),
   },
   {
+    id: 'endDate',
     accessorKey: 'endDate',
     header: 'End Date',
     cell: ({ row }) => {
@@ -221,6 +229,19 @@ export const columns: ColumnDef<Issue>[] = [
   },
 ]
 
+const queryFiltersSchema = z
+  .object({
+    id: z.string(),
+    value: z.object({
+      operator: z.string(),
+      values: z.any(),
+    }),
+  })
+  .array()
+  .min(0)
+
+type QueryFiltersSchema = z.infer<typeof queryFiltersSchema>
+
 interface DataTableDemoProps {
   hideTable?: boolean
 }
@@ -229,8 +250,20 @@ export default function DataTableDemo({
   hideTable = false,
 }: DataTableDemoProps) {
   const [sorting, setSorting] = React.useState<SortingState>([])
+  const [queryFilters, setQueryFilters] = useQueryState(
+    'filter',
+    parseAsJson(queryFiltersSchema.parse).withDefault([]).withOptions({
+      clearOnDefault: false,
+    }),
+  )
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    [],
+    queryFilters.map((f) => ({
+      ...f,
+      value: {
+        ...f.value,
+        columnMeta: columns.find((c) => c.id === f.id)!.meta,
+      },
+    })) ?? [],
   )
   const [globalFilter, setGlobalFilter] = React.useState('')
   const [columnVisibility, setColumnVisibility] =
@@ -262,6 +295,23 @@ export default function DataTableDemo({
     //   fuzzy: fuzzyFilter,
     // },
   })
+
+  // console.log(columnFilters)
+
+  React.useEffect(() => {
+    setQueryFilters(
+      columnFilters.map((f) => ({
+        id: f.id,
+        // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+        value: { ...(f.value as any), columnMeta: undefined },
+      })),
+    )
+  }, [columnFilters])
+
+  React.useEffect(() => {
+    console.log('queryFilters:', queryFilters)
+    console.log('columnFilters:', columnFilters)
+  }, [queryFilters, columnFilters])
 
   return (
     <div className="w-full">
