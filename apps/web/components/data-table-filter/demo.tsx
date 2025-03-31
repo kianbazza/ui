@@ -240,8 +240,6 @@ const queryFiltersSchema = z
   .array()
   .min(0)
 
-type QueryFiltersSchema = z.infer<typeof queryFiltersSchema>
-
 interface DataTableDemoProps {
   hideTable?: boolean
 }
@@ -291,12 +289,7 @@ export default function DataTableDemo({
       columnVisibility,
       rowSelection,
     },
-    // filterFns: {
-    //   fuzzy: fuzzyFilter,
-    // },
   })
-
-  // console.log(columnFilters)
 
   React.useEffect(() => {
     setQueryFilters(
