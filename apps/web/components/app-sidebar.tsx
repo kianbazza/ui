@@ -1,5 +1,7 @@
 'use client'
 
+import { GithubIcon } from '@/components/icons'
+import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
@@ -11,6 +13,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarSeparator,
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import logoSrc from '@/public/bazzaui-v3-color.png'
@@ -100,9 +103,16 @@ export function AppSidebar() {
         </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
-        <SidebarMenu>
+        <SidebarMenu className="flex-row gap-0 justify-between">
           <SidebarMenuItem>
             <ThemeToggle />
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="https://github.com/kianbazza/ui">
+                <GithubIcon className="size-5" />
+              </Link>
+            </Button>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarFooter>
