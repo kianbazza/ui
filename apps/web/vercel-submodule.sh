@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # github submodule repo address without https:// prefix
-SUBMODULE_GITHUB=github.com/bazzadev/assets
+SUBMODULE_GITHUB=github.com/kianbazza/assets
 
 # .gitmodules submodule path
 SUBMODULE_PATH=assets

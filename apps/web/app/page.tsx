@@ -47,7 +47,7 @@ export default function Page() {
                 </Link>
               </Button>
               <Button variant="ghost" size="icon" asChild>
-                <Link href="https://github.com/bazzadev/ui">
+                <Link href="https://github.com/kianbazza/ui">
                   <GithubIcon className="size-5" />
                 </Link>
               </Button>

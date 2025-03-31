@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://vercel.com">
-    <img src="https://github.com/BazzaDEV/ui/blob/main/assets/images/bazza:ui-v3-color.png?raw=true" height="96" width="96">
+    <img src="https://github.com/kianbazza/ui/blob/main/assets/images/bazza:ui-v3-color.png?raw=true" height="96" width="96">
     <h3 align="center">bazza/ui</h3>
   </a>
 </p>
