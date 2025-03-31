@@ -255,13 +255,23 @@ export default function DataTableDemo({
     }),
   )
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    queryFilters.map((f) => ({
-      ...f,
-      value: {
-        ...f.value,
-        columnMeta: columns.find((c) => c.id === f.id)!.meta,
-      },
-    })) ?? [],
+    queryFilters.map((f) => {
+      const columnMeta = columns.find((c) => c.id === f.id)!.meta!
+
+      const values =
+        columnMeta.type === 'date'
+          ? f.value.values.map((v: string) => new Date(v))
+          : f.value.values
+
+      return {
+        ...f,
+        value: {
+          operator: f.value.operator,
+          values,
+          columnMeta,
+        },
+      }
+    }) ?? [],
   )
   const [globalFilter, setGlobalFilter] = React.useState('')
   const [columnVisibility, setColumnVisibility] =
