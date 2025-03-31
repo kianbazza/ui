@@ -1344,9 +1344,11 @@ export function PropertyFilterMultiOptionValueMenu<
 
   const optionsCount: Record<ColumnOption['value'], number> = columnVals.reduce(
     (acc, curr) => {
-      const { value } = columnMeta.transformOptionFn!(
-        curr as ElementType<NonNullable<TValue>>,
-      )
+      const value = columnMeta.options
+        ? (curr as string)
+        : columnMeta.transformOptionFn!(
+            curr as ElementType<NonNullable<TValue>>,
+          ).value
 
       acc[value] = (acc[value] ?? 0) + 1
       return acc
