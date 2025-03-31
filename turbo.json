@@ -13,7 +13,7 @@
     "registry:build": {
       "cache": true,
       "inputs": ["$TURBO_DEFAULT$", ".env*"],
-      "outputs": ["registry/**"]
+      "outputs": ["public/r/**"]
     },
     "dev": {
       "cache": false,
