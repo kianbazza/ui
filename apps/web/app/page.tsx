@@ -97,7 +97,7 @@ export default function Page() {
         </div>
       </div>
       <div className="border-b border-border border-dashed">
-        <div className="xl:border-x border-border border-dashed px-4 py-24 max-w-screen-xl w-full mx-auto space-y-4">
+        <div className="xl:border-x border-border border-dashed px-4 py-24 max-w-screen-xl w-full mx-auto space-y-4 h-[800px]">
           <h2 className="text-5xl tracking-[-0.03em] font-semibold drop-shadow-xs text-center">
             Check out the demo.
           </h2>
