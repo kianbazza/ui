@@ -5,6 +5,7 @@ import {
   type ColumnFiltersState,
   type SortingState,
   type VisibilityState,
+  createColumnHelper,
   flexRender,
   getCoreRowModel,
   getFacetedMinMaxValues,
@@ -28,7 +29,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTableFilter } from '@/registry/data-table-filter/components/data-table-filter'
-import { filterFn } from '@/registry/data-table-filter/lib/filters'
+import { defineMeta, filterFn } from '@/registry/data-table-filter/lib/filters'
 import { format } from 'date-fns'
 import {
   CalendarArrowDownIcon,
@@ -41,11 +42,13 @@ import {
 } from 'lucide-react'
 import { parseAsJson, useQueryState } from 'nuqs'
 import { z } from 'zod'
-import { issues, users } from './data'
-import { type Issue, issueStatuses } from './types'
+import { issues } from './data'
+import { type Issue, type User, issueStatuses } from './types'
 
-export const columns: ColumnDef<Issue>[] = [
-  {
+const columnHelper = createColumnHelper<Issue>()
+
+export const columns = [
+  columnHelper.display({
     id: 'select',
     header: ({ table }) => (
       <Checkbox
@@ -66,10 +69,9 @@ export const columns: ColumnDef<Issue>[] = [
     ),
     enableSorting: false,
     enableHiding: false,
-  },
-  {
+  }),
+  columnHelper.accessor('status', {
     id: 'status',
-    accessorKey: 'status',
     header: 'Status',
     cell: ({ row }) => {
       const status = issueStatuses.find(
@@ -92,10 +94,9 @@ export const columns: ColumnDef<Issue>[] = [
       icon: CircleDotDashedIcon,
       options: issueStatuses.map((x) => ({ ...x, label: x.name })),
     },
-  },
-  {
+  }),
+  columnHelper.accessor('title', {
     id: 'title',
-    accessorKey: 'title',
     header: 'Title',
     cell: ({ row }) => <div>{row.getValue('title')}</div>,
     meta: {
@@ -104,20 +105,17 @@ export const columns: ColumnDef<Issue>[] = [
       icon: Heading1Icon,
     },
     filterFn: filterFn('text'),
-  },
-  {
+  }),
+  columnHelper.accessor('assignee', {
     id: 'assignee',
-    accessorKey: 'assignee',
     header: 'Assignee',
     cell: ({ row }) => {
-      const assigneeId = row.getValue('assignee')
-      const user = users.find((x) => x.id === assigneeId)
-
-      if (!assigneeId || !user) {
+      const assignee = row.getValue<User | undefined>('assignee')
+      if (!assignee) {
         return <CircleDashedIcon className="size-5 text-border" />
       }
 
-      const initials = user.name
+      const initials = assignee.name
         .split(' ')
         .map((x) => x[0])
         .join('')
@@ -125,25 +123,24 @@ export const columns: ColumnDef<Issue>[] = [
 
       return (
         <Avatar className="size-5">
-          <AvatarImage src={user.picture} />
+          <AvatarImage src={assignee.picture} />
           <AvatarFallback>{initials}</AvatarFallback>
         </Avatar>
       )
     },
     filterFn: filterFn('option'),
-    meta: {
+    meta: defineMeta('assignee', {
       displayName: 'Assignee',
       type: 'option',
       icon: UserCheckIcon,
-      // transformFn: (u: User) => u.id,
-      options: users.map((x) => ({
-        value: x.id,
-        label: x.name,
+      transformOptionFn: (u) => ({
+        value: u.id,
+        label: u.name,
         icon: (
-          <Avatar key={x.id} className="size-4">
-            <AvatarImage src={x.picture} />
+          <Avatar key={u.id} className="size-4">
+            <AvatarImage src={u.picture} />
             <AvatarFallback>
-              {x.name
+              {u.name
                 .split(' ')
                 .map((x) => x[0])
                 .join('')
@@ -151,12 +148,11 @@ export const columns: ColumnDef<Issue>[] = [
             </AvatarFallback>
           </Avatar>
         ),
-      })),
-    },
-  },
-  {
+      }),
+    }),
+  }),
+  columnHelper.accessor('estimatedHours', {
     id: 'estimatedHours',
-    accessorKey: 'estimatedHours',
     header: 'Estimated Hours',
     cell: ({ row }) => {
       const estimatedHours = row.getValue<number>('estimatedHours')
@@ -181,10 +177,9 @@ export const columns: ColumnDef<Issue>[] = [
       max: 100,
     },
     filterFn: filterFn('number'),
-  },
-  {
+  }),
+  columnHelper.accessor('startDate', {
     id: 'startDate',
-    accessorKey: 'startDate',
     header: 'Start Date',
     cell: ({ row }) => {
       const startDate = row.getValue<Issue['startDate']>('startDate')
@@ -203,10 +198,9 @@ export const columns: ColumnDef<Issue>[] = [
       icon: CalendarArrowUpIcon,
     },
     filterFn: filterFn('date'),
-  },
-  {
+  }),
+  columnHelper.accessor('endDate', {
     id: 'endDate',
-    accessorKey: 'endDate',
     header: 'End Date',
     cell: ({ row }) => {
       const endDate = row.getValue<Issue['endDate']>('endDate')
@@ -225,7 +219,7 @@ export const columns: ColumnDef<Issue>[] = [
       icon: CalendarArrowDownIcon,
     },
     filterFn: filterFn('date'),
-  },
+  }),
 ]
 
 const dataTableFilterQuerySchema = z
@@ -273,7 +267,8 @@ export default function DataTableDemo() {
     parseAsJson(dataTableFilterQuerySchema.parse).withDefault([]),
   )
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    () => initializeFiltersFromQuery(queryFilters, columns),
+    () =>
+      initializeFiltersFromQuery(queryFilters, columns as ColumnDef<Issue>[]),
   )
   const [globalFilter, setGlobalFilter] = React.useState('')
   const [columnVisibility, setColumnVisibility] =

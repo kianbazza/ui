@@ -17,7 +17,7 @@ export type Issue = {
   title: string
   description?: string
   status: 'backlog' | 'todo' | 'in-progress' | 'done'
-  assignee?: string
+  assignee?: User
   startDate?: Date
   endDate?: Date
   estimatedHours?: number
