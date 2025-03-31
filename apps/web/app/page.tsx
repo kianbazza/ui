@@ -120,13 +120,7 @@ export default function Page() {
               </span>
             </div>
             <div>
-              <CodeBlock
-                lang="tsx"
-                className="bg-surface rounded-2xl"
-                colorReplacements={{
-                  '#24292e': '#010101FF',
-                }}
-              >
+              <CodeBlock lang="tsx" className="dark:bg-surface">
                 {[
                   'export const columns: ColumnDef<Issue>[] = [',
                   '  /* ..other columns */',
@@ -159,9 +153,6 @@ export default function Page() {
                 <CodeBlock
                   lang="typescript"
                   className="[&>pre]:p-0 border-none shadow-none dark:bg-surface"
-                  colorReplacements={{
-                    '#24292e': 'transparent',
-                  }}
                 >
                   {[
                     'export type Issue = {',
@@ -239,9 +230,6 @@ export default function Page() {
                   <CodeBlock
                     lang="typescript"
                     className="[&>pre]:p-0 border-none shadow-none text-[0.6rem] dark:bg-surface"
-                    colorReplacements={{
-                      '#24292e': 'transparent',
-                    }}
                   >
                     {[
                       'type FilterOperatorDetailsBase<OperatorValue, T extends ColumnDataType> = {',
