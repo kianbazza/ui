@@ -229,7 +229,7 @@ export const columns: ColumnDef<Issue>[] = [
   },
 ]
 
-const queryFiltersSchema = z
+const dataTableFilterQuerySchema = z
   .object({
     id: z.string(),
     value: z.object({
@@ -240,8 +240,35 @@ const queryFiltersSchema = z
   .array()
   .min(0)
 
+type DataTableFilterQuerySchema = z.infer<typeof dataTableFilterQuerySchema>
+
 interface DataTableDemoProps {
   hideTable?: boolean
+}
+
+function initializeFiltersFromQuery<TData, TValue>(
+  filters: DataTableFilterQuerySchema,
+  columns: ColumnDef<TData, TValue>[],
+) {
+  return filters && filters.length > 0
+    ? filters.map((f) => {
+        const columnMeta = columns.find((c) => c.id === f.id)!.meta!
+
+        const values =
+          columnMeta.type === 'date'
+            ? f.value.values.map((v: string) => new Date(v))
+            : f.value.values
+
+        return {
+          ...f,
+          value: {
+            operator: f.value.operator,
+            values,
+            columnMeta,
+          },
+        }
+      })
+    : []
 }
 
 export default function DataTableDemo({
@@ -250,28 +277,10 @@ export default function DataTableDemo({
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [queryFilters, setQueryFilters] = useQueryState(
     'filter',
-    parseAsJson(queryFiltersSchema.parse).withDefault([]).withOptions({
-      clearOnDefault: false,
-    }),
+    parseAsJson(dataTableFilterQuerySchema.parse).withDefault([]),
   )
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    queryFilters.map((f) => {
-      const columnMeta = columns.find((c) => c.id === f.id)!.meta!
-
-      const values =
-        columnMeta.type === 'date'
-          ? f.value.values.map((v: string) => new Date(v))
-          : f.value.values
-
-      return {
-        ...f,
-        value: {
-          operator: f.value.operator,
-          values,
-          columnMeta,
-        },
-      }
-    }) ?? [],
+    () => initializeFiltersFromQuery(queryFilters, columns),
   )
   const [globalFilter, setGlobalFilter] = React.useState('')
   const [columnVisibility, setColumnVisibility] =
@@ -309,7 +318,7 @@ export default function DataTableDemo({
         value: { ...(f.value as any), columnMeta: undefined },
       })),
     )
-  }, [columnFilters])
+  }, [columnFilters, setQueryFilters])
 
   React.useEffect(() => {
     console.log('queryFilters:', queryFilters)
