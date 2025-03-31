@@ -284,8 +284,9 @@ function initializeFiltersFromQuery<TData, TValue>(
 
 5. Update your date table component file:
 
-```tsx {1,4-7,9,16-23}
+```tsx {1-2,4-8,10-11,18-25}
 import { parseAsJson, useQueryState } from 'nuqs'
+import { type ColumnDef } from '@tanstack/react-table'
 
 export default function YourDataTableComponent() {
   const [queryFilters, setQueryFilters] = useQueryState(
@@ -293,6 +294,7 @@ export default function YourDataTableComponent() {
     parseAsJson(dataTableFilterQuerySchema.parse).withDefault([]),
   )
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    // Replace `Issue` with your data type
     () => initializeFiltersFromQuery(queryFilters, columns as ColumnDef<Issue>[]),
   )
 
