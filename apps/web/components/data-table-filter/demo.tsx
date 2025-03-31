@@ -27,7 +27,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { cn } from '@/lib/utils'
 import { DataTableFilter } from '@/registry/data-table-filter/components/data-table-filter'
 import { filterFn } from '@/registry/data-table-filter/lib/filters'
 import { format } from 'date-fns'
@@ -242,10 +241,6 @@ const dataTableFilterQuerySchema = z
 
 type DataTableFilterQuerySchema = z.infer<typeof dataTableFilterQuerySchema>
 
-interface DataTableDemoProps {
-  hideTable?: boolean
-}
-
 function initializeFiltersFromQuery<TData, TValue>(
   filters: DataTableFilterQuerySchema,
   columns: ColumnDef<TData, TValue>[],
@@ -271,9 +266,7 @@ function initializeFiltersFromQuery<TData, TValue>(
     : []
 }
 
-export default function DataTableDemo({
-  hideTable = false,
-}: DataTableDemoProps) {
+export default function DataTableDemo() {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [queryFilters, setQueryFilters] = useQueryState(
     'filter',
@@ -330,12 +323,7 @@ export default function DataTableDemo({
       <div className="flex items-center py-4 gap-2">
         <DataTableFilter table={table} />
       </div>
-      <div
-        className={cn(
-          'rounded-md border bg-white dark:bg-inherit',
-          hideTable && 'hidden',
-        )}
-      >
+      <div className="rounded-md border bg-white dark:bg-inherit">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
