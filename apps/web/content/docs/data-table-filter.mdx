@@ -217,6 +217,102 @@ export const columns = [
 ]
 ```
 
+## Integrations
+
+### `nuqs`
+
+> [!WARNING] This integration is in alpha.
+> We are working on making this easier to use.
+
+You can use [`nuqs`](https://nuqs.47ng.com/) to persist the filter state in the URL.
+
+1. Install the `nuqs` and `zod` packages:
+
+```bash
+npm install nuqs zod
+```
+
+2. Use the appropriate `nuqs` adapter for your framework from the [nuqs docs](https://nuqs.47ng.com/docs/adapters).
+
+3. Create your Zod schema for the query filter state:
+
+```ts
+import { z } from 'zod'
+
+const dataTableFilterQuerySchema = z
+  .object({
+    id: z.string(),
+    value: z.object({
+      operator: z.string(),
+      values: z.any(),
+    }),
+  })
+  .array()
+  .min(0)
+
+type DataTableFilterQuerySchema = z.infer<typeof dataTableFilterQuerySchema>
+```
+
+4. Create the following helper function:
+
+```ts
+function initializeFiltersFromQuery<TData, TValue>(
+  filters: DataTableFilterQuerySchema,
+  columns: ColumnDef<TData, TValue>[],
+) {
+  return filters && filters.length > 0
+    ? filters.map((f) => {
+        const columnMeta = columns.find((c) => c.id === f.id)!.meta!
+
+        const values =
+          columnMeta.type === 'date'
+            ? f.value.values.map((v: string) => new Date(v))
+            : f.value.values
+
+        return {
+          ...f,
+          value: {
+            operator: f.value.operator,
+            values,
+            columnMeta,
+          },
+        }
+      })
+    : []
+}
+```
+
+5. Update your date table component file:
+
+```tsx {1,4-7,9,16-23}
+import { parseAsJson, useQueryState } from 'nuqs'
+
+export default function YourDataTableComponent() {
+  const [queryFilters, setQueryFilters] = useQueryState(
+    'filter',
+    parseAsJson(dataTableFilterQuerySchema.parse).withDefault([]),
+  )
+  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
+    () => initializeFiltersFromQuery(queryFilters, columns),
+  )
+
+  const table = useReactTable({
+    /* ... */
+  })
+
+  React.useEffect(() => {
+    setQueryFilters(
+      columnFilters.map((f) => ({
+        id: f.id,
+        value: { ...(f.value as any), columnMeta: undefined },
+      })),
+    )
+  }, [columnFilters, setQueryFilters])
+
+  /* ... */
+}
+```
+
 ## Overview
 
 Let's take a high-level look at how we've created the data table filter component.
