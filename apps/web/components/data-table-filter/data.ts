@@ -32,6 +32,7 @@ export const issues: Issue[] = [
     assignee: users.find((u) => u.name === 'John Smith')!,
     startDate: sub(new Date(), { days: 3 }),
     estimatedHours: 101,
+    labelIds: ['feature'],
   },
   {
     id: 'f6g7h8i9j0k1l2m3n4o5p',
@@ -39,6 +40,7 @@ export const issues: Issue[] = [
     status: 'todo',
     assignee: users.find((u) => u.name === 'Rose Eve')!,
     estimatedHours: 6,
+    labelIds: ['bug'],
   },
   {
     id: 'g7h8i9j0k1l2m3n4o5p6q',
@@ -48,12 +50,14 @@ export const issues: Issue[] = [
     startDate: sub(new Date(), { days: 7 }),
     endDate: sub(new Date(), { days: 2 }),
     estimatedHours: 10,
+    labelIds: ['database', 'feature'],
   },
   {
     id: 'h8i9j0k1l2m3n4o5p6q7r',
     title: 'Update API docs',
     status: 'backlog',
     estimatedHours: 4,
+    labelIds: ['docs', 'api'],
   },
   {
     id: 'i9j0k1l2m3n4o5p6q7r8s',
@@ -62,6 +66,7 @@ export const issues: Issue[] = [
     assignee: users.find((u) => u.name === 'Michael Scott')!,
     startDate: sub(new Date(), { days: 2 }),
     estimatedHours: 12,
+    labelIds: ['performance', 'ui'],
   },
   {
     id: 'j0k1l2m3n4o5p6q7r8s9t',
@@ -69,6 +74,7 @@ export const issues: Issue[] = [
     status: 'todo',
     assignee: users.find((u) => u.name === 'John Smith')!,
     estimatedHours: 8,
+    labelIds: ['testing', 'feature'],
   },
   {
     id: 'k1l2m3n4o5p6q7r8s9t0u',
@@ -77,12 +83,14 @@ export const issues: Issue[] = [
     startDate: sub(new Date(), { days: 5 }),
     endDate: sub(new Date(), { hours: 12 }),
     estimatedHours: 6,
+    labelIds: ['feature', 'ui'],
   },
   {
     id: 'l2m3n4o5p6q7r8s9t0u1v',
     title: 'Fix search filter',
     status: 'backlog',
     estimatedHours: 3,
+    labelIds: ['bug', 'ui'],
   },
   {
     id: 'm3n4o5p6q7r8s9t0u1v2w',
@@ -90,6 +98,7 @@ export const issues: Issue[] = [
     status: 'todo',
     assignee: users.find((u) => u.name === 'Rose Eve')!,
     estimatedHours: 5,
+    labelIds: ['refactor'],
   },
   {
     id: 'n4o5p6q7r8s9t0u1v2w3x',
@@ -98,6 +107,7 @@ export const issues: Issue[] = [
     assignee: users.find((u) => u.name === 'Adam Young')!,
     startDate: sub(new Date(), { days: 4 }),
     estimatedHours: 7,
+    labelIds: ['enhancement', 'ui'],
   },
   {
     id: 'o5p6q7r8s9t0u1v2w3x4y',
@@ -107,12 +117,14 @@ export const issues: Issue[] = [
     startDate: sub(new Date(), { days: 6 }),
     endDate: sub(new Date(), { days: 1 }),
     estimatedHours: 4,
+    labelIds: ['feature'],
   },
   {
     id: 'p6q7r8s9t0u1v2w3x4y5z',
     title: 'Improve form validation',
     status: 'backlog',
     estimatedHours: 5,
+    labelIds: ['enhancement', 'ui'],
   },
   {
     id: 'q7r8s9t0u1v2w3x4y5z6a',
@@ -120,6 +132,7 @@ export const issues: Issue[] = [
     status: 'todo',
     assignee: users.find((u) => u.name === 'John Smith')!,
     estimatedHours: 10,
+    labelIds: ['feature'],
   },
   {
     id: 'r8s9t0u1v2w3x4y5z6a7b',
@@ -128,6 +141,7 @@ export const issues: Issue[] = [
     assignee: users.find((u) => u.name === 'Rose Eve')!,
     startDate: sub(new Date(), { days: 1 }),
     estimatedHours: 6,
+    labelIds: ['bug', 'ui'],
   },
   {
     id: 's9t0u1v2w3x4y5z6a7b8c',
@@ -136,12 +150,14 @@ export const issues: Issue[] = [
     startDate: sub(new Date(), { days: 8 }),
     endDate: sub(new Date(), { days: 3 }),
     estimatedHours: 8,
+    labelIds: ['feature', 'ui'],
   },
   {
     id: 't0u1v2w3x4y5z6a7b8c9d',
     title: 'Optimize database queries',
     status: 'backlog',
     estimatedHours: 7,
+    labelIds: ['performance', 'database'],
   },
   {
     id: 'u1v2w3x4y5z6a7b8c9d0e',
@@ -149,6 +165,7 @@ export const issues: Issue[] = [
     status: 'todo',
     assignee: users.find((u) => u.name === 'Adam Young')!,
     estimatedHours: 3,
+    labelIds: ['security'],
   },
   {
     id: 'v2w3x4y5z6a7b8c9d0e1f',
@@ -157,6 +174,7 @@ export const issues: Issue[] = [
     assignee: users.find((u) => u.name === 'Michael Scott')!,
     startDate: sub(new Date(), { days: 2 }),
     estimatedHours: 9,
+    labelIds: ['performance', 'feature'],
   },
   {
     id: 'w3x4y5z6a7b8c9d0e1f2g',
@@ -166,12 +184,14 @@ export const issues: Issue[] = [
     startDate: sub(new Date(), { days: 4 }),
     endDate: sub(new Date(), { hours: 6 }),
     estimatedHours: 4,
+    labelIds: ['bug'],
   },
   {
     id: 'x4y5z6a7b8c9d0e1f2g3h',
     title: 'Add analytics tracking',
     status: 'backlog',
     estimatedHours: 6,
+    labelIds: ['feature'],
   },
   {
     id: 'y5z6a7b8c9d0e1f2g3h4i',
@@ -179,6 +199,7 @@ export const issues: Issue[] = [
     status: 'todo',
     assignee: users.find((u) => u.name === 'Rose Eve')!,
     estimatedHours: 5,
+    labelIds: ['ui', 'enhancement'],
   },
   {
     id: 'z6a7b8c9d0e1f2g3h4i5j',
@@ -187,6 +208,7 @@ export const issues: Issue[] = [
     assignee: users.find((u) => u.name === 'Adam Young')!,
     startDate: sub(new Date(), { days: 3 }),
     estimatedHours: 8,
+    labelIds: ['refactor', 'api'],
   },
   {
     id: 'a7b8c9d0e1f2g3h4i5j6k',
@@ -195,12 +217,14 @@ export const issues: Issue[] = [
     startDate: sub(new Date(), { days: 6 }),
     endDate: sub(new Date(), { days: 2 }),
     estimatedHours: 5,
+    labelIds: ['bug'],
   },
   {
     id: 'b8c9d0e1f2g3h4i5j6k7l',
     title: 'Add password reset',
     status: 'backlog',
     estimatedHours: 4,
+    labelIds: ['feature'],
   },
   {
     id: 'c9d0e1f2g3h4i5j6k7l8m',
@@ -208,6 +232,7 @@ export const issues: Issue[] = [
     status: 'todo',
     assignee: users.find((u) => u.name === 'Michael Scott')!,
     estimatedHours: 7,
+    labelIds: ['ui', 'enhancement'],
   },
   {
     id: 'd0e1f2g3h4i5j6k7l8m9n',
@@ -216,6 +241,7 @@ export const issues: Issue[] = [
     assignee: users.find((u) => u.name === 'John Smith')!,
     startDate: sub(new Date(), { days: 1 }),
     estimatedHours: 6,
+    labelIds: ['performance', 'ui'],
   },
   {
     id: 'e1f2g3h4i5j6k7l8m9n0o',
@@ -225,12 +251,14 @@ export const issues: Issue[] = [
     startDate: sub(new Date(), { days: 5 }),
     endDate: sub(new Date(), { days: 1 }),
     estimatedHours: 3,
+    labelIds: ['bug', 'ui'],
   },
   {
     id: 'f2g3h4i5j6k7l8m9n0o1p',
     title: 'Add user roles',
     status: 'backlog',
     estimatedHours: 8,
+    labelIds: ['feature'],
   },
   {
     id: 'g3h4i5j6k7l8m9n0o1p2q',
@@ -238,6 +266,7 @@ export const issues: Issue[] = [
     status: 'todo',
     assignee: users.find((u) => u.name === 'Adam Young')!,
     estimatedHours: 6,
+    labelIds: ['enhancement', 'ui'],
   },
   {
     id: 'h4i5j6k7l8m9n0o1p2q3r',
@@ -246,6 +275,7 @@ export const issues: Issue[] = [
     assignee: users.find((u) => u.name === 'Michael Scott')!,
     startDate: sub(new Date(), { days: 2 }),
     estimatedHours: 4,
+    labelIds: ['bug', 'ui'],
   },
   {
     id: 'i5j6k7l8m9n0o1p2q3r4s',
@@ -254,12 +284,14 @@ export const issues: Issue[] = [
     startDate: sub(new Date(), { days: 7 }),
     endDate: sub(new Date(), { days: 3 }),
     estimatedHours: 5,
+    labelIds: ['feature', 'ui'],
   },
   {
     id: 'j6k7l8m9n0o1p2q3r4s5t',
     title: 'Optimize API calls',
     status: 'backlog',
     estimatedHours: 7,
+    labelIds: ['performance', 'api'],
   },
   {
     id: 'k7l8m9n0o1p2q3r4s5t6u',
@@ -267,6 +299,7 @@ export const issues: Issue[] = [
     status: 'todo',
     assignee: users.find((u) => u.name === 'John Smith')!,
     estimatedHours: 4,
+    labelIds: ['enhancement', 'ui'],
   },
   {
     id: 'l8m9n0o1p2q3r4s5t6u7v',
@@ -275,6 +308,7 @@ export const issues: Issue[] = [
     assignee: users.find((u) => u.name === 'Rose Eve')!,
     startDate: sub(new Date(), { days: 1 }),
     estimatedHours: 6,
+    labelIds: ['bug', 'ui'],
   },
   {
     id: 'm9n0o1p2q3r4s5t6u7v8w',
@@ -284,12 +318,14 @@ export const issues: Issue[] = [
     startDate: sub(new Date(), { days: 4 }),
     endDate: sub(new Date(), { hours: 12 }),
     estimatedHours: 8,
+    labelIds: ['feature'],
   },
   {
     id: 'n0o1p2q3r4s5t6u7v8w9x',
     title: 'Update footer links',
     status: 'backlog',
     estimatedHours: 3,
+    labelIds: ['enhancement', 'ui'],
   },
   {
     id: 'o1p2q3r4s5t6u7v8w9x0y',
@@ -297,6 +333,7 @@ export const issues: Issue[] = [
     status: 'todo',
     assignee: users.find((u) => u.name === 'Michael Scott')!,
     estimatedHours: 5,
+    labelIds: ['bug', 'ui'],
   },
   {
     id: 'p2q3r4s5t6u7v8w9x0y1z',
@@ -305,6 +342,7 @@ export const issues: Issue[] = [
     assignee: users.find((u) => u.name === 'John Smith')!,
     startDate: sub(new Date(), { days: 3 }),
     estimatedHours: 7,
+    labelIds: ['feature', 'security'],
   },
   {
     id: 'q3r4s5t6u7v8w9x0y1z2a',
@@ -313,12 +351,14 @@ export const issues: Issue[] = [
     startDate: sub(new Date(), { days: 6 }),
     endDate: sub(new Date(), { days: 2 }),
     estimatedHours: 4,
+    labelIds: ['docs'],
   },
   {
     id: 'r4s5t6u7v8w9x0y1z2a3b',
     title: 'Fix dropdown menu',
     status: 'backlog',
     estimatedHours: 3,
+    labelIds: ['bug', 'ui'],
   },
   {
     id: 's5t6u7v8w9x0y1z2a3b4c',
@@ -326,6 +366,7 @@ export const issues: Issue[] = [
     status: 'todo',
     assignee: users.find((u) => u.name === 'Rose Eve')!,
     estimatedHours: 6,
+    labelIds: ['feature', 'ui'],
   },
   {
     id: 't6u7v8w9x0y1z2a3b4c5d',
@@ -334,6 +375,7 @@ export const issues: Issue[] = [
     assignee: users.find((u) => u.name === 'Adam Young')!,
     startDate: sub(new Date(), { days: 2 }),
     estimatedHours: 5,
+    labelIds: ['performance', 'ui'],
   },
   {
     id: 'u7v8w9x0y1z2a3b4c5d6e',
@@ -343,12 +385,14 @@ export const issues: Issue[] = [
     startDate: sub(new Date(), { days: 5 }),
     endDate: sub(new Date(), { days: 1 }),
     estimatedHours: 4,
+    labelIds: ['bug'],
   },
   {
     id: 'v8w9x0y1z2a3b4c5d6e7f',
     title: 'Add breadcrumbs',
     status: 'backlog',
     estimatedHours: 5,
+    labelIds: ['feature', 'ui'],
   },
   {
     id: 'w9x0y1z2a3b4c5d6e7f8g',
@@ -356,6 +400,7 @@ export const issues: Issue[] = [
     status: 'todo',
     assignee: users.find((u) => u.name === 'John Smith')!,
     estimatedHours: 6,
+    labelIds: ['enhancement', 'ui'],
   },
   {
     id: 'x0y1z2a3b4c5d6e7f8g9h',
@@ -364,6 +409,7 @@ export const issues: Issue[] = [
     assignee: users.find((u) => u.name === 'Rose Eve')!,
     startDate: sub(new Date(), { days: 1 }),
     estimatedHours: 4,
+    labelIds: ['bug', 'ui'],
   },
   {
     id: 'y1z2a3b4c5d6e7f8g9h0i',
@@ -372,12 +418,14 @@ export const issues: Issue[] = [
     startDate: sub(new Date(), { days: 7 }),
     endDate: sub(new Date(), { days: 3 }),
     estimatedHours: 7,
+    labelIds: ['feature'],
   },
   {
     id: 'z2a3b4c5d6e7f8g9h0i1j',
     title: 'Optimize JS bundle',
     status: 'backlog',
     estimatedHours: 8,
+    labelIds: ['performance'],
   },
   {
     id: 'a3b4c5d6e7f8g9h0i1j2k',
@@ -385,5 +433,6 @@ export const issues: Issue[] = [
     status: 'todo',
     assignee: users.find((u) => u.name === 'Adam Young')!,
     estimatedHours: 5,
+    labelIds: ['enhancement', 'ui'],
   },
 ]

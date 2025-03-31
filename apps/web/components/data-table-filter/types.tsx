@@ -18,6 +18,7 @@ export type Issue = {
   description?: string
   status: 'backlog' | 'todo' | 'in-progress' | 'done'
   assignee?: User
+  labelIds?: string[]
   startDate?: Date
   endDate?: Date
   estimatedHours?: number
@@ -51,3 +52,90 @@ export const issueStatuses: IssueStatus[] = [
     icon: CircleCheckIcon,
   },
 ] as const
+
+export type IssueLabel = {
+  value: string
+  name: string
+  color:
+    | 'red'
+    | 'orange'
+    | 'amber'
+    | 'yellow'
+    | 'lime'
+    | 'green'
+    | 'emerald'
+    | 'teal'
+    | 'cyan'
+    | 'sky'
+    | 'blue'
+    | 'indigo'
+    | 'violet'
+    | 'purple'
+    | 'fuchsia'
+    | 'pink'
+    | 'rose'
+    | 'neutral'
+}
+
+export const issueLabels: IssueLabel[] = [
+  {
+    value: 'bug',
+    name: 'Bug',
+    color: 'red',
+  },
+  {
+    value: 'feature',
+    name: 'Feature',
+    color: 'green',
+  },
+  {
+    value: 'enhancement',
+    name: 'Enhancement',
+    color: 'blue',
+  },
+  {
+    value: 'docs',
+    name: 'Documentation',
+    color: 'neutral',
+  },
+  {
+    value: 'performance',
+    name: 'Performance',
+    color: 'yellow',
+  },
+  {
+    value: 'security',
+    name: 'Security',
+    color: 'orange',
+  },
+  {
+    value: 'ui',
+    name: 'User Interface',
+    color: 'cyan',
+  },
+  {
+    value: 'testing',
+    name: 'Testing',
+    color: 'purple',
+  },
+  {
+    value: 'refactor',
+    name: 'Refactor',
+    color: 'indigo',
+  },
+  {
+    value: 'urgent',
+    name: 'Urgent',
+    color: 'rose',
+  },
+  {
+    value: 'database',
+    name: 'Database',
+    color: 'teal',
+  },
+  {
+    value: 'api',
+    name: 'API',
+    color: 'violet',
+  },
+]
