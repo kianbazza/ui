@@ -197,6 +197,11 @@ export default async function Page({
                 <span>{metadata.badge}</span>
               </Badge>
             )}
+            {metadata.badge === 'beta' && (
+              <Badge className="bg-purple-500 dark:bg-purple-600 text-white leading-none h-5 [&>span]:translate-y-[-0.5px]">
+                <span>{metadata.badge}</span>
+              </Badge>
+            )}
           </div>
           <div className="text-muted-foreground">{summary}</div>
         </div>
