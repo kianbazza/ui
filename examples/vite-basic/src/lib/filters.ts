@@ -49,11 +49,8 @@ export function defineMeta<
   TType extends ColumnDataType,
 >(
   key: TKey,
-  meta: Omit<ColumnMeta<TData, TData[TKey]>, 'type' | 'transformFn'> & {
+  meta: Omit<ColumnMeta<TData, TData[TKey]>, 'type'> & {
     type: TType
-    transformFn?: (
-      value: Exclude<TData[TKey], undefined | null>,
-    ) => FilterTypes[TType]
   },
 ): ColumnMeta<TData, TData[TKey]> {
   return meta
@@ -151,7 +148,7 @@ export type FilterTypes = {
 export type FilterValue<T extends ColumnDataType, TData> = {
   operator: FilterOperators[T]
   values: Array<FilterTypes[T]>
-  column: Column<TData>
+  columnMeta: Column<TData>['columnDef']['meta']
 }
 
 /*
@@ -614,7 +611,7 @@ export function optionFilterFn<TData>(
 
   if (!value) return false
 
-  const columnMeta = filterValue.column.columnDef.meta!
+  const columnMeta = filterValue.columnMeta!
 
   if (typeof value === 'string') {
     return __optionFilterFn(value, filterValue)
@@ -649,11 +646,16 @@ export function __optionFilterFn<TData>(
   }
 }
 
-function isColumnOption(value: unknown): value is ColumnOption {
-  return typeof value === 'object' && value !== null && 'value' in value
+export function isColumnOption(value: unknown): value is ColumnOption {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'value' in value &&
+    'label' in value
+  )
 }
 
-function isColumnOptionArray(value: unknown): value is ColumnOption[] {
+export function isColumnOptionArray(value: unknown): value is ColumnOption[] {
   return Array.isArray(value) && value.every(isColumnOption)
 }
 
@@ -670,7 +672,7 @@ export function multiOptionFilterFn<TData>(
 
   if (!value) return false
 
-  const columnMeta = filterValue.column.columnDef.meta!
+  const columnMeta = filterValue.columnMeta!
 
   if (isStringArray(value)) {
     return __multiOptionFilterFn(value, filterValue)

@@ -63,4 +63,4 @@ export function generateIssues(count: number) {
   return arr
 }
 
-export const ISSUES = generateIssues(30)
+export const ISSUES = generateIssues(5000)

@@ -30,6 +30,8 @@ import {
   filterTypeOperatorDetails,
   getColumn,
   getColumnMeta,
+  isColumnOption,
+  isColumnOptionArray,
   multiOptionFilterDetails,
   numberFilterDetails,
   optionFilterDetails,
@@ -829,6 +831,7 @@ export function PropertyFilterOptionValueDisplay<TData, TValue>({
     .getCoreRowModel()
     .rows.flatMap((r) => r.getValue<TValue>(id))
     .filter((v): v is NonNullable<TValue> => v !== undefined && v !== null)
+  const uniqueVals = uniq(columnVals)
 
   // If static options are provided, use them
   if (columnMeta.options) {
@@ -840,18 +843,20 @@ export function PropertyFilterOptionValueDisplay<TData, TValue>({
   else if (columnMeta.transformOptionFn) {
     const transformOptionFn = columnMeta.transformOptionFn
 
-    const unique = uniq(columnVals)
-
-    options = unique.map((v) =>
+    options = uniqueVals.map((v) =>
       transformOptionFn(v as ElementType<NonNullable<TValue>>),
     )
   }
 
-  // No static options provided
-  // Missing transformOptionFn - throw error
+  // Make sure the column data conforms to ColumnOption type
+  else if (isColumnOptionArray(uniqueVals)) {
+    options = uniqueVals
+  }
+
+  // Invalid configuration
   else {
     throw new Error(
-      'No options provided - this is required for multiOption data type without static options',
+      `[data-table-filter] [${id}] Either provide static options, a transformOptionFn, or ensure the column data conforms to ColumnOption type`,
     )
   }
 
@@ -914,6 +919,7 @@ export function PropertyFilterMultiOptionValueDisplay<TData, TValue>({
     .getCoreRowModel()
     .rows.flatMap((r) => r.getValue<TValue>(id))
     .filter((v): v is NonNullable<TValue> => v !== undefined && v !== null)
+  const uniqueVals = uniq(columnVals)
 
   // If static options are provided, use them
   if (columnMeta.options) {
@@ -925,18 +931,20 @@ export function PropertyFilterMultiOptionValueDisplay<TData, TValue>({
   else if (columnMeta.transformOptionFn) {
     const transformOptionFn = columnMeta.transformOptionFn
 
-    const unique = uniq(columnVals)
-
-    options = unique.map((v) =>
+    options = uniqueVals.map((v) =>
       transformOptionFn(v as ElementType<NonNullable<TValue>>),
     )
   }
 
-  // No static options provided
-  // Missing transformOptionFn - throw error
+  // Make sure the column data conforms to ColumnOption type
+  else if (isColumnOptionArray(uniqueVals)) {
+    options = uniqueVals
+  }
+
+  // Invalid configuration
   else {
     throw new Error(
-      'No options provided - this is required for multiOption data type without static options',
+      `[data-table-filter] [${id}] Either provide static options, a transformOptionFn, or ensure the column data conforms to ColumnOption type`,
     )
   }
 
@@ -1161,6 +1169,7 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
     .getCoreRowModel()
     .rows.flatMap((r) => r.getValue<TValue>(id))
     .filter((v): v is NonNullable<TValue> => v !== undefined && v !== null)
+  const uniqueVals = uniq(columnVals)
 
   // If static options are provided, use them
   if (columnMeta.options) {
@@ -1172,18 +1181,20 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
   else if (columnMeta.transformOptionFn) {
     const transformOptionFn = columnMeta.transformOptionFn
 
-    const unique = uniq(columnVals)
-
-    options = unique.map((v) =>
+    options = uniqueVals.map((v) =>
       transformOptionFn(v as ElementType<NonNullable<TValue>>),
     )
   }
 
-  // No static options provided
-  // Missing transformOptionFn - throw error
+  // Make sure the column data conforms to ColumnOption type
+  else if (isColumnOptionArray(uniqueVals)) {
+    options = uniqueVals
+  }
+
+  // Invalid configuration
   else {
     throw new Error(
-      'No options provided - this is required for multiOption data type without static options',
+      `[data-table-filter] [${id}] Either provide static options, a transformOptionFn, or ensure the column data conforms to ColumnOption type`,
     )
   }
 
@@ -1207,7 +1218,7 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
             return {
               operator: 'is',
               values: [value],
-              column,
+              columnMeta: column.columnDef.meta,
             } satisfies FilterValue<'option', TData>
 
           const newValues = [...old.values, value]
@@ -1215,7 +1226,7 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
           return {
             operator: 'is any of',
             values: newValues,
-            column,
+            columnMeta: column.columnDef.meta,
           } satisfies FilterValue<'option', TData>
         },
       )
@@ -1228,7 +1239,7 @@ export function PropertyFilterOptionValueMenu<TData, TValue>({
           return {
             operator: newValues.length > 1 ? 'is any of' : 'is',
             values: newValues,
-            column,
+            columnMeta: column.columnDef.meta,
           } satisfies FilterValue<'option', TData>
         },
       )
@@ -1302,6 +1313,7 @@ export function PropertyFilterMultiOptionValueMenu<
     .getCoreRowModel()
     .rows.flatMap((r) => r.getValue<TValue>(id))
     .filter((v): v is NonNullable<TValue> => v !== undefined && v !== null)
+  const uniqueVals = uniq(columnVals)
 
   // If static options are provided, use them
   if (columnMeta.options) {
@@ -1313,18 +1325,20 @@ export function PropertyFilterMultiOptionValueMenu<
   else if (columnMeta.transformOptionFn) {
     const transformOptionFn = columnMeta.transformOptionFn
 
-    const unique = uniq(columnVals)
-
-    options = unique.map((v) =>
+    options = uniqueVals.map((v) =>
       transformOptionFn(v as ElementType<NonNullable<TValue>>),
     )
   }
 
-  // No static options provided
-  // Missing transformOptionFn - throw error
+  // Make sure the column data conforms to ColumnOption type
+  else if (isColumnOptionArray(uniqueVals)) {
+    options = uniqueVals
+  }
+
+  // Invalid configuration
   else {
     throw new Error(
-      'No options provided - this is required for multiOption data type without static options',
+      `[data-table-filter] [${id}] Either provide static options, a transformOptionFn, or ensure the column data conforms to ColumnOption type`,
     )
   }
 
@@ -1354,7 +1368,7 @@ export function PropertyFilterMultiOptionValueMenu<
             return {
               operator: 'include',
               values: [[value]],
-              column,
+              columnMeta: column.columnDef.meta,
             } satisfies FilterValue<'multiOption', TData>
 
           const newValues = [uniq([...old.values[0], value])]
@@ -1367,7 +1381,7 @@ export function PropertyFilterMultiOptionValueMenu<
               old.operator,
             ),
             values: newValues,
-            column,
+            columnMeta: column.columnDef.meta,
           } satisfies FilterValue<'multiOption', TData>
         },
       )
@@ -1388,7 +1402,7 @@ export function PropertyFilterMultiOptionValueMenu<
               old.operator,
             ),
             values: newValues,
-            column,
+            columnMeta: column.columnDef.meta,
           } satisfies FilterValue<'multiOption', TData>
         },
       )
@@ -1474,7 +1488,7 @@ export function PropertyFilterDateValueMenu<TData, TValue>({
         return {
           operator: newValues.length > 1 ? 'is between' : 'is',
           values: newValues,
-          column,
+          columnMeta: column.columnDef.meta,
         } satisfies FilterValue<'date', TData>
 
       return {
@@ -1485,7 +1499,7 @@ export function PropertyFilterDateValueMenu<TData, TValue>({
               ? 'is'
               : old.operator,
         values: newValues,
-        column,
+        columnMeta: column.columnDef.meta,
       } satisfies FilterValue<'date', TData>
     })
   }
@@ -1525,7 +1539,7 @@ export function PropertyFilterTextValueMenu<TData, TValue>({
         return {
           operator: 'contains',
           values: [String(value)],
-          column,
+          columnMeta: column.columnDef.meta,
         } satisfies FilterValue<'text', TData>
       return { operator: old.operator, values: [String(value)] }
     })
