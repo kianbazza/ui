@@ -5,6 +5,7 @@ import { env } from '@/lib/env'
 import { berkeleyMono, inter } from '@/lib/fonts'
 import { ThemeProvider } from '@/providers/theme-provider'
 import type { Viewport } from 'next'
+import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 const title = 'bazza/ui — Hand-crafted, modern React components'
 const description =
@@ -84,7 +85,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <NuqsAdapter>{children}</NuqsAdapter>
         </ThemeProvider>
       </body>
     </html>

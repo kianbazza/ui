@@ -19,7 +19,6 @@ import {
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
-import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 export default function Page() {
   return (
@@ -101,9 +100,7 @@ export default function Page() {
           <h2 className="text-5xl tracking-[-0.03em] font-semibold drop-shadow-xs text-center">
             Check out the demo.
           </h2>
-          <NuqsAdapter>
-            <DataTableDemo />
-          </NuqsAdapter>
+          <DataTableDemo />
         </div>
       </div>
       <div className="border-b border-border border-dashed">
