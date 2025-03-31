@@ -172,6 +172,14 @@
   .callout {
     @apply rounded-sm !py-4;
 
+    .callout-title-icon svg {
+      @apply size-4 translate-y-[2px];
+    }
+
+    .callout-title-text {
+      @apply text-base;
+    }
+
     &[data-callout="tip"] {
       @apply bg-green-500/10;
     }
