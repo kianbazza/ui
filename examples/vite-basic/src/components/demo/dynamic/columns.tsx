@@ -14,7 +14,6 @@ import {
   TagsIcon,
   UserCheckIcon,
 } from 'lucide-react'
-import { USERS } from '../shared/data'
 import type { Issue } from './types'
 
 const columnHelper = createColumnHelper<Issue>()
@@ -146,11 +145,11 @@ export const columns = [
       }),
     },
   }),
-  columnHelper.accessor('assignee.name', {
+  columnHelper.accessor((row) => row.assignee?.name, {
     id: 'assigneeName',
     header: 'Assignee (Name)',
     filterFn: filterFn('option'),
-    meta: defineMeta('assignee.name', {
+    meta: defineMeta((row) => row.assignee?.name, {
       displayName: 'Assignee (Name)',
       type: 'option',
       icon: UserCheckIcon,
@@ -255,7 +254,7 @@ export const columns = [
       )
     },
     filterFn: filterFn('multiOption'),
-    meta: defineMeta('labels', {
+    meta: defineMeta((row) => row.labels, {
       displayName: 'Labels',
       type: 'multiOption',
       icon: TagsIcon,

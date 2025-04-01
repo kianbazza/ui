@@ -25,7 +25,7 @@ export const columns: ColumnDef<Issue, any>[] = [
     id: 'title',
     header: 'Title',
     filterFn: filterFn('text'),
-    meta: defineMeta('title', {
+    meta: defineMeta((row) => row.title, {
       displayName: 'Title',
       type: 'text',
       icon: Heading1Icon,
@@ -35,7 +35,7 @@ export const columns: ColumnDef<Issue, any>[] = [
     id: 'dueDate',
     header: 'Due Date',
     filterFn: filterFn('date'),
-    meta: defineMeta('dueDate', {
+    meta: defineMeta((row) => row.dueDate, {
       displayName: 'Due Date',
       type: 'date',
       icon: CalendarIcon,
@@ -45,7 +45,7 @@ export const columns: ColumnDef<Issue, any>[] = [
     id: 'estimatedHours',
     header: 'Estimated Hours',
     filterFn: filterFn('number'),
-    meta: defineMeta('estimatedHours', {
+    meta: defineMeta((row) => row.estimatedHours, {
       displayName: 'Estimated Hours',
       type: 'number',
       icon: ClockIcon,
@@ -55,7 +55,7 @@ export const columns: ColumnDef<Issue, any>[] = [
     id: 'status',
     header: 'Status',
     filterFn: filterFn('option'),
-    meta: defineMeta('status', {
+    meta: defineMeta((row) => row.status, {
       displayName: 'Status',
       type: 'option',
       icon: CircleDotDashedIcon,
