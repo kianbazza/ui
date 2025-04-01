@@ -146,6 +146,20 @@ export const columns = [
       }),
     },
   }),
+  columnHelper.accessor('assignee.name', {
+    id: 'assigneeName',
+    header: 'Assignee (Name)',
+    filterFn: filterFn('option'),
+    meta: defineMeta('assignee.name', {
+      displayName: 'Assignee (Name)',
+      type: 'option',
+      icon: UserCheckIcon,
+      transformOptionFn: (firstName) => ({
+        value: firstName,
+        label: firstName,
+      }),
+    }),
+  }),
   columnHelper.accessor((row) => row.estimatedHours, {
     id: 'estimatedHours',
     header: 'Estimated Hours',

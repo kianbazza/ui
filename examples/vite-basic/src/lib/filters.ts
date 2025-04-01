@@ -1,5 +1,11 @@
 import '@tanstack/table-core'
-import type { Column, Row, RowData } from '@tanstack/react-table'
+import type {
+  Column,
+  DeepKeys,
+  DeepValue,
+  Row,
+  RowData,
+} from '@tanstack/react-table'
 import type { ColumnMeta, Table } from '@tanstack/react-table'
 import {
   endOfDay,
@@ -43,34 +49,16 @@ declare module '@tanstack/react-table' {
   }
 }
 
-// Type utility to get the type of a nested property using dot notation
-type PathValue<T, P extends string> = P extends `${infer K}.${infer Rest}`
-  ? K extends keyof T
-    ? PathValue<T[K], Rest>
-    : never
-  : P extends keyof T
-    ? T[P]
-    : never
-
-// Type utility to get all possible nested paths for a type
-type NestedPaths<T> = {
-  [K in keyof T]: K extends string
-    ? T[K] extends object
-      ? K | `${K}.${keyof T[K] & string}`
-      : K
-    : never
-}[keyof T & string]
-
 export function defineMeta<
   TData,
-  TPath extends NestedPaths<TData>,
+  TPath extends DeepKeys<TData>,
   TType extends ColumnDataType,
 >(
   path: TPath,
-  meta: Omit<ColumnMeta<TData, PathValue<TData, TPath>>, 'type'> & {
+  meta: Omit<ColumnMeta<TData, DeepValue<TData, TPath>>, 'type'> & {
     type: TType
   },
-): ColumnMeta<TData, PathValue<TData, TPath>> {
+): ColumnMeta<TData, DeepValue<TData, TPath>> {
   return meta
 }
 
