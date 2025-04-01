@@ -50,7 +50,7 @@ type PathValue<T, P extends string> = P extends `${infer K}.${infer Rest}`
     : never
   : P extends keyof T
     ? T[P]
-    : never;
+    : never
 
 // Type utility to get all possible nested paths for a type
 type NestedPaths<T> = {
@@ -58,8 +58,8 @@ type NestedPaths<T> = {
     ? T[K] extends object
       ? K | `${K}.${keyof T[K] & string}`
       : K
-    : never;
-}[keyof T & string];
+    : never
+}[keyof T & string]
 
 export function defineMeta<
   TData,
@@ -67,11 +67,11 @@ export function defineMeta<
   TType extends ColumnDataType,
 >(
   path: TPath,
-  meta: Omit<ColumnMeta<TData, PathValue<TData, TPath>>, "type"> & {
-    type: TType;
+  meta: Omit<ColumnMeta<TData, PathValue<TData, TPath>>, 'type'> & {
+    type: TType
   },
 ): ColumnMeta<TData, PathValue<TData, TPath>> {
-  return meta;
+  return meta
 }
 
 /*
