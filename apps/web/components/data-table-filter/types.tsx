@@ -11,11 +11,6 @@ export type User = {
   name: string
   firstName: string
   lastName: string
-  nameObj?: {
-    first: string
-    last: string
-    num: number
-  }
   picture: string
 }
 
