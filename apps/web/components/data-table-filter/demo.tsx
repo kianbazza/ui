@@ -190,7 +190,7 @@ export const columns = [
       )
     },
     filterFn: filterFn('option'),
-    meta: defineMeta('assignee', {
+    meta: defineMeta((row) => row.assignee, {
       displayName: 'Assignee',
       type: 'option',
       icon: UserCheckIcon,
@@ -216,7 +216,7 @@ export const columns = [
     id: 'assigneeName',
     header: 'Assignee (Name)',
     filterFn: filterFn('option'),
-    meta: defineMeta('assignee.name', {
+    meta: defineMeta((row) => row.assignee?.name, {
       displayName: 'Assignee name',
       type: 'option',
       icon: UserCheckIcon,
@@ -251,7 +251,7 @@ export const columns = [
         </div>
       )
     },
-    meta: defineMeta('labelIds', {
+    meta: defineMeta((row) => row.labelIds, {
       displayName: 'Labels',
       type: 'multiOption',
       icon: TagIcon,
