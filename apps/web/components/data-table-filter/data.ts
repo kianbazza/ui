@@ -5,29 +5,21 @@ export const users: User[] = [
   {
     id: 'a1b2c3d4e5f6g7h8i9j0k',
     name: 'John Smith',
-    firstName: 'John',
-    lastName: 'Smith',
     picture: '/avatars/john-smith.png',
   },
   {
     id: 'b2c3d4e5f6g7h8i9j0k1l',
     name: 'Rose Eve',
-    firstName: 'Rose',
-    lastName: 'Eve',
     picture: '/avatars/rose-eve.png',
   },
   {
     id: 'c3d4e5f6g7h8i9j0k1l2m',
     name: 'Adam Young',
-    firstName: 'Adam',
-    lastName: 'Young',
     picture: '/avatars/adam-young.png',
   },
   {
     id: 'd4e5f6g7h8i9j0k1l2m3n',
     name: 'Michael Scott',
-    firstName: 'Michael',
-    lastName: 'Scott',
     picture: '/avatars/michael-scott.png',
   },
 ]

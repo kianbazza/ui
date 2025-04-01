@@ -217,12 +217,12 @@ export const columns = [
     header: 'Assignee (Name)',
     filterFn: filterFn('option'),
     meta: defineMeta('assignee.name', {
-      displayName: 'Assignee (Name)',
+      displayName: 'Assignee name',
       type: 'option',
       icon: UserCheckIcon,
-      transformOptionFn: (firstName) => ({
-        value: firstName,
-        label: firstName,
+      transformOptionFn: (name) => ({
+        value: name,
+        label: name,
       }),
     }),
   }),
