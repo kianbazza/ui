@@ -320,7 +320,11 @@
           height: calc(var(--spacing) * 6);
           content: '';
         }
+      }
 
+      [data-line].diff ~ [data-highlighted-line]::before,
+      [data-highlighted-line] ~ [data-line].diff + [data-highlighted-line]::before {
+        margin-left: calc(var(--spacing) * -8);
       }
 
       [data-line]:has(+ [data-line].diff),
