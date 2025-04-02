@@ -363,3 +363,56 @@ We can break down the `PropertyFilterValueController` as an example:
 />
 
 The `PropertyFilterOperatorController` has a similar composition and can be inferred from the above description and image.
+
+## Changelog
+
+### 2025-04-01 - April 1st, 2025
+
+> [!DANGER] This is a breaking change.
+
+This adds support for filtering columns where the column value is not strictly a property of the original data. This was not possible before, due to the limitation of `defineMeta`'s first argument, which only accepted a direct property on the initial data type.
+
+You can now filter columns where the value is:
+
+- a deeply nested property (i.e. `user.name`)
+- accessed using a function (i.e. `row => row.user.name.split(' ')[0]`)
+
+To accomplish this, we've decided to change the interface for the `defineMeta` helper function. The first property is now an **accessor function**, instead of an accessor key.
+
+See the example below for how to migrate:
+
+```ts
+type Issue = {
+  status: string
+  user: {
+    name: string
+  }
+}
+```
+
+```ts {15-22}
+const columns = [
+  /* ... */
+  columnHelper.accessor('status', {
+    meta: defineMeta(
+      'status', // [!code --]
+      row => row.status, // [!code ++]
+      { 
+        type: 'option',
+        icon: CircleDotDashedIcon,
+        options: ISSUE_STATUSES,
+      }
+    ),
+  }),
+  columnHelper.accessor(row => row.user.name, {
+    meta: defineMeta(
+      row => row.user.name,
+      { 
+        type: 'option',
+        icon: AvatarIcon,
+        /* ... */
+      }
+    ),
+  }),
+]
+```
