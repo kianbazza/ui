@@ -177,3 +177,18 @@ export function UserJotIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   )
 }
+
+export function BazzaUIIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="30 30 175 175"
+      width="100%"
+      height="100%"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <circle cx="90" cy="90" r="60" className="fill-[#eb0c0c]/75" />
+      <circle cx="145" cy="145" r="60" className="fill-[#0067ff]/75" />
+    </svg>
+  )
+}
