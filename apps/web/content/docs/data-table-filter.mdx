@@ -203,11 +203,13 @@ For the filter function, we provide one for you - it is conveniently called `fil
 
 For the column meta, we provide a helper function called `defineMeta()` which takes two arguments: **(1)** the property name from your data object, and **(2)** an object containing the column meta.
 
+When specifying the property name, you must use an accessor function, as demonstrated below.
+
 ```ts
 export const columns = [
   columnHelper.accessor('status', {
     filterFn: filterFn('option'),
-    meta: defineMeta('status', {
+    meta: defineMeta(row => row.status, {
       displayName: 'Status',
       type: 'option',
       icon: CircleDotDashedIcon,
