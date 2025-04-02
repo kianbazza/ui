@@ -212,7 +212,7 @@ export const columns = [
       }),
     }),
   }),
-  columnHelper.accessor('assignee.name', {
+  columnHelper.accessor((row) => row.assignee?.name, {
     id: 'assigneeName',
     header: 'Assignee (Name)',
     filterFn: filterFn('option'),
