@@ -191,6 +191,10 @@
     &[data-callout="warning"] {
       @apply bg-orange-500/10;
     }
+
+    &[data-callout="danger"] {
+      @apply bg-red-500/10 **:!text-red-700 !border-l-red-700 dark:!border-l-red-500 dark:**:!text-red-500;
+    }
   }
 
   html.dark .shiki,
@@ -316,7 +320,17 @@
           height: calc(var(--spacing) * 6);
           content: '';
         }
+      }
 
+      [data-line].diff ~ [data-highlighted-line]::before,
+      [data-highlighted-line] ~ [data-line].diff + [data-highlighted-line]::before {
+        margin-left: calc(var(--spacing) * -8);
+      }
+
+      [data-line]:has(+ [data-line].diff),
+      [data-line].diff,
+      [data-line].diff ~ [data-line] {
+        padding-left: calc(var(--spacing) * 8);
       }
 
       [data-line].diff.add {
@@ -325,7 +339,7 @@
         &::before {
           @apply border-l-3 border-green-500;
           position: absolute;
-          margin-left: calc(var(--spacing) * -6);
+          margin-left: calc(var(--spacing) * -8);
           margin-top: calc(var(--spacing) * -0.5);
           height: calc(var(--spacing) * 6);
           content: '';
@@ -336,6 +350,7 @@
           left: calc(var(--spacing) * 2.5);
           color: var(--color-green-500);
           font-size: var(--text-base);
+          line-height: 1.3;
           content: '+';
         }
       }
@@ -346,7 +361,7 @@
         &::before {
           @apply border-l-3 border-red-500;
           position: absolute;
-          margin-left: calc(var(--spacing) * -6);
+          margin-left: calc(var(--spacing) * -8);
           margin-top: calc(var(--spacing) * -0.5);
           height: calc(var(--spacing) * 6);
           content: '';
@@ -357,6 +372,7 @@
           left: calc(var(--spacing) * 2.5);
           color: var(--color-red-500);
           font-size: var(--text-base);
+          line-height: 1.3;
           content: '-';
         }
       }
