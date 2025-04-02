@@ -581,7 +581,7 @@ function PropertyFilterOptionOperatorMenu<TData>({
       {relatedFilters.map((r) => {
         return (
           <CommandItem onSelect={changeOperator} value={r.value} key={r.value}>
-            {r.value}
+            {r.label}
           </CommandItem>
         )
       })}
@@ -610,7 +610,7 @@ function PropertyFilterMultiOptionOperatorMenu<TData>({
       {relatedFilters.map((r) => {
         return (
           <CommandItem onSelect={changeOperator} value={r.value} key={r.value}>
-            {r.value}
+            {r.label}
           </CommandItem>
         )
       })}
@@ -639,7 +639,7 @@ function PropertyFilterDateOperatorMenu<TData>({
       {relatedFilters.map((r) => {
         return (
           <CommandItem onSelect={changeOperator} value={r.value} key={r.value}>
-            {r.value}
+            {r.label}
           </CommandItem>
         )
       })}
@@ -668,7 +668,7 @@ export function PropertyFilterTextOperatorMenu<TData>({
       {relatedFilters.map((r) => {
         return (
           <CommandItem onSelect={changeOperator} value={r.value} key={r.value}>
-            {r.value}
+            {r.label}
           </CommandItem>
         )
       })}
@@ -708,7 +708,7 @@ function PropertyFilterNumberOperatorMenu<TData>({
             value={r.value}
             key={r.value}
           >
-            {r.value} {/**/}
+            {r.label} {/**/}
           </CommandItem>
         ))}
       </CommandGroup>
