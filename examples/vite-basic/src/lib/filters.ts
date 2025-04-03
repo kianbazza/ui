@@ -167,7 +167,7 @@ export type FilterTypes = {
  * - Values: An array of values to be used for the filter.
  *
  */
-export type FilterValue<T extends ColumnDataType, TData> = {
+export type TFilterValuee<T extends ColumnDataType, TData> = {
   operator: FilterOperators[T]
   values: Array<FilterTypes[T]>
   columnMeta: Column<TData>['columnDef']['meta']
@@ -627,7 +627,7 @@ export function filterFn(dataType: ColumnDataType) {
 export function optionFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: FilterValue<'option', TData>,
+  filterValue: TFilterValuee<'option', TData>,
 ) {
   const value = row.getValue(columnId)
 
@@ -649,7 +649,7 @@ export function optionFilterFn<TData>(
 
 export function __optionFilterFn<TData>(
   inputData: string,
-  filterValue: FilterValue<'option', TData>,
+  filterValue: TFilterValuee<'option', TData>,
 ) {
   if (!inputData) return false
   if (filterValue.values.length === 0) return true
@@ -688,7 +688,7 @@ function isStringArray(value: unknown): value is string[] {
 export function multiOptionFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: FilterValue<'multiOption', TData>,
+  filterValue: TFilterValuee<'multiOption', TData>,
 ) {
   const value = row.getValue(columnId)
 
@@ -719,7 +719,7 @@ export function multiOptionFilterFn<TData>(
 
 export function __multiOptionFilterFn<TData>(
   inputData: string[],
-  filterValue: FilterValue<'multiOption', TData>,
+  filterValue: TFilterValuee<'multiOption', TData>,
 ) {
   if (!inputData) return false
 
@@ -753,7 +753,7 @@ export function __multiOptionFilterFn<TData>(
 export function dateFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: FilterValue<'date', TData>,
+  filterValue: TFilterValuee<'date', TData>,
 ) {
   const valueStr = row.getValue<Date>(columnId)
 
@@ -762,7 +762,7 @@ export function dateFilterFn<TData>(
 
 export function __dateFilterFn<TData>(
   inputData: Date,
-  filterValue: FilterValue<'date', TData>,
+  filterValue: TFilterValuee<'date', TData>,
 ) {
   if (!filterValue || filterValue.values.length === 0) return true
 
@@ -813,7 +813,7 @@ export function __dateFilterFn<TData>(
 export function textFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: FilterValue<'text', TData>,
+  filterValue: TFilterValuee<'text', TData>,
 ) {
   const value = row.getValue<string>(columnId) ?? ''
 
@@ -822,7 +822,7 @@ export function textFilterFn<TData>(
 
 export function __textFilterFn<TData>(
   inputData: string,
-  filterValue: FilterValue<'text', TData>,
+  filterValue: TFilterValuee<'text', TData>,
 ) {
   if (!filterValue || filterValue.values.length === 0) return true
 
@@ -844,7 +844,7 @@ export function __textFilterFn<TData>(
 export function numberFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: FilterValue<'number', TData>,
+  filterValue: TFilterValuee<'number', TData>,
 ) {
   const value = row.getValue<number>(columnId)
 
@@ -853,7 +853,7 @@ export function numberFilterFn<TData>(
 
 export function __numberFilterFn<TData>(
   inputData: number,
-  filterValue: FilterValue<'number', TData>,
+  filterValue: TFilterValuee<'number', TData>,
 ) {
   if (!filterValue || !filterValue.values || filterValue.values.length === 0) {
     return true
