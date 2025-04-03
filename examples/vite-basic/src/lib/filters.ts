@@ -1,12 +1,5 @@
 import '@tanstack/table-core'
-import type {
-  AccessorFn,
-  Column,
-  DeepKeys,
-  DeepValue,
-  Row,
-  RowData,
-} from '@tanstack/react-table'
+import type { AccessorFn, Column, Row, RowData } from '@tanstack/react-table'
 import type { ColumnMeta, Table } from '@tanstack/react-table'
 import {
   endOfDay,
@@ -167,7 +160,7 @@ export type FilterTypes = {
  * - Values: An array of values to be used for the filter.
  *
  */
-export type TFilterValue<T extends ColumnDataType, TData> = {
+export type FilterModel<T extends ColumnDataType, TData> = {
   operator: FilterOperators[T]
   values: Array<FilterTypes[T]>
   columnMeta: Column<TData>['columnDef']['meta']
@@ -627,7 +620,7 @@ export function filterFn(dataType: ColumnDataType) {
 export function optionFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: TFilterValue<'option', TData>,
+  filterValue: FilterModel<'option', TData>,
 ) {
   const value = row.getValue(columnId)
 
@@ -649,7 +642,7 @@ export function optionFilterFn<TData>(
 
 export function __optionFilterFn<TData>(
   inputData: string,
-  filterValue: TFilterValue<'option', TData>,
+  filterValue: FilterModel<'option', TData>,
 ) {
   if (!inputData) return false
   if (filterValue.values.length === 0) return true
@@ -688,7 +681,7 @@ function isStringArray(value: unknown): value is string[] {
 export function multiOptionFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: TFilterValue<'multiOption', TData>,
+  filterValue: FilterModel<'multiOption', TData>,
 ) {
   const value = row.getValue(columnId)
 
@@ -719,7 +712,7 @@ export function multiOptionFilterFn<TData>(
 
 export function __multiOptionFilterFn<TData>(
   inputData: string[],
-  filterValue: TFilterValue<'multiOption', TData>,
+  filterValue: FilterModel<'multiOption', TData>,
 ) {
   if (!inputData) return false
 
@@ -753,7 +746,7 @@ export function __multiOptionFilterFn<TData>(
 export function dateFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: TFilterValue<'date', TData>,
+  filterValue: FilterModel<'date', TData>,
 ) {
   const valueStr = row.getValue<Date>(columnId)
 
@@ -762,7 +755,7 @@ export function dateFilterFn<TData>(
 
 export function __dateFilterFn<TData>(
   inputData: Date,
-  filterValue: TFilterValue<'date', TData>,
+  filterValue: FilterModel<'date', TData>,
 ) {
   if (!filterValue || filterValue.values.length === 0) return true
 
@@ -813,7 +806,7 @@ export function __dateFilterFn<TData>(
 export function textFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: TFilterValue<'text', TData>,
+  filterValue: FilterModel<'text', TData>,
 ) {
   const value = row.getValue<string>(columnId) ?? ''
 
@@ -822,7 +815,7 @@ export function textFilterFn<TData>(
 
 export function __textFilterFn<TData>(
   inputData: string,
-  filterValue: TFilterValue<'text', TData>,
+  filterValue: FilterModel<'text', TData>,
 ) {
   if (!filterValue || filterValue.values.length === 0) return true
 
@@ -844,7 +837,7 @@ export function __textFilterFn<TData>(
 export function numberFilterFn<TData>(
   row: Row<TData>,
   columnId: string,
-  filterValue: TFilterValue<'number', TData>,
+  filterValue: FilterModel<'number', TData>,
 ) {
   const value = row.getValue<number>(columnId)
 
@@ -853,7 +846,7 @@ export function numberFilterFn<TData>(
 
 export function __numberFilterFn<TData>(
   inputData: number,
-  filterValue: TFilterValue<'number', TData>,
+  filterValue: FilterModel<'number', TData>,
 ) {
   if (!filterValue || !filterValue.values || filterValue.values.length === 0) {
     return true
