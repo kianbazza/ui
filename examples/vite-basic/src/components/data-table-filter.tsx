@@ -23,7 +23,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import { take, uniq } from '@/lib/array'
 import {
   type ColumnDataType,
-  type TFilterValuee,
+  type TFilterValue,
   createNumberRange,
   dateFilterDetails,
   determineNewOperator,
@@ -63,7 +63,7 @@ export function DataTableFilter<TData, TValue>({
     return (
       <div className="flex w-full items-start justify-between gap-2">
         <div className="flex gap-1">
-          <FilterCreator table={table} />
+          <FilterSelector table={table} />
           <FilterActions table={table} />
         </div>
         <ActiveFiltersMobileContainer>
@@ -76,7 +76,7 @@ export function DataTableFilter<TData, TValue>({
   return (
     <div className="flex w-full items-start justify-between gap-2">
       <div className="flex md:flex-wrap gap-2 w-full flex-1">
-        <FilterCreator table={table} />
+        <FilterSelector table={table} />
         <ActiveFilters table={table} />
       </div>
       <FilterActions table={table} />
@@ -173,7 +173,7 @@ export function FilterActions<TData>({ table }: { table: Table<TData> }) {
   )
 }
 
-export function FilterCreator<TData>({ table }: { table: Table<TData> }) {
+export function FilterSelector<TData>({ table }: { table: Table<TData> }) {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState('')
   const [property, setProperty] = useState<string | undefined>(undefined)
@@ -335,28 +335,28 @@ export function ActiveFilters<TData>({ table }: { table: Table<TData> }) {
         switch (meta.type) {
           case 'text':
             return renderFilter<TData, 'text'>(
-              filter as { id: string; value: TFilterValuee<'text', TData> },
+              filter as { id: string; value: TFilterValue<'text', TData> },
               column,
               meta as ColumnMeta<TData, unknown> & { type: 'text' },
               table,
             )
           case 'number':
             return renderFilter<TData, 'number'>(
-              filter as { id: string; value: TFilterValuee<'number', TData> },
+              filter as { id: string; value: TFilterValue<'number', TData> },
               column,
               meta as ColumnMeta<TData, unknown> & { type: 'number' },
               table,
             )
           case 'date':
             return renderFilter<TData, 'date'>(
-              filter as { id: string; value: TFilterValuee<'date', TData> },
+              filter as { id: string; value: TFilterValue<'date', TData> },
               column,
               meta as ColumnMeta<TData, unknown> & { type: 'date' },
               table,
             )
           case 'option':
             return renderFilter<TData, 'option'>(
-              filter as { id: string; value: TFilterValuee<'option', TData> },
+              filter as { id: string; value: TFilterValue<'option', TData> },
               column,
               meta as ColumnMeta<TData, unknown> & { type: 'option' },
               table,
@@ -365,7 +365,7 @@ export function ActiveFilters<TData>({ table }: { table: Table<TData> }) {
             return renderFilter<TData, 'multiOption'>(
               filter as {
                 id: string
-                value: TFilterValuee<'multiOption', TData>
+                value: TFilterValue<'multiOption', TData>
               },
               column,
               meta as ColumnMeta<TData, unknown> & {
@@ -383,7 +383,7 @@ export function ActiveFilters<TData>({ table }: { table: Table<TData> }) {
 
 // Generic render function for a filter with type-safe value
 function renderFilter<TData, T extends ColumnDataType>(
-  filter: { id: string; value: TFilterValuee<T, TData> },
+  filter: { id: string; value: TFilterValue<T, TData> },
   column: Column<TData, unknown>,
   meta: ColumnMeta<TData, unknown> & { type: T },
   table: Table<TData>,
@@ -449,7 +449,7 @@ export function FilterOperator<TData, T extends ColumnDataType>({
 }: {
   column: Column<TData, unknown>
   columnMeta: ColumnMeta<TData, unknown>
-  filter: TFilterValuee<T, TData>
+  filter: TFilterValue<T, TData>
 }) {
   const [open, setOpen] = useState<boolean>(false)
 
@@ -485,7 +485,7 @@ export function FilterOperatorDisplay<TData, T extends ColumnDataType>({
   filter,
   filterType,
 }: {
-  filter: TFilterValuee<T, TData>
+  filter: TFilterValue<T, TData>
   filterType: T
 }) {
   const details = filterTypeOperatorDetails[filterType][filter.operator]
@@ -549,7 +549,7 @@ function FilterOperatorOptionController<TData>({
   column,
   closeController,
 }: FilterOperatorControllerProps<TData>) {
-  const filter = column.getFilterValue() as TFilterValuee<'option', TData>
+  const filter = column.getFilterValue() as TFilterValue<'option', TData>
   const filterDetails = optionFilterDetails[filter.operator]
 
   const relatedFilters = Object.values(optionFilterDetails).filter(
@@ -578,7 +578,7 @@ function FilterOperatorMultiOptionController<TData>({
   column,
   closeController,
 }: FilterOperatorControllerProps<TData>) {
-  const filter = column.getFilterValue() as TFilterValuee<'multiOption', TData>
+  const filter = column.getFilterValue() as TFilterValue<'multiOption', TData>
   const filterDetails = multiOptionFilterDetails[filter.operator]
 
   const relatedFilters = Object.values(multiOptionFilterDetails).filter(
@@ -607,7 +607,7 @@ function FilterOperatorDateController<TData>({
   column,
   closeController,
 }: FilterOperatorControllerProps<TData>) {
-  const filter = column.getFilterValue() as TFilterValuee<'date', TData>
+  const filter = column.getFilterValue() as TFilterValue<'date', TData>
   const filterDetails = dateFilterDetails[filter.operator]
 
   const relatedFilters = Object.values(dateFilterDetails).filter(
@@ -636,7 +636,7 @@ export function FilterOperatorTextController<TData>({
   column,
   closeController,
 }: FilterOperatorControllerProps<TData>) {
-  const filter = column.getFilterValue() as TFilterValuee<'text', TData>
+  const filter = column.getFilterValue() as TFilterValue<'text', TData>
   const filterDetails = textFilterDetails[filter.operator]
 
   const relatedFilters = Object.values(textFilterDetails).filter(
@@ -665,7 +665,7 @@ function FilterOperatorNumberController<TData>({
   column,
   closeController,
 }: FilterOperatorControllerProps<TData>) {
-  const filter = column.getFilterValue() as TFilterValuee<'number', TData>
+  const filter = column.getFilterValue() as TFilterValue<'number', TData>
 
   // Show all related operators
   const relatedFilters = Object.values(numberFilterDetails)
@@ -850,7 +850,7 @@ export function FilterValueOptionDisplay<TData, TValue>({
     )
   }
 
-  const filter = column.getFilterValue() as TFilterValuee<'option', TData>
+  const filter = column.getFilterValue() as TFilterValue<'option', TData>
   const selected = options.filter((o) => filter?.values.includes(o.value))
 
   // We display the selected options based on how many are selected
@@ -938,7 +938,7 @@ export function FilterValueMultiOptionDisplay<TData, TValue>({
     )
   }
 
-  const filter = column.getFilterValue() as TFilterValuee<'multiOption', TData>
+  const filter = column.getFilterValue() as TFilterValue<'multiOption', TData>
   const selected = options.filter((o) => filter?.values[0].includes(o.value))
 
   if (selected.length === 1) {
@@ -1002,7 +1002,7 @@ export function FilterValueDateDisplay<TData, TValue>({
   column,
 }: FilterValueDisplayProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as TFilterValuee<'date', TData>)
+    ? (column.getFilterValue() as TFilterValue<'date', TData>)
     : undefined
 
   if (!filter) return null
@@ -1024,7 +1024,7 @@ export function FilterValueTextDisplay<TData, TValue>({
   column,
 }: FilterValueDisplayProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as TFilterValuee<'text', TData>)
+    ? (column.getFilterValue() as TFilterValue<'text', TData>)
     : undefined
 
   if (!filter) return null
@@ -1044,7 +1044,7 @@ export function FilterValueNumberDisplay<TData, TValue>({
   const cappedMax = maxFromMeta ?? 2147483647
 
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as TFilterValuee<'number', TData>)
+    ? (column.getFilterValue() as TFilterValue<'number', TData>)
     : undefined
 
   if (!filter) return null
@@ -1151,7 +1151,7 @@ export function FilterValueOptionController<TData, TValue>({
   table,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as TFilterValuee<'option', TData>)
+    ? (column.getFilterValue() as TFilterValue<'option', TData>)
     : undefined
 
   let options: ColumnOption[]
@@ -1203,13 +1203,13 @@ export function FilterValueOptionController<TData, TValue>({
   function handleOptionSelect(value: string, check: boolean) {
     if (check)
       column?.setFilterValue(
-        (old: undefined | TFilterValuee<'option', TData>) => {
+        (old: undefined | TFilterValue<'option', TData>) => {
           if (!old || old.values.length === 0)
             return {
               operator: 'is',
               values: [value],
               columnMeta: column.columnDef.meta,
-            } satisfies TFilterValuee<'option', TData>
+            } satisfies TFilterValue<'option', TData>
 
           const newValues = [...old.values, value]
 
@@ -1217,12 +1217,12 @@ export function FilterValueOptionController<TData, TValue>({
             operator: 'is any of',
             values: newValues,
             columnMeta: column.columnDef.meta,
-          } satisfies TFilterValuee<'option', TData>
+          } satisfies TFilterValue<'option', TData>
         },
       )
     else
       column?.setFilterValue(
-        (old: undefined | TFilterValuee<'option', TData>) => {
+        (old: undefined | TFilterValue<'option', TData>) => {
           if (!old || old.values.length <= 1) return undefined
 
           const newValues = old.values.filter((v) => v !== value)
@@ -1230,7 +1230,7 @@ export function FilterValueOptionController<TData, TValue>({
             operator: newValues.length > 1 ? 'is any of' : 'is',
             values: newValues,
             columnMeta: column.columnDef.meta,
-          } satisfies TFilterValuee<'option', TData>
+          } satisfies TFilterValue<'option', TData>
         },
       )
   }
@@ -1295,7 +1295,7 @@ export function FilterValueMultiOptionController<
   table,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue() as
-    | TFilterValuee<'multiOption', TData>
+    | TFilterValue<'multiOption', TData>
     | undefined
 
   let options: ColumnOption[]
@@ -1350,7 +1350,7 @@ export function FilterValueMultiOptionController<
   function handleOptionSelect(value: string, check: boolean) {
     if (check) {
       column.setFilterValue(
-        (old: undefined | TFilterValuee<'multiOption', TData>) => {
+        (old: undefined | TFilterValue<'multiOption', TData>) => {
           if (
             !old ||
             old.values.length === 0 ||
@@ -1361,7 +1361,7 @@ export function FilterValueMultiOptionController<
               operator: 'include',
               values: [[value]],
               columnMeta: column.columnDef.meta,
-            } satisfies TFilterValuee<'multiOption', TData>
+            } satisfies TFilterValue<'multiOption', TData>
 
           const newValues = [uniq([...old.values[0], value])]
 
@@ -1374,12 +1374,12 @@ export function FilterValueMultiOptionController<
             ),
             values: newValues,
             columnMeta: column.columnDef.meta,
-          } satisfies TFilterValuee<'multiOption', TData>
+          } satisfies TFilterValue<'multiOption', TData>
         },
       )
     } else
       column.setFilterValue(
-        (old: undefined | TFilterValuee<'multiOption', TData>) => {
+        (old: undefined | TFilterValue<'multiOption', TData>) => {
           if (!old?.values[0] || old.values[0].length <= 1) return undefined
 
           const newValues = [
@@ -1395,7 +1395,7 @@ export function FilterValueMultiOptionController<
             ),
             values: newValues,
             columnMeta: column.columnDef.meta,
-          } satisfies TFilterValuee<'multiOption', TData>
+          } satisfies TFilterValue<'multiOption', TData>
         },
       )
   }
@@ -1454,7 +1454,7 @@ export function FilterValueDateController<TData, TValue>({
   column,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as TFilterValuee<'date', TData>)
+    ? (column.getFilterValue() as TFilterValue<'date', TData>)
     : undefined
 
   const [date, setDate] = useState<DateRange | undefined>({
@@ -1475,13 +1475,13 @@ export function FilterValueDateController<TData, TValue>({
 
     const newValues = isRange ? [start, end] : start ? [start] : []
 
-    column.setFilterValue((old: undefined | TFilterValuee<'date', TData>) => {
+    column.setFilterValue((old: undefined | TFilterValue<'date', TData>) => {
       if (!old || old.values.length === 0)
         return {
           operator: newValues.length > 1 ? 'is between' : 'is',
           values: newValues,
           columnMeta: column.columnDef.meta,
-        } satisfies TFilterValuee<'date', TData>
+        } satisfies TFilterValue<'date', TData>
 
       return {
         operator:
@@ -1492,7 +1492,7 @@ export function FilterValueDateController<TData, TValue>({
               : old.operator,
         values: newValues,
         columnMeta: column.columnDef.meta,
-      } satisfies TFilterValuee<'date', TData>
+      } satisfies TFilterValue<'date', TData>
     })
   }
 
@@ -1522,17 +1522,17 @@ export function FilterValueTextController<TData, TValue>({
   column,
 }: ProperFilterValueMenuProps<TData, TValue>) {
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as TFilterValuee<'text', TData>)
+    ? (column.getFilterValue() as TFilterValue<'text', TData>)
     : undefined
 
   const changeText = (value: string | number) => {
-    column.setFilterValue((old: undefined | TFilterValuee<'text', TData>) => {
+    column.setFilterValue((old: undefined | TFilterValue<'text', TData>) => {
       if (!old || old.values.length === 0)
         return {
           operator: 'contains',
           values: [String(value)],
           columnMeta: column.columnDef.meta,
-        } satisfies TFilterValuee<'text', TData>
+        } satisfies TFilterValue<'text', TData>
       return { operator: old.operator, values: [String(value)] }
     })
   }
@@ -1564,7 +1564,7 @@ export function FilterValueNumberController<TData, TValue>({
   const cappedMax = maxFromMeta ?? Number.MAX_SAFE_INTEGER
 
   const filter = column.getFilterValue()
-    ? (column.getFilterValue() as TFilterValuee<'number', TData>)
+    ? (column.getFilterValue() as TFilterValue<'number', TData>)
     : undefined
 
   const isNumberRange =
@@ -1586,7 +1586,7 @@ export function FilterValueNumberController<TData, TValue>({
   const changeNumber = (value: number[]) => {
     const sortedValues = [...value].sort((a, b) => a - b)
 
-    column.setFilterValue((old: undefined | TFilterValuee<'number', TData>) => {
+    column.setFilterValue((old: undefined | TFilterValue<'number', TData>) => {
       if (!old || old.values.length === 0) {
         return {
           operator: 'is',
@@ -1635,7 +1635,7 @@ export function FilterValueNumberController<TData, TValue>({
   }
 
   const changeType = (type: 'single' | 'range') => {
-    column.setFilterValue((old: undefined | TFilterValuee<'number', TData>) => {
+    column.setFilterValue((old: undefined | TFilterValue<'number', TData>) => {
       if (type === 'single') {
         return {
           operator: 'is',
