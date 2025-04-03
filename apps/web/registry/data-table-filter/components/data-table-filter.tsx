@@ -68,7 +68,7 @@ export function DataTableFilter<TData, TValue>({
     return (
       <div className="flex w-full items-start justify-between gap-2">
         <div className="flex gap-1">
-          <FilterCreator table={table} />
+          <FilterSelector table={table} />
           <FilterActions table={table} />
         </div>
         <ActiveFiltersMobileContainer>
@@ -81,7 +81,7 @@ export function DataTableFilter<TData, TValue>({
   return (
     <div className="flex w-full items-start justify-between gap-2">
       <div className="flex md:flex-wrap gap-2 w-full flex-1">
-        <FilterCreator table={table} />
+        <FilterSelector table={table} />
         <ActiveFilters table={table} />
       </div>
       <FilterActions table={table} />
@@ -178,7 +178,7 @@ export function FilterActions<TData>({ table }: { table: Table<TData> }) {
   )
 }
 
-export function FilterCreator<TData>({ table }: { table: Table<TData> }) {
+export function FilterSelector<TData>({ table }: { table: Table<TData> }) {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState('')
   const [property, setProperty] = useState<string | undefined>(undefined)
