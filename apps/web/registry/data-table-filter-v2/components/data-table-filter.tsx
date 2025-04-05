@@ -120,20 +120,28 @@ export function DataTableFilter<TData>({
 }: { config: DataTableFilterConfig<TData> }) {
   const { columns, filters, actions } = useDataTableFilters(config)
 
-  // const isMobile = useIsMobile()
-  // if (isMobile) {
-  //   return (
-  //     <div className="flex w-full items-start justify-between gap-2">
-  //       <div className="flex gap-1">
-  //         <FilterSelector table={table} />
-  //         <FilterActions table={table} />
-  //       </div>
-  //       <ActiveFiltersMobileContainer>
-  //         <ActiveFilters table={table} />
-  //       </ActiveFiltersMobileContainer>
-  //     </div>
-  //   )
-  // }
+  const isMobile = useIsMobile()
+  if (isMobile) {
+    return (
+      <div className="flex w-full items-start justify-between gap-2">
+        <div className="flex gap-1">
+          <FilterSelector
+            filters={filters}
+            columns={columns}
+            actions={actions}
+          />
+          <FilterActions filters={filters} actions={actions} />
+        </div>
+        <ActiveFiltersMobileContainer>
+          <ActiveFilters
+            columns={columns}
+            filters={filters}
+            actions={actions}
+          />
+        </ActiveFiltersMobileContainer>
+      </div>
+    )
+  }
 
   return (
     <div className="flex w-full items-start justify-between gap-2">
