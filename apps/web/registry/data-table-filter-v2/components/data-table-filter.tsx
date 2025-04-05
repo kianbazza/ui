@@ -59,6 +59,7 @@ import { Ellipsis } from 'lucide-react'
 import {
   cloneElement,
   isValidElement,
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -236,11 +237,17 @@ export function useDataTableFilters<TData>(
   return { columns, filters, actions }
 }
 
-export function DataTableFilter<TData>({
-  config,
-}: { config: DataTableFilterConfig<TData> }) {
-  const { columns, filters, actions } = useDataTableFilters(config)
+interface DataTableFilterProps<TData> {
+  columns: Column<TData>[]
+  filters: FiltersState
+  actions: DataTableFilterActions
+}
 
+export function DataTableFilter<TData>({
+  columns,
+  filters,
+  actions,
+}: DataTableFilterProps<TData>) {
   // const isMobile = useIsMobile()
   // if (isMobile) {
   //   return (
@@ -400,11 +407,44 @@ export function FilterableColumn<TData, TVal>({
   column: Column<TData, TVal>
   setProperty: (value: string) => void
 }) {
+  const itemRef = useRef<HTMLDivElement>(null)
+
+  // Wrap this in useCallback to prevent it from being called on every render
+  const prefetch = useCallback(() => {
+    column.prefetchFacetedUniqueValues()
+  }, [column])
+
+  useEffect(() => {
+    const target = itemRef.current
+
+    if (!target) return
+
+    // Set up MutationObserver
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === 'attributes') {
+          const isSelected = target.getAttribute('data-selected') === 'true'
+          if (isSelected) prefetch()
+        }
+      }
+    })
+
+    // Set up observer
+    observer.observe(target, {
+      attributes: true,
+      attributeFilter: ['data-selected'],
+    })
+
+    // Cleanup on unmount
+    return () => observer.disconnect()
+  }, [prefetch])
+
   return (
     <CommandItem
+      ref={itemRef}
       onSelect={() => setProperty(column.id)}
       className="group"
-      onMouseEnter={() => column.prefetchFacetedUniqueValues()}
+      onMouseEnter={prefetch}
     >
       <div className="flex w-full items-center justify-between">
         <div className="inline-flex items-center gap-1.5">
