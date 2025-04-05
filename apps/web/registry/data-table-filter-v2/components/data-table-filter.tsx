@@ -77,13 +77,13 @@ export function useDataTableFilters<TData>(
     setInternalFilters,
   ]
 
-  // Memoize columns – the expensive getters will only recalc if data/columns change.
+  // This useMemo call ensures that createColumns() only recomputes when config.data or config.columns change.
   const columns = useMemo(
     () => createColumns(config.data, config.columns),
     [config.data, config.columns],
   )
 
-  // Expose actions to modify the filters.
+  // ... (rest of the hook)
   const actions: DataTableFilterActions = useMemo(
     () => ({
       setFilterValue<TType extends ColumnDataType>(

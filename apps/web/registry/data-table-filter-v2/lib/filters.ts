@@ -1,6 +1,7 @@
 import { isAnyOf } from '@/components/data-table-filter/v2/utils'
 import type { LucideIcon } from 'lucide-react'
 import { uniq } from './array'
+import { memo } from './memo'
 
 export type ElementType<T> = T extends (infer U)[] ? U : T
 
@@ -70,9 +71,10 @@ export function getColumnOptions<TData, TVal>(
   data: TData[],
 ): ColumnOption[] {
   if (!isAnyOf(column.type, ['option', 'multiOption'])) {
-    throw new Error(
+    console.warn(
       'Column options can only be retrieved for option and multiOption columns',
     )
+    return []
   }
 
   if (column.options) {
@@ -86,17 +88,16 @@ export function getColumnOptions<TData, TVal>(
   )
 
   if (column.transformOptionFn) {
-    // Map the accessor values to options
-    if (column.type === 'option') {
-      // All rows as per the accessor
-      return models.map((m) =>
-        column.transformOptionFn!(m as ElementType<NonNullable<TVal>>),
-      )
-    }
-
-    return models.map((m) =>
-      column.transformOptionFn!(m as ElementType<NonNullable<TVal>>),
+    // Memoize transformOptionFn calls
+    const memoizedTransform = memo(
+      () => [models],
+      (deps) =>
+        deps[0].map((m) =>
+          column.transformOptionFn!(m as ElementType<NonNullable<TVal>>),
+        ),
+      { key: `transform-${column.id}` },
     )
+    return memoizedTransform()
   }
 
   if (isColumnOptionArray(models)) return models
@@ -107,27 +108,43 @@ export function getColumnOptions<TData, TVal>(
 }
 
 export function getColumnValues<TData, TVal>(
-  column: Column<TData, TVal>,
+  column: ColumnConfig<TData, TVal>,
   data: TData[],
 ) {
-  const raw = data
-    .flatMap(column.accessor)
-    .filter(
-      (v): v is NonNullable<TVal> => v !== undefined && v !== null,
-    ) as ElementType<NonNullable<TVal>>[]
+  // Memoize accessor calls
+  const memoizedAccessor = memo(
+    () => [data],
+    (deps) =>
+      deps[0]
+        .flatMap(column.accessor)
+        .filter(
+          (v): v is NonNullable<TVal> => v !== undefined && v !== null,
+        ) as ElementType<NonNullable<TVal>>[],
+    { key: `accessor-${column.id}` },
+  )
+
+  const raw = memoizedAccessor()
 
   if (!isAnyOf(column.type, ['option', 'multiOption'])) {
     return raw
   }
 
   if (column.options) {
-    return raw.map((v) => column.options?.find((o) => o.value === v)?.value)
+    return raw
+      .map((v) => column.options?.find((o) => o.value === v)?.value)
+      .filter((v) => v !== undefined && v !== null)
   }
 
   if (column.transformOptionFn) {
-    return raw.map(
-      (v) => column.transformOptionFn!(v) as ElementType<NonNullable<TVal>>,
+    const memoizedTransform = memo(
+      () => [raw],
+      (deps) =>
+        deps[0].map(
+          (v) => column.transformOptionFn!(v) as ElementType<NonNullable<TVal>>,
+        ),
+      { key: `transform-values-${column.id}` },
     )
+    return memoizedTransform()
   }
 
   if (isColumnOptionArray(raw)) {
@@ -140,35 +157,39 @@ export function getColumnValues<TData, TVal>(
 }
 
 export function getFacetedUniqueValues<TData, TVal>(
-  column: Column<TData, TVal>,
-  data: TData[],
+  column: ColumnConfig<TData, TVal>,
+  values: string[] | ColumnOption[],
 ): Map<string, number> {
   console.time('getFacetedUniqueValues')
   if (!isAnyOf(column.type, ['option', 'multiOption'])) {
-    console.time('getFacetedUniqueValues')
-    throw new Error(
+    console.timeEnd('getFacetedUniqueValues')
+    console.warn(
       'Faceted unique values can only be retrieved for option and multiOption columns',
     )
+    return new Map<string, number>()
   }
 
   console.log('HERE!')
 
-  const options = getColumnValues(column, data)
   const acc = new Map<string, number>()
 
-  if (isColumnOptionArray(options)) {
-    for (const option of options) {
+  console.log('processing values:', values)
+
+  if (isColumnOptionArray(values)) {
+    for (const option of values) {
       const curr = acc.get(option.value) ?? 0
       acc.set(option.value, curr + 1)
     }
   } else {
-    for (const option of options) {
+    for (const option of values) {
       const curr = acc.get(option as string) ?? 0
       acc.set(option as string, curr + 1)
     }
   }
 
   console.timeEnd('getFacetedUniqueValues')
+
+  console.log('Faceted unique values:', acc)
   return acc
 }
 
@@ -186,20 +207,57 @@ export function createColumns<TData>(
   data: TData[],
   columnConfigs: ColumnConfig<TData>[],
 ): Column<TData>[] {
-  const columns: Column<TData>[] = []
+  const initialData = data
 
-  for (const columnConfig of columnConfigs) {
-    const column: Column<TData, any> = {
+  return columnConfigs.map((columnConfig) => {
+    const getOptions: () => ColumnOption[] = memo(
+      () => [initialData],
+      () => getColumnOptions(columnConfig, initialData),
+      { key: `options-${columnConfig.id}` },
+    )
+
+    const getValues: () => ElementType<NonNullable<any>>[] = memo(
+      () => [initialData],
+      () => getColumnValues(columnConfig, initialData),
+      { key: `values-${columnConfig.id}` },
+    )
+
+    // Fix: Compute faceted values directly within the memo function
+    const getFacetedValues: () => Map<string, number> = memo(
+      () => [getValues()], // Dependency is the getValues result
+      (deps) => {
+        const values = deps[0] // Unpack the array from dependencies
+        return getFacetedUniqueValues(columnConfig, values) // Pass the array
+      },
+      { key: `faceted-${columnConfig.id}` },
+    )
+
+    const getMinMaxValues: () => number[] = memo(
+      () => [initialData],
+      () => getFacetedMinMaxValues(columnConfig, initialData),
+      { key: `minmax-${columnConfig.id}` },
+    )
+
+    return {
       ...columnConfig,
-      getOptions: () => getColumnOptions(columnConfig, data),
-      getFacetedUniqueValues: () => getFacetedUniqueValues(column, data),
-      getFacetedMinMaxValues: () => getFacetedMinMaxValues(columnConfig, data),
-      getValues: () => getColumnValues(column, data),
-    }
-    columns.push(column)
-  }
-
-  return columns
+      getOptions,
+      getValues,
+      getFacetedUniqueValues: getFacetedValues,
+      getFacetedMinMaxValues: getMinMaxValues,
+      recomputeFull: () => {
+        const fullOptions = getColumnOptions(columnConfig, data)
+        const fullValues = getColumnValues(columnConfig, data)
+        return {
+          getOptions: () => fullOptions,
+          getValues: () => fullValues,
+          getFacetedUniqueValues: () =>
+            getFacetedUniqueValues(columnConfig, fullValues as any),
+          getFacetedMinMaxValues: () =>
+            getFacetedMinMaxValues(columnConfig, data),
+        }
+      },
+    } as Column<TData>
+  })
 }
 
 export function getColumn<TData>(columns: Column<TData>[], id: string) {
