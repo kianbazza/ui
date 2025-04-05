@@ -20,31 +20,32 @@ import { ISSUES } from './data'
 import DataTable from './data-table'
 
 export default function DataTableDemo() {
-  const [sorting, setSorting] = useState<SortingState>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [globalFilter, setGlobalFilter] = useState('')
-  const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
+  // const [sorting, setSorting] = useState<SortingState>([])
+  // const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+  // const [globalFilter, setGlobalFilter] = useState('')
+  // const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
 
   const table = useReactTable({
     data: ISSUES,
     columns,
+    getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getFacetedRowModel: getFacetedRowModel(),
-    getFacetedMinMaxValues: getFacetedMinMaxValues(),
-    onSortingChange: setSorting,
-    onColumnFiltersChange: setColumnFilters,
-    onColumnVisibilityChange: setColumnVisibility,
+    // getPaginationRowModel: getPaginationRowModel(),
+    // getSortedRowModel: getSortedRowModel(),
+    // getFilteredRowModel: getFilteredRowModel(),
+    // getFacetedRowModel: getFacetedRowModel(),
+    // getFacetedMinMaxValues: getFacetedMinMaxValues(),
+    // onSortingChange: setSorting,
+    // onColumnFiltersChange: setColumnFilters,
+    // onColumnVisibilityChange: setColumnVisibility,
     onRowSelectionChange: setRowSelection,
-    onGlobalFilterChange: setGlobalFilter,
+    // onGlobalFilterChange: setGlobalFilter,
     state: {
-      sorting,
-      columnFilters,
-      globalFilter,
-      columnVisibility,
+      // sorting,
+      // columnFilters,
+      // globalFilter,
+      // columnVisibility,
       rowSelection,
     },
   })
