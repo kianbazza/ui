@@ -276,7 +276,11 @@ export function FilterableColumn<TData, TVal>({
   setProperty: (value: string) => void
 }) {
   return (
-    <CommandItem onSelect={() => setProperty(column.id)} className="group">
+    <CommandItem
+      onSelect={() => setProperty(column.id)}
+      className="group"
+      onMouseEnter={() => column.prefetchFacetedUniqueValues()}
+    >
       <div className="flex w-full items-center justify-between">
         <div className="inline-flex items-center gap-1.5">
           {<column.icon strokeWidth={2.25} className="size-4" />}
