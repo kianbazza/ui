@@ -31,7 +31,7 @@ export default function DataTableDemo() {
     columns,
     getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
-    // getPaginationRowModel: getPaginationRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
     // getSortedRowModel: getSortedRowModel(),
     // getFilteredRowModel: getFilteredRowModel(),
     // getFacetedRowModel: getFacetedRowModel(),
