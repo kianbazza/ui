@@ -1,7 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { use, useState } from 'react'
 
+import { CodeBlock } from '@/components/code-block'
+import { print } from '@/lib/utils'
+import { useDataTableFilters } from '@/registry/data-table-filter-v2/components/data-table-filter'
 import { createColumns } from '@/registry/data-table-filter-v2/lib/filters'
 import {
   type ColumnFiltersState,
@@ -15,7 +18,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { columns, columnsConfig } from './columns'
+import { columnsConfig, columns as tableColumns } from './columns'
 import { ISSUES } from './data'
 import DataTable from './data-table'
 
@@ -28,7 +31,7 @@ export default function DataTableDemo() {
 
   const table = useReactTable({
     data: ISSUES,
-    columns,
+    columns: tableColumns,
     getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -51,6 +54,20 @@ export default function DataTableDemo() {
   })
 
   const cols = createColumns(ISSUES, columnsConfig)
+  const { filters, columns, actions } = useDataTableFilters({
+    data: ISSUES,
+    columns: cols,
+  })
 
-  return <DataTable table={table} config={{ data: ISSUES, columns: cols }} />
+  return (
+    <div className="grid grid-cols-2 gap-8">
+      <DataTable
+        table={table}
+        filters={filters}
+        columns={columns}
+        actions={actions}
+      />
+      <CodeBlock lang="json" code={print(filters)} />
+    </div>
+  )
 }

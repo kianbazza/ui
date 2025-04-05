@@ -8,17 +8,35 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { DataTableFilter } from '@/registry/data-table-filter-v2/components/data-table-filter'
-import type { DataTableFilterConfig } from '@/registry/data-table-filter-v2/lib/filters'
+import type {
+  Column,
+  DataTableFilterActions,
+  DataTableFilterConfig,
+  FiltersState,
+} from '@/registry/data-table-filter-v2/lib/filters'
 import { type Table as TanStackTable, flexRender } from '@tanstack/react-table'
+
+interface DataTableProps<TData> {
+  table: TanStackTable<TData>
+  filters: FiltersState
+  columns: Column<TData>[]
+  actions: DataTableFilterActions
+}
 
 export default function DataTable<TData>({
   table,
-  config,
-}: { table: TanStackTable<TData>; config: DataTableFilterConfig<TData> }) {
+  filters,
+  columns,
+  actions,
+}: DataTableProps<TData>) {
   return (
     <div className="w-full">
       <div className="flex items-center py-4 gap-2">
-        <DataTableFilter config={config} />
+        <DataTableFilter
+          filters={filters}
+          columns={columns}
+          actions={actions}
+        />
       </div>
       <div className="rounded-md border bg-white dark:bg-inherit">
         <Table>
