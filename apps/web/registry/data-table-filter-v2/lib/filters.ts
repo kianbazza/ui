@@ -178,11 +178,7 @@ export function getFacetedUniqueValues<TData, TVal>(
     return new Map<string, number>()
   }
 
-  console.log('HERE!')
-
   const acc = new Map<string, number>()
-
-  console.log('processing values:', values)
 
   if (isColumnOptionArray(values)) {
     for (const option of values) {
@@ -198,7 +194,6 @@ export function getFacetedUniqueValues<TData, TVal>(
 
   console.timeEnd('getFacetedUniqueValues')
 
-  console.log('Faceted unique values:', acc)
   return acc
 }
 
@@ -265,7 +260,7 @@ export function createColumns<TData>(
           setTimeout(() => {
             const options = getOptions()
             column._prefetchedOptionsCache = options
-            console.log(`Prefetched options for ${columnConfig.id}:`, options)
+            console.log(`Prefetched options for ${columnConfig.id}`)
             resolve(undefined)
           }, 0),
         )
@@ -278,7 +273,7 @@ export function createColumns<TData>(
           setTimeout(() => {
             const values = getValues()
             column._prefetchedValuesCache = values
-            console.log(`Prefetched values for ${columnConfig.id}:`, values)
+            console.log(`Prefetched values for ${columnConfig.id}`)
             resolve(undefined)
           }, 0),
         )
@@ -293,8 +288,7 @@ export function createColumns<TData>(
             const facetedMap = getFacetedUniqueValues(columnConfig, values)
             column._prefetchedFacetedCache = facetedMap
             console.log(
-              `Prefetched faceted unique values for ${columnConfig.id}:`,
-              facetedMap,
+              `Prefetched faceted unique values for ${columnConfig.id}`,
             )
             resolve(undefined)
           }, 0),
