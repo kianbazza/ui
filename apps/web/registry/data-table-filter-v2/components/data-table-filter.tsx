@@ -41,6 +41,7 @@ import {
   dateFilterDetails,
   determineNewOperator,
   filterTypeOperatorDetails,
+  getColumn,
   multiOptionFilterDetails,
   numberFilterDetails,
   optionFilterDetails,
@@ -62,107 +63,85 @@ import {
 } from 'react'
 import type { DateRange } from 'react-day-picker'
 
-export function ActiveFiltersMobileContainer({
-  children,
-}: { children: React.ReactNode }) {
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
-  const [showLeftBlur, setShowLeftBlur] = useState(false)
-  const [showRightBlur, setShowRightBlur] = useState(true)
+export function useDataTableFilters<TData>(
+  config: DataTableFilterConfig<TData>,
+  controlledState?: [
+    FiltersState,
+    React.Dispatch<React.SetStateAction<FiltersState>>,
+  ],
+) {
+  const [internalFilters, setInternalFilters] = useState<FiltersState>([])
+  const [filters, setFilters] = controlledState ?? [
+    internalFilters,
+    setInternalFilters,
+  ]
 
-  // Check if there's content to scroll and update blur states
-  const checkScroll = () => {
-    if (scrollContainerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } =
-        scrollContainerRef.current
-
-      // Show left blur if scrolled to the right
-      setShowLeftBlur(scrollLeft > 0)
-
-      // Show right blur if there's more content to scroll to the right
-      // Add a small buffer (1px) to account for rounding errors
-      setShowRightBlur(scrollLeft + clientWidth < scrollWidth - 1)
-    }
-  }
-
-  // Log blur states for debugging
-  // useEffect(() => {
-  //   console.log('left:', showLeftBlur, '  right:', showRightBlur)
-  // }, [showLeftBlur, showRightBlur])
-
-  // Set up ResizeObserver to monitor container size
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    if (scrollContainerRef.current) {
-      const resizeObserver = new ResizeObserver(() => {
-        checkScroll()
-      })
-      resizeObserver.observe(scrollContainerRef.current)
-      return () => {
-        resizeObserver.disconnect()
-      }
-    }
-  }, [])
-
-  // Update blur states when children change
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    checkScroll()
-  }, [children])
-
-  return (
-    <div className="relative w-full overflow-x-hidden">
-      {/* Left blur effect */}
-      {showLeftBlur && (
-        <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-r from-background to-transparent animate-in fade-in-0" />
-      )}
-
-      {/* Scrollable container */}
-      <div
-        ref={scrollContainerRef}
-        className="flex gap-2 overflow-x-scroll no-scrollbar"
-        onScroll={checkScroll}
-      >
-        {children}
-      </div>
-
-      {/* Right blur effect */}
-      {showRightBlur && (
-        <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-l from-background to-transparent animate-in fade-in-0 " />
-      )}
-    </div>
+  // Memoize columns – the expensive getters will only recalc if data/columns change.
+  const columns = useMemo(
+    () => createColumns(config.data, config.columns),
+    [config.data, config.columns],
   )
+
+  // Expose actions to modify the filters.
+  const actions: DataTableFilterActions = useMemo(
+    () => ({
+      setFilterValue<TType extends ColumnDataType>(
+        columnId: string,
+        values: FilterModel<TType>['values'],
+      ) {
+        setFilters((prev) =>
+          prev.map((f) => (f.columnId === columnId ? { ...f, values } : f)),
+        )
+      },
+      setFilterOperator<TType extends ColumnDataType>(
+        columnId: string,
+        operator: FilterModel<TType>['operator'],
+      ) {
+        setFilters((prev) =>
+          prev.map((f) => (f.columnId === columnId ? { ...f, operator } : f)),
+        )
+      },
+      removeFilter(columnId: string) {
+        setFilters((prev) => prev.filter((f) => f.columnId !== columnId))
+      },
+      removeAllFilters() {
+        setFilters([])
+      },
+    }),
+    [setFilters],
+  )
+
+  return { columns, filters, actions }
 }
 
-export function DebouncedInput({
-  value: initialValue,
-  onChange,
-  debounce = 500,
-  ...props
-}: {
-  value: string | number
-  onChange: (value: string | number) => void
-  debounce?: number
-} & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'>) {
-  const [value, setValue] = useState(initialValue)
+export function DataTableFilter<TData>({
+  config,
+}: { config: DataTableFilterConfig<TData> }) {
+  const { columns, filters, actions } = useDataTableFilters(config)
 
-  useEffect(() => {
-    setValue(initialValue)
-  }, [initialValue])
-
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      onChange(value)
-    }, debounce)
-
-    return () => clearTimeout(timeout)
-  }, [value, onChange, debounce])
+  // const isMobile = useIsMobile()
+  // if (isMobile) {
+  //   return (
+  //     <div className="flex w-full items-start justify-between gap-2">
+  //       <div className="flex gap-1">
+  //         <FilterSelector table={table} />
+  //         <FilterActions table={table} />
+  //       </div>
+  //       <ActiveFiltersMobileContainer>
+  //         <ActiveFilters table={table} />
+  //       </ActiveFiltersMobileContainer>
+  //     </div>
+  //   )
+  // }
 
   return (
-    <Input
-      {...props}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-    />
+    <div className="flex w-full items-start justify-between gap-2">
+      <div className="flex md:flex-wrap gap-2 w-full flex-1">
+        <FilterSelector filters={filters} columns={columns} />
+        <ActiveFilters columns={columns} filters={filters} actions={actions} />
+      </div>
+      <FilterActions filters={filters} actions={actions} />
+    </div>
   )
 }
 
@@ -189,16 +168,6 @@ export function FilterActions({ filters, actions }: FilterActionsProps) {
 interface FilterSelectorProps<TData> {
   filters: FiltersState
   columns: Column<TData>[]
-}
-
-function getColumn<TData>(columns: Column<TData>[], id: string) {
-  const column = columns.find((c) => c.id === id)
-
-  if (!column) {
-    throw new Error(`Column with id ${id} not found`)
-  }
-
-  return column
 }
 
 export function FilterSelector<TData>({
@@ -617,72 +586,6 @@ function FilterOperatorNumberController<TData>({
           </CommandItem>
         ))}
       </CommandGroup>
-    </div>
-  )
-}
-
-export function DataTableFilter<TData>({
-  config,
-}: { config: DataTableFilterConfig<TData> }) {
-  const [filters, setFilters] = useState<FiltersState>([])
-
-  const columns = createColumns(config.data, config.columns)
-
-  function removeAllFilters() {
-    return setFilters([])
-  }
-
-  function setFilterValue<TType extends ColumnDataType>(
-    columnId: string,
-    values: FilterModel<TType>['values'],
-  ) {
-    setFilters((prev) =>
-      prev.map((f) => (f.columnId === columnId ? { ...f, values } : f)),
-    )
-  }
-
-  function setFilterOperator<TType extends ColumnDataType>(
-    columnId: string,
-    operator: FilterModel<TType>['operator'],
-  ) {
-    setFilters((prev) =>
-      prev.map((f) => (f.columnId === columnId ? { ...f, operator } : f)),
-    )
-  }
-
-  function removeFilter(columnId: string) {
-    setFilters((prev) => prev.filter((f) => f.columnId !== columnId))
-  }
-
-  const actions = {
-    setFilterValue,
-    setFilterOperator,
-    removeFilter,
-    removeAllFilters,
-  } satisfies DataTableFilterActions
-
-  // const isMobile = useIsMobile()
-  // if (isMobile) {
-  //   return (
-  //     <div className="flex w-full items-start justify-between gap-2">
-  //       <div className="flex gap-1">
-  //         <FilterSelector table={table} />
-  //         <FilterActions table={table} />
-  //       </div>
-  //       <ActiveFiltersMobileContainer>
-  //         <ActiveFilters table={table} />
-  //       </ActiveFiltersMobileContainer>
-  //     </div>
-  //   )
-  // }
-
-  return (
-    <div className="flex w-full items-start justify-between gap-2">
-      <div className="flex md:flex-wrap gap-2 w-full flex-1">
-        <FilterSelector filters={filters} columns={columns} />
-        <ActiveFilters columns={columns} filters={filters} actions={actions} />
-      </div>
-      <FilterActions filters={filters} actions={actions} />
     </div>
   )
 }
@@ -1594,5 +1497,109 @@ export function FilterValueNumberController<TData>({
         </CommandGroup>
       </CommandList>
     </Command>
+  )
+}
+
+export function ActiveFiltersMobileContainer({
+  children,
+}: { children: React.ReactNode }) {
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
+  const [showLeftBlur, setShowLeftBlur] = useState(false)
+  const [showRightBlur, setShowRightBlur] = useState(true)
+
+  // Check if there's content to scroll and update blur states
+  const checkScroll = () => {
+    if (scrollContainerRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } =
+        scrollContainerRef.current
+
+      // Show left blur if scrolled to the right
+      setShowLeftBlur(scrollLeft > 0)
+
+      // Show right blur if there's more content to scroll to the right
+      // Add a small buffer (1px) to account for rounding errors
+      setShowRightBlur(scrollLeft + clientWidth < scrollWidth - 1)
+    }
+  }
+
+  // Log blur states for debugging
+  // useEffect(() => {
+  //   console.log('left:', showLeftBlur, '  right:', showRightBlur)
+  // }, [showLeftBlur, showRightBlur])
+
+  // Set up ResizeObserver to monitor container size
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      const resizeObserver = new ResizeObserver(() => {
+        checkScroll()
+      })
+      resizeObserver.observe(scrollContainerRef.current)
+      return () => {
+        resizeObserver.disconnect()
+      }
+    }
+  }, [])
+
+  // Update blur states when children change
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    checkScroll()
+  }, [children])
+
+  return (
+    <div className="relative w-full overflow-x-hidden">
+      {/* Left blur effect */}
+      {showLeftBlur && (
+        <div className="absolute left-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-r from-background to-transparent animate-in fade-in-0" />
+      )}
+
+      {/* Scrollable container */}
+      <div
+        ref={scrollContainerRef}
+        className="flex gap-2 overflow-x-scroll no-scrollbar"
+        onScroll={checkScroll}
+      >
+        {children}
+      </div>
+
+      {/* Right blur effect */}
+      {showRightBlur && (
+        <div className="absolute right-0 top-0 bottom-0 w-16 z-10 pointer-events-none bg-gradient-to-l from-background to-transparent animate-in fade-in-0 " />
+      )}
+    </div>
+  )
+}
+
+export function DebouncedInput({
+  value: initialValue,
+  onChange,
+  debounce = 500,
+  ...props
+}: {
+  value: string | number
+  onChange: (value: string | number) => void
+  debounce?: number
+} & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'>) {
+  const [value, setValue] = useState(initialValue)
+
+  useEffect(() => {
+    setValue(initialValue)
+  }, [initialValue])
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      onChange(value)
+    }, debounce)
+
+    return () => clearTimeout(timeout)
+  }, [value, onChange, debounce])
+
+  return (
+    <Input
+      {...props}
+      value={value}
+      onChange={(e) => setValue(e.target.value)}
+    />
   )
 }

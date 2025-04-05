@@ -106,6 +106,16 @@ export function createColumns<TData>(
   return columns
 }
 
+export function getColumn<TData>(columns: Column<TData>[], id: string) {
+  const column = columns.find((c) => c.id === id)
+
+  if (!column) {
+    throw new Error(`Column with id ${id} not found`)
+  }
+
+  return column
+}
+
 /*
  * Represents a possible value for a column property of type 'option' or 'multiOption'.
  */
