@@ -47,6 +47,7 @@ import {
   optionFilterDetails,
   textFilterDetails,
 } from '@/registry/data-table-filter-v2/lib/filters'
+import { FitlerValueController } from '@/registry/data-table-filter/components/data-table-filter'
 import { take, uniq } from '@/registry/data-table-filter/lib/array'
 import { format, isEqual } from 'date-fns'
 import { FilterXIcon } from 'lucide-react'
@@ -137,7 +138,7 @@ export function DataTableFilter<TData>({
   return (
     <div className="flex w-full items-start justify-between gap-2">
       <div className="flex md:flex-wrap gap-2 w-full flex-1">
-        <FilterSelector filters={filters} columns={columns} />
+        <FilterSelector filters={filters} columns={columns} actions={actions} />
         <ActiveFilters columns={columns} filters={filters} actions={actions} />
       </div>
       <FilterActions filters={filters} actions={actions} />
@@ -168,11 +169,13 @@ export function FilterActions({ filters, actions }: FilterActionsProps) {
 interface FilterSelectorProps<TData> {
   filters: FiltersState
   columns: Column<TData>[]
+  actions: DataTableFilterActions
 }
 
 export function FilterSelector<TData>({
   filters,
   columns,
+  actions,
 }: FilterSelectorProps<TData>) {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState('')
@@ -180,6 +183,16 @@ export function FilterSelector<TData>({
   const inputRef = useRef<HTMLInputElement>(null)
 
   const column = property ? getColumn(columns, property) : undefined
+  const filter = property
+    ? filters.find((f) => f.columnId === property)
+    : undefined
+
+  // console.log(
+  //   'All columns:',
+  //   columns.map((c) => c.id),
+  // )
+
+  // console.log('Viewing column:', column?.id)
 
   const hasFilters = filters.length > 0
 
@@ -196,13 +209,13 @@ export function FilterSelector<TData>({
 
   const content = useMemo(
     () =>
-      property && column ? null : (
-        // <FitlerValueController
-        //   id={property}
-        //   column={column}
-        //   columnMeta={columnMeta}
-        //   table={table}
-        // />
+      property && column ? (
+        <FilterValueController
+          filter={filter!}
+          column={column}
+          actions={actions}
+        />
+      ) : (
         <Command loop>
           <CommandInput
             value={value}
@@ -224,7 +237,7 @@ export function FilterSelector<TData>({
           </CommandList>
         </Command>
       ),
-    [property, column, columns, value],
+    [property, column, filter, columns, actions, value],
   )
 
   return (

@@ -1,4 +1,6 @@
+import { isAnyOf } from '@/components/data-table-filter/v2/utils'
 import type { LucideIcon } from 'lucide-react'
+import { uniq } from './array'
 
 export type ElementType<T> = T extends (infer U)[] ? U : T
 
@@ -28,7 +30,7 @@ export type ColumnConfig<TData, TVal = unknown> = {
   type: ColumnDataType
   options?: ColumnOption[]
   max?: number
-  // transformOptionFn?: (value: NonNullable<ElementType<TVal>>) => ColumnOption
+  transformOptionFn?: (value: ElementType<NonNullable<TVal>>) => ColumnOption
 }
 
 export type ColumnConfigHelper<TData> = {
@@ -38,7 +40,7 @@ export type ColumnConfigHelper<TData> = {
   >(
     accessor: TAccessor,
     config?: Omit<ColumnConfig<TData, TVal>, 'accessor'>,
-  ) => ColumnConfig<TData, TVal>
+  ) => ColumnConfig<TData, unknown>
 }
 
 export function createColumnConfigHelper<TData>(): ColumnConfigHelper<TData> {
@@ -58,6 +60,7 @@ export type DataTableFilterConfig<TData> = {
 
 export type ColumnProperties<TData, TVal> = {
   getOptions: () => ColumnOption[]
+  getValues: () => ElementType<NonNullable<TVal>>[]
   getFacetedUniqueValues: () => Map<string, number>
   getFacetedMinMaxValues: () => number[]
 }
@@ -66,15 +69,107 @@ export function getColumnOptions<TData, TVal>(
   column: ColumnConfig<TData, TVal>,
   data: TData[],
 ): ColumnOption[] {
-  if (column.options) return column.options
-  return data.map(column.accessor) as ColumnOption[]
+  if (!isAnyOf(column.type, ['option', 'multiOption'])) {
+    throw new Error(
+      'Column options can only be retrieved for option and multiOption columns',
+    )
+  }
+
+  if (column.options) {
+    return column.options
+  }
+
+  const models = uniq(
+    data
+      .flatMap(column.accessor)
+      .filter((v): v is NonNullable<TVal> => v !== undefined && v !== null),
+  )
+
+  if (column.transformOptionFn) {
+    // Map the accessor values to options
+    if (column.type === 'option') {
+      // All rows as per the accessor
+      return models.map((m) =>
+        column.transformOptionFn!(m as ElementType<NonNullable<TVal>>),
+      )
+    }
+
+    return models.map((m) =>
+      column.transformOptionFn!(m as ElementType<NonNullable<TVal>>),
+    )
+  }
+
+  if (isColumnOptionArray(models)) return models
+
+  throw new Error(
+    `[data-table-filter] [${column.id}] Either provide static options, a transformOptionFn, or ensure the column data conforms to ColumnOption type`,
+  )
+}
+
+export function getColumnValues<TData, TVal>(
+  column: Column<TData, TVal>,
+  data: TData[],
+) {
+  const raw = data
+    .flatMap(column.accessor)
+    .filter(
+      (v): v is NonNullable<TVal> => v !== undefined && v !== null,
+    ) as ElementType<NonNullable<TVal>>[]
+
+  if (!isAnyOf(column.type, ['option', 'multiOption'])) {
+    return raw
+  }
+
+  if (column.options) {
+    return raw.map((v) => column.options?.find((o) => o.value === v)?.value)
+  }
+
+  if (column.transformOptionFn) {
+    return raw.map(
+      (v) => column.transformOptionFn!(v) as ElementType<NonNullable<TVal>>,
+    )
+  }
+
+  if (isColumnOptionArray(raw)) {
+    return raw
+  }
+
+  throw new Error(
+    `[data-table-filter] [${column.id}] Either provide static options, a transformOptionFn, or ensure the column data conforms to ColumnOption type`,
+  )
 }
 
 export function getFacetedUniqueValues<TData, TVal>(
-  column: ColumnConfig<TData, TVal>,
+  column: Column<TData, TVal>,
   data: TData[],
 ): Map<string, number> {
-  return new Map<string, number>()
+  console.time('getFacetedUniqueValues')
+  if (!isAnyOf(column.type, ['option', 'multiOption'])) {
+    console.time('getFacetedUniqueValues')
+    throw new Error(
+      'Faceted unique values can only be retrieved for option and multiOption columns',
+    )
+  }
+
+  console.log('HERE!')
+
+  const options = getColumnValues(column, data)
+  const acc = new Map<string, number>()
+
+  if (isColumnOptionArray(options)) {
+    for (const option of options) {
+      const curr = acc.get(option.value) ?? 0
+      acc.set(option.value, curr + 1)
+    }
+  } else {
+    for (const option of options) {
+      const curr = acc.get(option as string) ?? 0
+      acc.set(option as string, curr + 1)
+    }
+  }
+
+  console.timeEnd('getFacetedUniqueValues')
+  return acc
 }
 
 export function getFacetedMinMaxValues<TData, TVal>(
@@ -94,11 +189,12 @@ export function createColumns<TData>(
   const columns: Column<TData>[] = []
 
   for (const columnConfig of columnConfigs) {
-    const column: Column<TData> = {
+    const column: Column<TData, any> = {
       ...columnConfig,
       getOptions: () => getColumnOptions(columnConfig, data),
-      getFacetedUniqueValues: () => getFacetedUniqueValues(columnConfig, data),
+      getFacetedUniqueValues: () => getFacetedUniqueValues(column, data),
       getFacetedMinMaxValues: () => getFacetedMinMaxValues(columnConfig, data),
+      getValues: () => getColumnValues(column, data),
     }
     columns.push(column)
   }
@@ -645,4 +741,21 @@ export function createNumberRange(values: number[] | undefined) {
   const [min, max] = a < b ? [a, b] : [b, a]
 
   return [min, max]
+}
+
+export function isColumnOption(value: unknown): value is ColumnOption {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    'value' in value &&
+    'label' in value
+  )
+}
+
+export function isColumnOptionArray(value: unknown): value is ColumnOption[] {
+  return Array.isArray(value) && value.every(isColumnOption)
+}
+
+export function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every((v) => typeof v === 'string')
 }
