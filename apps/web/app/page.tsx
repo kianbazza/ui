@@ -140,6 +140,16 @@ export default function Page() {
               </CodeBlock>
             </div>
           </div>
+          <p className="text-base tracking-[-0.01em] font-[510] text-muted-foreground leading-none">
+            Want to support bazza/ui?{' '}
+            <Link
+              href="mailto:kian@bazza.dev?subject=bazza%2Fui%20-%20I%20want%20to%20sponsor%20you&body=Hey%20Kian%2C"
+              className="relative text-neutral-800 dark:text-neutral-200 group/sponsor-link hover:underline underline-offset-2"
+            >
+              Become a sponsor.
+              <ArrowRightIcon className="absolute ml-1 group-hover/sponsor-link:inline hidden size-4 translate-y-[-0.5px] stroke-[2.5] animate-in slide-in-from-left-1" />
+            </Link>
+          </p>
         </div>
       </div>
       <div className="border-b border-border border-dashed">
