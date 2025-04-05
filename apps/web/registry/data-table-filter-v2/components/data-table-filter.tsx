@@ -22,7 +22,7 @@ import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIsMobile } from '@/hooks/use-mobile'
-import { cn } from '@/lib/utils'
+import { cn, print } from '@/lib/utils'
 import type {
   Column,
   ColumnConfig,
@@ -32,9 +32,11 @@ import type {
   ElementType,
   FilterOperators,
   FiltersState,
+  OptionBasedColumnDataType,
 } from '@/registry/data-table-filter-v2/lib/filters'
 import {
   type ColumnDataType,
+  DEFAULT_OPERATORS,
   type FilterModel,
   createColumns,
   createNumberRange,
@@ -63,6 +65,7 @@ import {
   useState,
 } from 'react'
 import type { DateRange } from 'react-day-picker'
+import { addUniq, removeUniq } from '../lib/array'
 
 export function useDataTableFilters<TData>(
   config: DataTableFilterConfig<TData>,
@@ -77,21 +80,139 @@ export function useDataTableFilters<TData>(
     setInternalFilters,
   ]
 
+  console.log('Filters:', print(filters))
+
   // This useMemo call ensures that createColumns() only recomputes when config.data or config.columns change.
   const columns = useMemo(
     () => createColumns(config.data, config.columns),
     [config.data, config.columns],
   )
 
-  // ... (rest of the hook)
   const actions: DataTableFilterActions = useMemo(
     () => ({
-      setFilterValue<TType extends ColumnDataType>(
-        columnId: string,
+      addFilterValue<TData, TType extends OptionBasedColumnDataType>(
+        column: ColumnConfig<TData, TType>,
         values: FilterModel<TType>['values'],
       ) {
+        if (column.type === 'option') {
+          setFilters((prev) => {
+            // Does column already have a filter?
+            const filter = prev.find((f) => f.columnId === column.id) // as FilterModel<'option'> | undefined
+
+            const isColumnFiltered = filter && filter.values.length > 0
+            if (!isColumnFiltered) {
+              // Add a new filter
+              return [
+                ...prev,
+                {
+                  columnId: column.id,
+                  operator: DEFAULT_OPERATORS[column.type],
+                  values,
+                },
+              ]
+            }
+
+            // Column already has a filter - update it
+            const oldValues = filter.values
+            const newValues = addUniq(filter.values, values)
+            filter.operator = determineNewOperator(
+              'option',
+              oldValues,
+              newValues,
+              filter.operator,
+            )
+            filter.values = newValues
+
+            // console.log('next filter values:', filter.values)
+
+            return prev.map((f) => (f.columnId === column.id ? filter : f))
+          })
+
+          return
+        }
+
+        throw new Error(
+          '[data-table-filter] addFilterValue() is only supported for option columns - NOT IMPLEMENTED',
+        )
+      },
+      removeFilterValue<TData, TType extends OptionBasedColumnDataType>(
+        column: ColumnConfig<TData, TType>,
+        value: FilterModel<TType>['values'],
+      ) {
+        if (column.type === 'option') {
+          setFilters((prev) => {
+            // Does column already have a filter?
+            const filter = prev.find((f) => f.columnId === column.id) // as FilterModel<'option'> | undefined
+
+            const isColumnFiltered = filter && filter.values.length > 0
+            if (!isColumnFiltered) {
+              // Add a new filter
+              return [...prev]
+            }
+
+            // Column already has a filter - update it
+            const newValues = removeUniq(filter.values, value)
+            const oldValues = filter.values
+
+            filter.operator = determineNewOperator(
+              'option',
+              oldValues,
+              newValues,
+              filter.operator,
+            )
+            filter.values = newValues
+
+            // Remove filter if it's empty now
+            if (filter.values.length === 0) {
+              return prev.filter((f) => f.columnId !== column.id)
+            }
+
+            return prev.map((f) => (f.columnId === column.id ? filter : f))
+          })
+
+          return
+        }
+
+        throw new Error(
+          '[data-table-filter] removeFilterValue() is only supported for option columns - NOT IMPLEMENTED',
+        )
+      },
+
+      setFilterValue<TData, TType extends ColumnDataType>(
+        column: ColumnConfig<TData, TType>,
+        newValues: FilterModel<TType>['values'],
+      ) {
+        if (column.type === 'option') {
+          setFilters((prev) => {
+            // Does column already have a filter?
+            const filter = prev.find((f) => f.columnId === column.id)
+
+            const isColumnFiltered = filter && filter.values.length > 0
+            if (!isColumnFiltered) {
+              // Add a new filter
+              return [
+                ...prev,
+                {
+                  columnId: column.id,
+                  operator: DEFAULT_OPERATORS[column.type],
+                  values: newValues,
+                },
+              ]
+            }
+
+            // Column already has a filter - update it
+            filter.values = newValues
+
+            return prev.map((f) => (f.columnId === column.id ? filter : f))
+          })
+
+          return
+        }
+
         setFilters((prev) =>
-          prev.map((f) => (f.columnId === columnId ? { ...f, values } : f)),
+          prev.map((f) =>
+            f.columnId === column.id ? { ...f, values: newValues } : f,
+          ),
         )
       },
       setFilterOperator<TType extends ColumnDataType>(
@@ -120,28 +241,28 @@ export function DataTableFilter<TData>({
 }: { config: DataTableFilterConfig<TData> }) {
   const { columns, filters, actions } = useDataTableFilters(config)
 
-  const isMobile = useIsMobile()
-  if (isMobile) {
-    return (
-      <div className="flex w-full items-start justify-between gap-2">
-        <div className="flex gap-1">
-          <FilterSelector
-            filters={filters}
-            columns={columns}
-            actions={actions}
-          />
-          <FilterActions filters={filters} actions={actions} />
-        </div>
-        <ActiveFiltersMobileContainer>
-          <ActiveFilters
-            columns={columns}
-            filters={filters}
-            actions={actions}
-          />
-        </ActiveFiltersMobileContainer>
-      </div>
-    )
-  }
+  // const isMobile = useIsMobile()
+  // if (isMobile) {
+  //   return (
+  //     <div className="flex w-full items-start justify-between gap-2">
+  //       <div className="flex gap-1">
+  //         <FilterSelector
+  //           filters={filters}
+  //           columns={columns}
+  //           actions={actions}
+  //         />
+  //         <FilterActions filters={filters} actions={actions} />
+  //       </div>
+  //       <ActiveFiltersMobileContainer>
+  //         <ActiveFilters
+  //           columns={columns}
+  //           filters={filters}
+  //           actions={actions}
+  //         />
+  //       </ActiveFiltersMobileContainer>
+  //     </div>
+  //   )
+  // }
 
   return (
     <div className="flex w-full items-start justify-between gap-2">
@@ -195,12 +316,7 @@ export function FilterSelector<TData>({
     ? filters.find((f) => f.columnId === property)
     : undefined
 
-  // console.log(
-  //   'All columns:',
-  //   columns.map((c) => c.id),
-  // )
-
-  // console.log('Viewing column:', column?.id)
+  // console.log('[FilterSelector] filter:', print(filter))
 
   const hasFilters = filters.length > 0
 
@@ -215,12 +331,13 @@ export function FilterSelector<TData>({
     if (!open) setTimeout(() => setValue(''), 150)
   }, [open])
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: need filters to be updated
   const content = useMemo(
     () =>
       property && column ? (
         <FilterValueController
           filter={filter!}
-          column={column}
+          column={column as Column<TData, ColumnDataType>}
           actions={actions}
         />
       ) : (
@@ -245,7 +362,7 @@ export function FilterSelector<TData>({
           </CommandList>
         </Command>
       ),
-    [property, column, filter, columns, actions, value],
+    [property, column, filter, filters, columns, actions, value],
   )
 
   return (
@@ -457,6 +574,11 @@ function FilterOperatorOptionController<TData>({
   closeController,
 }: FilterOperatorControllerProps<TData, 'option'>) {
   const filterDetails = optionFilterDetails[filter.operator]
+
+  console.log(
+    '[FilterOperatorOptionController] filterDetails:',
+    print(filterDetails),
+  )
 
   const relatedFilters = Object.values(optionFilterDetails).filter(
     (o) => o.target === filterDetails.target,
@@ -976,7 +1098,7 @@ export function FilterValueNumberDisplay<TData>({
 
 interface FilterValueControllerProps<TData, TType extends ColumnDataType> {
   filter: FilterModel<TType>
-  column: Column<TData>
+  column: Column<TData, TType>
   actions: DataTableFilterActions
 }
 
@@ -990,7 +1112,7 @@ export function FilterValueController<TData, TType extends ColumnDataType>({
       return (
         <FilterValueOptionController
           filter={filter as FilterModel<'option'>}
-          column={column}
+          column={column as Column<TData, 'option'>}
           actions={actions}
         />
       )
@@ -998,7 +1120,7 @@ export function FilterValueController<TData, TType extends ColumnDataType>({
       return (
         <FilterValueMultiOptionController
           filter={filter as FilterModel<'multiOption'>}
-          column={column}
+          column={column as Column<TData, 'multiOption'>}
           actions={actions}
         />
       )
@@ -1006,7 +1128,7 @@ export function FilterValueController<TData, TType extends ColumnDataType>({
       return (
         <FilterValueDateController
           filter={filter as FilterModel<'date'>}
-          column={column}
+          column={column as Column<TData, 'date'>}
           actions={actions}
         />
       )
@@ -1014,7 +1136,7 @@ export function FilterValueController<TData, TType extends ColumnDataType>({
       return (
         <FilterValueTextController
           filter={filter as FilterModel<'text'>}
-          column={column}
+          column={column as Column<TData, 'text'>}
           actions={actions}
         />
       )
@@ -1022,7 +1144,7 @@ export function FilterValueController<TData, TType extends ColumnDataType>({
       return (
         <FilterValueNumberController
           filter={filter as FilterModel<'number'>}
-          column={column}
+          column={column as Column<TData, 'number'>}
           actions={actions}
         />
       )
@@ -1039,8 +1161,14 @@ export function FilterValueOptionController<TData>({
   const options = column.getOptions()
   const optionsCount = column.getFacetedUniqueValues()
 
+  // console.log('[FilterValueOptionController] filter:', print(filter))
+
   function handleOptionSelect(value: string, check: boolean) {
     // TODO: Implement logic
+    if (check) actions.addFilterValue(column, [value])
+    else actions.removeFilterValue(column, [value])
+
+    // * PREVIOUS LOGIC, FOR REFERENCE
     // if (check)
     //   column?.setFilterValue(
     //     (old: undefined | FilterModel<'option', TData>) => {

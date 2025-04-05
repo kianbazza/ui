@@ -6,8 +6,18 @@ import { memo } from './memo'
 export type ElementType<T> = T extends (infer U)[] ? U : T
 
 export interface DataTableFilterActions {
-  setFilterValue: <TType extends ColumnDataType>(
-    columnId: string,
+  addFilterValue: <TData, TType extends OptionBasedColumnDataType>(
+    column: Column<TData, TType>,
+    values: FilterModel<TType>['values'],
+  ) => void
+
+  removeFilterValue: <TData, TType extends OptionBasedColumnDataType>(
+    column: Column<TData, TType>,
+    value: FilterModel<TType>['values'],
+  ) => void
+
+  setFilterValue: <TData, TType extends ColumnDataType>(
+    column: Column<TData, TType>,
     values: FilterModel<TType>['values'],
   ) => void
 
@@ -260,7 +270,7 @@ export function createColumns<TData>(
           setTimeout(() => {
             const options = getOptions()
             column._prefetchedOptionsCache = options
-            console.log(`Prefetched options for ${columnConfig.id}`)
+            // console.log(`Prefetched options for ${columnConfig.id}`)
             resolve(undefined)
           }, 0),
         )
@@ -273,7 +283,7 @@ export function createColumns<TData>(
           setTimeout(() => {
             const values = getValues()
             column._prefetchedValuesCache = values
-            console.log(`Prefetched values for ${columnConfig.id}`)
+            // console.log(`Prefetched values for ${columnConfig.id}`)
             resolve(undefined)
           }, 0),
         )
@@ -287,9 +297,7 @@ export function createColumns<TData>(
             const values = getValues()
             const facetedMap = getFacetedUniqueValues(columnConfig, values)
             column._prefetchedFacetedCache = facetedMap
-            console.log(
-              `Prefetched faceted unique values for ${columnConfig.id}`,
-            )
+            // console.log(`Prefetched faceted unique values for ${columnConfig.id}`)
             resolve(undefined)
           }, 0),
         )
@@ -334,6 +342,11 @@ export type ColumnDataType =
   | 'option'
   /* The column value can be zero or more values from a list of options. */
   | 'multiOption'
+
+export type OptionBasedColumnDataType = Extract<
+  ColumnDataType,
+  'option' | 'multiOption'
+>
 
 /* Operators for text data */
 export type TextFilterOperator = 'contains' | 'does not contain'
@@ -388,6 +401,17 @@ export type FilterTypes = {
   date: Date
   option: string
   multiOption: string[]
+}
+
+export const DEFAULT_OPERATORS: Record<
+  ColumnDataType,
+  FilterOperators[ColumnDataType]
+> = {
+  text: 'contains',
+  number: 'is',
+  date: 'is',
+  option: 'is',
+  multiOption: 'include',
 }
 
 /*
@@ -461,8 +485,8 @@ export const optionFilterDetails = {
     label: 'is',
     value: 'is',
     target: 'single',
-    singularOf: 'is not',
-    relativeOf: 'is any of',
+    singularOf: 'is any of',
+    relativeOf: 'is not',
     isNegated: false,
     negation: 'is not',
   },
@@ -470,8 +494,8 @@ export const optionFilterDetails = {
     label: 'is not',
     value: 'is not',
     target: 'single',
-    singularOf: 'is',
-    relativeOf: 'is none of',
+    singularOf: 'is none of',
+    relativeOf: 'is',
     isNegated: true,
     negationOf: 'is',
   },
@@ -480,7 +504,7 @@ export const optionFilterDetails = {
     value: 'is any of',
     target: 'multiple',
     pluralOf: 'is',
-    relativeOf: 'is',
+    relativeOf: 'is none of',
     isNegated: false,
     negation: 'is none of',
   },
@@ -489,7 +513,7 @@ export const optionFilterDetails = {
     value: 'is none of',
     target: 'multiple',
     pluralOf: 'is not',
-    relativeOf: 'is not',
+    relativeOf: 'is any of',
     isNegated: true,
     negationOf: 'is any of',
   },
@@ -809,6 +833,8 @@ export function determineNewOperator<T extends ColumnDataType>(
     Array.isArray(nextVals) && Array.isArray(nextVals[0])
       ? nextVals[0].length
       : nextVals.length
+
+  console.log('[determineNewOperator] a:', a, 'b:', b)
 
   // If filter size has not transitioned from single to multiple (or vice versa)
   // or is unchanged, return the current operator.
