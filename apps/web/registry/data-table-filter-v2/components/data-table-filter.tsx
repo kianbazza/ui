@@ -23,21 +23,8 @@ import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn, print } from '@/lib/utils'
-import type {
-  Column,
-  ColumnConfig,
-  ColumnOption,
-  DataTableFilterActions,
-  DataTableFilterConfig,
-  ElementType,
-  FilterOperators,
-  FiltersState,
-  OptionBasedColumnDataType,
-} from '@/registry/data-table-filter-v2/lib/filters'
 import {
-  type ColumnDataType,
   DEFAULT_OPERATORS,
-  type FilterModel,
   createColumns,
   createNumberRange,
   dateFilterDetails,
@@ -49,7 +36,19 @@ import {
   optionFilterDetails,
   textFilterDetails,
 } from '@/registry/data-table-filter-v2/lib/filters'
-import { FitlerValueController } from '@/registry/data-table-filter/components/data-table-filter'
+import type {
+  Column,
+  ColumnConfig,
+  ColumnDataType,
+  ColumnOption,
+  DataTableFilterActions,
+  DataTableFilterConfig,
+  ElementType,
+  FilterModel,
+  FilterOperators,
+  FiltersState,
+  OptionBasedColumnDataType,
+} from '@/registry/data-table-filter-v2/lib/filters.types'
 import { take, uniq } from '@/registry/data-table-filter/lib/array'
 import { format, isEqual } from 'date-fns'
 import { FilterXIcon } from 'lucide-react'
@@ -255,12 +254,14 @@ export function useDataTableFilters<TData>(
 
       setFilterValue<TData, TType extends ColumnDataType>(
         column: ColumnConfig<TData, TType>,
-        newValues: FilterModel<TType>['values'],
+        values: FilterModel<TType>['values'],
       ) {
         if (column.type === 'option') {
           setFilters((prev) => {
             // Does column already have a filter?
-            const filter = prev.find((f) => f.columnId === column.id)
+            const filter = prev.find((f) => f.columnId === column.id) as
+              | FilterModel<'option'>
+              | undefined
 
             const isColumnFiltered = filter && filter.values.length > 0
             if (!isColumnFiltered) {
@@ -270,13 +271,20 @@ export function useDataTableFilters<TData>(
                 {
                   columnId: column.id,
                   operator: DEFAULT_OPERATORS[column.type],
-                  values: newValues,
+                  values: uniq(values),
                 },
               ]
             }
 
             // Column already has a filter - update it
-            filter.values = newValues
+            const oldValues = filter.values
+            const newValues = uniq(values)
+            filter.operator = determineNewOperator(
+              'option',
+              oldValues,
+              newValues,
+              filter.operator,
+            )
 
             return prev.map((f) => (f.columnId === column.id ? filter : f))
           })
@@ -474,11 +482,11 @@ export function FilterSelector<TData>({
   )
 }
 
-export function FilterableColumn<TData, TVal>({
+export function FilterableColumn<TData, TType extends ColumnDataType, TVal>({
   column,
   setProperty,
 }: {
-  column: Column<TData, TVal>
+  column: Column<TData, TType, TVal>
   setProperty: (value: string) => void
 }) {
   const itemRef = useRef<HTMLDivElement>(null)

@@ -1,10 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
-import {
-  ColumnConfig,
-  createColumnConfigHelper,
-} from '@/registry/data-table-filter-v2/lib/filters'
+import { createColumnConfigHelper } from '@/registry/data-table-filter-v2/lib/filters'
 import { filterFn } from '@/registry/data-table-filter/lib/filters'
 import { createColumnHelper } from '@tanstack/react-table'
 import { format } from 'date-fns'

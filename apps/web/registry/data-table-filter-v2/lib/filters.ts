@@ -1,62 +1,17 @@
-import { isAnyOf } from '@/components/data-table-filter/v2/utils'
-import type { LucideIcon } from 'lucide-react'
-import { uniq } from './array'
+import { isAnyOf, uniq } from './array'
+import type {
+  Column,
+  ColumnConfig,
+  ColumnConfigHelper,
+  ColumnDataNativeMap,
+  ColumnDataType,
+  ColumnOption,
+  ElementType,
+  FilterDetails,
+  FilterOperators,
+  FilterTypeOperatorDetails,
+} from './filters.types'
 import { memo } from './memo'
-
-export type ElementType<T> = T extends (infer U)[] ? U : T
-
-export interface DataTableFilterActions {
-  addFilterValue: <TData, TType extends OptionBasedColumnDataType>(
-    column: Column<TData, TType>,
-    values: FilterModel<TType>['values'],
-  ) => void
-
-  removeFilterValue: <TData, TType extends OptionBasedColumnDataType>(
-    column: Column<TData, TType>,
-    value: FilterModel<TType>['values'],
-  ) => void
-
-  setFilterValue: <TData, TType extends ColumnDataType>(
-    column: Column<TData, TType>,
-    values: FilterModel<TType>['values'],
-  ) => void
-
-  setFilterOperator: <TType extends ColumnDataType>(
-    columnId: string,
-    operator: FilterModel<TType>['operator'],
-  ) => void
-
-  removeFilter: (columnId: string) => void
-
-  removeAllFilters: () => void
-}
-
-export type TAccessorFn<TData, TVal = unknown> = (data: TData) => TVal
-
-export type ColumnConfig<TData, TVal = unknown> = {
-  id: string
-  accessor: TAccessorFn<TData, TVal>
-  displayName: string
-  icon: LucideIcon
-  type: ColumnDataType
-  options?: ColumnOption[]
-  max?: number
-  transformOptionFn?: (value: ElementType<NonNullable<TVal>>) => ColumnOption
-  orderFn?: (
-    a: ElementType<NonNullable<TVal>>,
-    b: ElementType<NonNullable<TVal>>,
-  ) => number
-}
-
-export type ColumnConfigHelper<TData> = {
-  accessor: <
-    TAccessor extends TAccessorFn<TData>,
-    TVal extends ReturnType<TAccessor>,
-  >(
-    accessor: TAccessor,
-    config?: Omit<ColumnConfig<TData, TVal>, 'accessor'>,
-  ) => ColumnConfig<TData, unknown>
-}
 
 export function createColumnConfigHelper<TData>(): ColumnConfigHelper<TData> {
   return {
@@ -68,29 +23,8 @@ export function createColumnConfigHelper<TData>(): ColumnConfigHelper<TData> {
   }
 }
 
-export type DataTableFilterConfig<TData> = {
-  data: TData[]
-  columns: ColumnConfig<TData>[]
-}
-
-export type ColumnProperties<TData, TVal> = {
-  getOptions: () => ColumnOption[]
-  getValues: () => ElementType<NonNullable<TVal>>[]
-  getFacetedUniqueValues: () => Map<string, number>
-  getFacetedMinMaxValues: () => number[]
-  prefetchOptions: () => Promise<void> // Prefetch options
-  prefetchValues: () => Promise<void> // Prefetch values
-  prefetchFacetedUniqueValues: () => Promise<void> // Prefetch faceted unique values
-}
-
-export type ColumnPrivateProperties<TData, TVal> = {
-  _prefetchedOptionsCache: ColumnOption[] | null
-  _prefetchedValuesCache: ElementType<NonNullable<TVal>>[] | null
-  _prefetchedFacetedCache: Map<string, number> | null
-}
-
-export function getColumnOptions<TData, TVal>(
-  column: ColumnConfig<TData, TVal>,
+export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
+  column: ColumnConfig<TData, TType, TVal>,
   data: TData[],
 ): ColumnOption[] {
   if (!isAnyOf(column.type, ['option', 'multiOption'])) {
@@ -108,7 +42,7 @@ export function getColumnOptions<TData, TVal>(
     .flatMap(column.accessor)
     .filter((v): v is NonNullable<TVal> => v !== undefined && v !== null)
 
-  console.log(`[getColumnOptions] [${column.id}] filtered:`, filtered)
+  // console.log(`[getColumnOptions] [${column.id}] filtered:`, filtered)
 
   let models = uniq(filtered)
 
@@ -121,7 +55,7 @@ export function getColumnOptions<TData, TVal>(
     )
   }
 
-  console.log(`[getColumnOptions] [${column.id}] models:`, models)
+  // console.log(`[getColumnOptions] [${column.id}] models:`, models)
 
   if (column.transformOptionFn) {
     // Memoize transformOptionFn calls
@@ -143,8 +77,8 @@ export function getColumnOptions<TData, TVal>(
   )
 }
 
-export function getColumnValues<TData, TVal>(
-  column: ColumnConfig<TData, TVal>,
+export function getColumnValues<TData, TType extends ColumnDataType, TVal>(
+  column: ColumnConfig<TData, TType, TVal>,
   data: TData[],
 ) {
   // Memoize accessor calls
@@ -192,8 +126,12 @@ export function getColumnValues<TData, TVal>(
   )
 }
 
-export function getFacetedUniqueValues<TData, TVal>(
-  column: ColumnConfig<TData, TVal>,
+export function getFacetedUniqueValues<
+  TData,
+  TType extends ColumnDataType,
+  TVal,
+>(
+  column: ColumnConfig<TData, TType, TVal>,
   values: string[] | ColumnOption[],
 ): Map<string, number> {
   console.time('getFacetedUniqueValues')
@@ -224,16 +162,13 @@ export function getFacetedUniqueValues<TData, TVal>(
   return acc
 }
 
-export function getFacetedMinMaxValues<TData, TVal>(
-  column: ColumnConfig<TData, TVal>,
-  data: TData[],
-): number[] {
+export function getFacetedMinMaxValues<
+  TData,
+  TType extends ColumnDataType,
+  TVal,
+>(column: ColumnConfig<TData, TType, TVal>, data: TData[]): number[] {
   return [0, 0]
 }
-
-export type Column<TData, TVal = unknown> = ColumnConfig<TData, TVal> &
-  ColumnProperties<TData, TVal> &
-  ColumnPrivateProperties<TData, TVal>
 
 export function createColumns<TData>(
   data: TData[],
@@ -336,91 +271,6 @@ export function getColumn<TData>(columns: Column<TData>[], id: string) {
   return column
 }
 
-/*
- * Represents a possible value for a column property of type 'option' or 'multiOption'.
- */
-export interface ColumnOption {
-  /* The label to display for the option. */
-  label: string
-  /* The internal value of the option. */
-  value: string
-  /* An optional icon to display next to the label. */
-  icon?: React.ReactElement | React.ElementType
-}
-
-/*
- * Represents the data type of a column.
- */
-export type ColumnDataType =
-  /* The column value is a string that should be searchable. */
-  | 'text'
-  | 'number'
-  | 'date'
-  /* The column value can be a single value from a list of options. */
-  | 'option'
-  /* The column value can be zero or more values from a list of options. */
-  | 'multiOption'
-
-export type OptionBasedColumnDataType = Extract<
-  ColumnDataType,
-  'option' | 'multiOption'
->
-
-/* Operators for text data */
-export type TextFilterOperator = 'contains' | 'does not contain'
-
-/* Operators for number data */
-export type NumberFilterOperator =
-  | 'is'
-  | 'is not'
-  | 'is less than'
-  | 'is greater than or equal to'
-  | 'is greater than'
-  | 'is less than or equal to'
-  | 'is between'
-  | 'is not between'
-
-/* Operators for date data */
-export type DateFilterOperator =
-  | 'is'
-  | 'is not'
-  | 'is before'
-  | 'is on or after'
-  | 'is after'
-  | 'is on or before'
-  | 'is between'
-  | 'is not between'
-
-/* Operators for option data */
-export type OptionFilterOperator = 'is' | 'is not' | 'is any of' | 'is none of'
-
-/* Operators for multi-option data */
-export type MultiOptionFilterOperator =
-  | 'include'
-  | 'exclude'
-  | 'include any of'
-  | 'include all of'
-  | 'exclude if any of'
-  | 'exclude if all'
-
-/* Maps filter operators to their respective data types */
-export type FilterOperators = {
-  text: TextFilterOperator
-  number: NumberFilterOperator
-  date: DateFilterOperator
-  option: OptionFilterOperator
-  multiOption: MultiOptionFilterOperator
-}
-
-/* Maps filter values to their respective data types */
-export type ColumnDataNativeMap = {
-  text: string
-  number: number
-  date: Date
-  option: string
-  multiOption: string[]
-}
-
 export const DEFAULT_OPERATORS: Record<
   ColumnDataType,
   FilterOperators[ColumnDataType]
@@ -431,75 +281,6 @@ export const DEFAULT_OPERATORS: Record<
   option: 'is',
   multiOption: 'include',
 }
-
-export type FilterValues<T extends ColumnDataType> = Array<
-  ElementType<ColumnDataNativeMap[T]>
->
-
-/*
- *
- * FilterValue is a type that represents a filter value for a specific column.
- *
- * It consists of:
- * - Operator: The operator to be used for the filter.
- * - Values: An array of values to be used for the filter.
- *
- */
-export type FilterModel<TType extends ColumnDataType> = {
-  columnId: string
-  operator: FilterOperators[TType]
-  values: FilterValues<TType>
-}
-
-export type FiltersState = Array<FilterModel<any>>
-
-/*
- * FilterDetails is a type that represents the details of all the filter operators for a specific column data type.
- */
-export type FilterDetails<T extends ColumnDataType> = {
-  [key in FilterOperators[T]]: FilterOperatorDetails<key, T>
-}
-
-type FilterOperatorDetailsBase<OperatorValue, T extends ColumnDataType> = {
-  /* The operator value. Usually the string representation of the operator. */
-  value: OperatorValue
-  /* The label for the operator, to show in the UI. */
-  label: string
-  /* How much data the operator applies to. */
-  target: 'single' | 'multiple'
-  /* The plural form of the operator, if applicable. */
-  singularOf?: FilterOperators[T]
-  /* The singular form of the operator, if applicable. */
-  pluralOf?: FilterOperators[T]
-  /* All related operators. Normally, all the operators which share the same target. */
-  relativeOf: FilterOperators[T] | Array<FilterOperators[T]>
-  /* Whether the operator is negated. */
-  isNegated: boolean
-  /* If the operator is not negated, this provides the negated equivalent. */
-  negation?: FilterOperators[T]
-  /* If the operator is negated, this provides the positive equivalent. */
-  negationOf?: FilterOperators[T]
-}
-
-/*
- *
- * FilterOperatorDetails is a type that provides details about a filter operator for a specific column data type.
- * It extends FilterOperatorDetailsBase with additional logic and contraints on the defined properties.
- *
- */
-export type FilterOperatorDetails<
-  OperatorValue,
-  T extends ColumnDataType,
-> = FilterOperatorDetailsBase<OperatorValue, T> &
-  (
-    | { singularOf?: never; pluralOf?: never }
-    | { target: 'single'; singularOf: FilterOperators[T]; pluralOf?: never }
-    | { target: 'multiple'; singularOf?: never; pluralOf: FilterOperators[T] }
-  ) &
-  (
-    | { isNegated: false; negation: FilterOperators[T]; negationOf?: never }
-    | { isNegated: true; negation?: never; negationOf: FilterOperators[T] }
-  )
 
 /* Details for all the filter operators for option data type */
 export const optionFilterDetails = {
@@ -816,11 +597,6 @@ export const numberFilterDetails = {
     negationOf: 'is between',
   },
 } as const satisfies FilterDetails<'number'>
-
-/* Maps column data types to their respective filter operator details */
-type FilterTypeOperatorDetails = {
-  [key in ColumnDataType]: FilterDetails<key>
-}
 
 export const filterTypeOperatorDetails: FilterTypeOperatorDetails = {
   text: textFilterDetails,
