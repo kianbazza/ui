@@ -10,6 +10,7 @@ import type {
   FilterDetails,
   FilterOperators,
   FilterTypeOperatorDetails,
+  FilterValues,
 } from './filters.types'
 import { memo } from './memo'
 
@@ -617,12 +618,12 @@ export const filterTypeOperatorDetails: FilterTypeOperatorDetails = {
  * new operator would be 'is any of'.
  *
  */
-export function determineNewOperator<T extends ColumnDataType>(
-  type: T,
-  oldVals: Array<ColumnDataNativeMap[T]>,
-  nextVals: Array<ColumnDataNativeMap[T]>,
-  currentOperator: FilterOperators[T],
-): FilterOperators[T] {
+export function determineNewOperator<TType extends ColumnDataType>(
+  type: TType,
+  oldVals: FilterValues<TType>,
+  nextVals: FilterValues<TType>,
+  currentOperator: FilterOperators[TType],
+): FilterOperators[TType] {
   const a =
     Array.isArray(oldVals) && Array.isArray(oldVals[0])
       ? oldVals[0].length
