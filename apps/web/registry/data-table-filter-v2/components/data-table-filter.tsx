@@ -46,6 +46,7 @@ import type {
   ElementType,
   FilterModel,
   FilterOperators,
+  FilterValues,
   FiltersState,
   OptionBasedColumnDataType,
 } from '@/registry/data-table-filter-v2/lib/filters.types'
@@ -256,47 +257,35 @@ export function useDataTableFilters<TData>(
         column: ColumnConfig<TData, TType>,
         values: FilterModel<TType>['values'],
       ) {
-        if (column.type === 'option') {
-          setFilters((prev) => {
-            // Does column already have a filter?
-            const filter = prev.find((f) => f.columnId === column.id) as
-              | FilterModel<'option'>
-              | undefined
+        setFilters((prev) => {
+          // Does this column already have a filter?
+          const filter = prev.find((f) => f.columnId === column.id)
+          const isColumnFiltered = filter && filter.values.length > 0
+          if (!isColumnFiltered) {
+            // Add a new filter
+            return [
+              ...prev,
+              {
+                columnId: column.id,
+                operator: DEFAULT_OPERATORS[column.type],
+                values,
+              },
+            ]
+          }
 
-            const isColumnFiltered = filter && filter.values.length > 0
-            if (!isColumnFiltered) {
-              // Add a new filter
-              return [
-                ...prev,
-                {
-                  columnId: column.id,
-                  operator: DEFAULT_OPERATORS[column.type],
-                  values: uniq(values),
-                },
-              ]
-            }
+          // Column already has a filter - override it
+          const oldValues = filter.values
+          const newValues = uniq(values)
+          filter.operator = determineNewOperator(
+            column.type,
+            oldValues,
+            newValues,
+            filter.operator,
+          )
+          filter.values = newValues
 
-            // Column already has a filter - update it
-            const oldValues = filter.values
-            const newValues = uniq(values)
-            filter.operator = determineNewOperator(
-              'option',
-              oldValues,
-              newValues,
-              filter.operator,
-            )
-
-            return prev.map((f) => (f.columnId === column.id ? filter : f))
-          })
-
-          return
-        }
-
-        setFilters((prev) =>
-          prev.map((f) =>
-            f.columnId === column.id ? { ...f, values: newValues } : f,
-          ),
-        )
+          return prev.map((f) => (f.columnId === column.id ? filter : f))
+        })
       },
       setFilterOperator<TType extends ColumnDataType>(
         columnId: string,
