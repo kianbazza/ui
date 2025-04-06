@@ -20,22 +20,22 @@ export const calculateEndDate = (start: Date) => {
 
 export const USERS: User[] = [
   {
-    id: nanoid(),
+    id: 'rmraOG0B-2xSUyJ3e73mv',
     name: 'John Smith',
     picture: '/avatars/john-smith.png',
   },
   {
-    id: nanoid(),
+    id: '4_vjFSibR5YkkQiHafaLx',
     name: 'Rose Eve',
     picture: '/avatars/rose-eve.png',
   },
   {
-    id: nanoid(),
+    id: 'RC9mraUl-oJECORIjeNbd',
     name: 'Adam Young',
     picture: '/avatars/adam-young.png',
   },
   {
-    id: nanoid(),
+    id: 'hhkjn-3L9bKDbl1FKuZW0',
     name: 'Michael Scott',
     picture: '/avatars/michael-scott.png',
   },

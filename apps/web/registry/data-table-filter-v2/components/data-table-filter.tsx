@@ -69,11 +69,11 @@ import type { DateRange } from 'react-day-picker'
 import { addUniq, removeUniq } from '../lib/array'
 
 export function useDataTableFilters<TData>(
-  config: DataTableFilterConfig<TData>,
-  controlledState?: [
-    FiltersState,
-    React.Dispatch<React.SetStateAction<FiltersState>>,
-  ],
+  data: TData[],
+  columnsConfig: ColumnConfig<TData>[],
+  controlledState?:
+    | [FiltersState, React.Dispatch<React.SetStateAction<FiltersState>>]
+    | undefined,
 ) {
   const [internalFilters, setInternalFilters] = useState<FiltersState>([])
   const [filters, setFilters] = controlledState ?? [
@@ -83,11 +83,11 @@ export function useDataTableFilters<TData>(
 
   console.log('Filters:', print(filters))
 
-  // This useMemo call ensures that createColumns() only recomputes when config.data or config.columns change.
+  // This useMemo call ensures that createColumns() only recomputes when data or config.columns change.
   const columns = useMemo(() => {
     console.log('[useDataTableFilters] Computing columns')
-    return createColumns(config.data, config.columns)
-  }, [config.data, config.columns])
+    return createColumns(data, columnsConfig)
+  }, [data, columnsConfig])
 
   const actions: DataTableFilterActions = useMemo(
     () => ({
@@ -132,8 +132,48 @@ export function useDataTableFilters<TData>(
           return
         }
 
+        if (column.type === 'multiOption') {
+          setFilters((prev) => {
+            // Does column already have a filter?
+            const filter = prev.find((f) => f.columnId === column.id) // as FilterModel<'multiOption'> | undefined
+
+            const isColumnFiltered = filter && filter.values.length > 0
+            if (!isColumnFiltered) {
+              // Add a new filter
+              return [
+                ...prev,
+                {
+                  columnId: column.id,
+                  operator: DEFAULT_OPERATORS[column.type],
+                  values,
+                },
+              ]
+            }
+
+            // Column already has a filter - update it
+            const oldValues = filter.values
+            const newValues = addUniq(filter.values, values)
+            filter.operator = determineNewOperator(
+              'multiOption',
+              oldValues,
+              newValues,
+              filter.operator,
+            )
+            filter.values = newValues
+
+            // Remove filter if it's empty now
+            if (filter.values.length === 0) {
+              return prev.filter((f) => f.columnId !== column.id)
+            }
+
+            return prev.map((f) => (f.columnId === column.id ? filter : f))
+          })
+
+          return
+        }
+
         throw new Error(
-          '[data-table-filter] addFilterValue() is only supported for option columns - NOT IMPLEMENTED',
+          '[data-table-filter] addFilterValue() is only supported for option columns',
         )
       },
       removeFilterValue<TData, TType extends OptionBasedColumnDataType>(
@@ -174,8 +214,42 @@ export function useDataTableFilters<TData>(
           return
         }
 
+        if (column.type === 'multiOption') {
+          setFilters((prev) => {
+            // Does column already have a filter?
+            const filter = prev.find((f) => f.columnId === column.id) // as FilterModel<'multiOption'> | undefined
+
+            const isColumnFiltered = filter && filter.values.length > 0
+            if (!isColumnFiltered) {
+              // Add a new filter
+              return [...prev]
+            }
+
+            // Column already has a filter - update it
+            const newValues = removeUniq(filter.values, value)
+            const oldValues = filter.values
+
+            filter.operator = determineNewOperator(
+              'multiOption',
+              oldValues,
+              newValues,
+              filter.operator,
+            )
+            filter.values = newValues
+
+            // Remove filter if it's empty now
+            if (filter.values.length === 0) {
+              return prev.filter((f) => f.columnId !== column.id)
+            }
+
+            return prev.map((f) => (f.columnId === column.id ? filter : f))
+          })
+
+          return
+        }
+
         throw new Error(
-          '[data-table-filter] removeFilterValue() is only supported for option columns - NOT IMPLEMENTED',
+          '[data-table-filter] removeFilterValue() is only supported for option columns',
         )
       },
 
@@ -884,6 +958,7 @@ export function FilterValue<TData, TType extends ColumnDataType>({
   column,
   actions,
 }: FilterValueProps<TData, TType>) {
+  console.log('[FilterValue] Rendering')
   return (
     <Popover>
       <PopoverAnchor className="h-full" />
@@ -976,7 +1051,7 @@ export function FilterValueOptionDisplay<TData>({
   column,
   actions,
 }: FilterValueDisplayProps<TData, 'option'>) {
-  const options = column.getOptions()
+  const options = useMemo(() => column.getOptions(), [column])
   const selected = options.filter((o) => filter?.values.includes(o.value))
 
   // We display the selected options based on how many are selected
@@ -1029,8 +1104,8 @@ export function FilterValueMultiOptionDisplay<TData>({
   column,
   actions,
 }: FilterValueDisplayProps<TData, 'multiOption'>) {
-  const options = column.getOptions()
-  const selected = options.filter((o) => filter?.values[0].includes(o.value))
+  const options = useMemo(() => column.getOptions(), [column])
+  const selected = options.filter((o) => filter.values.includes(o.value))
 
   if (selected.length === 1) {
     const { label, icon: Icon } = selected[0]
@@ -1226,7 +1301,7 @@ export function FilterValueOptionController<TData>({
   const options = useMemo(() => column.getOptions(), [column])
   const optionsCount = useMemo(() => column.getFacetedUniqueValues(), [column])
 
-  // console.log('[FilterValueOptionController] filter:', print(filter))
+  console.log('[FilterValueOptionController] filter:', print(filter))
 
   function handleOptionSelect(value: string, check: boolean) {
     // TODO: Implement logic
@@ -1326,6 +1401,10 @@ export function FilterValueMultiOptionController<TData>({
   // Handles the selection/deselection of an option
   function handleOptionSelect(value: string, check: boolean) {
     // TODO: Implement logic
+    if (check) actions.addFilterValue(column, [value])
+    else actions.removeFilterValue(column, [value])
+
+    // * PREVIOUS LOGIC, FOR REFERENCE
     // if (check) {
     //   column.setFilterValue(
     //     (old: undefined | FilterModel<'multiOption', TData>) => {
@@ -1381,7 +1460,7 @@ export function FilterValueMultiOptionController<TData>({
       <CommandList>
         <CommandGroup>
           {options.map((v) => {
-            const checked = Boolean(filter?.values[0]?.includes(v.value))
+            const checked = Boolean(filter?.values?.includes(v.value))
             const count = optionsCount.get(v.value) ?? 0
 
             return (

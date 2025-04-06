@@ -1,11 +1,12 @@
 'use client'
 
-import dynamic from 'next/dynamic'
+// import dynamic from 'next/dynamic'
 
-const DataTableDemo = dynamic(
-  () => import('@/components/data-table-filter/v2/demo'),
-  { ssr: false },
-)
+// const DataTableDemo = dynamic(
+//   () => import('@/components/data-table-filter/v2/demo'),
+//   { ssr: false },
+// )
+import DataTableDemo from '@/components/data-table-filter/v2/demo'
 
 export default function DemoPage() {
   return (

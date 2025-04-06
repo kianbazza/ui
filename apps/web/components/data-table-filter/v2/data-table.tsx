@@ -31,7 +31,7 @@ export default function DataTable<TData>({
 }: DataTableProps<TData>) {
   return (
     <div className="w-full">
-      <div className="flex items-center py-4 gap-2">
+      <div className="flex items-center pb-4 gap-2">
         <DataTableFilter
           filters={filters}
           columns={columns}

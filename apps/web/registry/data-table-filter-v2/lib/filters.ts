@@ -413,7 +413,7 @@ export type FilterOperators = {
 }
 
 /* Maps filter values to their respective data types */
-export type FilterTypes = {
+export type ColumnDataNativeMap = {
   text: string
   number: number
   date: Date
@@ -432,6 +432,10 @@ export const DEFAULT_OPERATORS: Record<
   multiOption: 'include',
 }
 
+export type FilterValues<T extends ColumnDataType> = Array<
+  ElementType<ColumnDataNativeMap[T]>
+>
+
 /*
  *
  * FilterValue is a type that represents a filter value for a specific column.
@@ -444,7 +448,7 @@ export const DEFAULT_OPERATORS: Record<
 export type FilterModel<TType extends ColumnDataType> = {
   columnId: string
   operator: FilterOperators[TType]
-  values: Array<FilterTypes[TType]>
+  values: FilterValues<TType>
 }
 
 export type FiltersState = Array<FilterModel<any>>
@@ -839,8 +843,8 @@ export const filterTypeOperatorDetails: FilterTypeOperatorDetails = {
  */
 export function determineNewOperator<T extends ColumnDataType>(
   type: T,
-  oldVals: Array<FilterTypes[T]>,
-  nextVals: Array<FilterTypes[T]>,
+  oldVals: Array<ColumnDataNativeMap[T]>,
+  nextVals: Array<ColumnDataNativeMap[T]>,
   currentOperator: FilterOperators[T],
 ): FilterOperators[T] {
   const a =
