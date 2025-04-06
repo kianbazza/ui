@@ -14,6 +14,7 @@ import type {
   FiltersState,
 } from '@/registry/data-table-filter-v2/lib/filters.types'
 import { type Table as TanStackTable, flexRender } from '@tanstack/react-table'
+import { memo } from 'react'
 
 interface DataTableProps<TData> {
   table: TanStackTable<TData>
@@ -22,7 +23,9 @@ interface DataTableProps<TData> {
   actions: DataTableFilterActions
 }
 
-export default function DataTable<TData>({
+export const DataTable = memo(__DataTable)
+
+function __DataTable<TData>({
   table,
   filters,
   columns,
@@ -117,3 +120,5 @@ export default function DataTable<TData>({
     </div>
   )
 }
+
+export default DataTable
