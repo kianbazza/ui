@@ -18,8 +18,6 @@ import {
 import { ISSUE_STATUSES } from './data'
 import type { Issue } from './types'
 
-const columnHelper = createColumnHelper<Issue>()
-
 const LABEL_STYLES_MAP = {
   red: 'bg-red-500 border-red-500',
   orange: 'bg-orange-500 border-orange-500',
@@ -43,6 +41,8 @@ const LABEL_STYLES_MAP = {
 
 type TW_COLOR = keyof typeof LABEL_STYLES_MAP
 
+const columnHelper = createColumnHelper<Issue>()
+
 export const columns = [
   columnHelper.display({
     id: 'select',
@@ -65,10 +65,12 @@ export const columns = [
     ),
     enableSorting: false,
     enableHiding: false,
+    enableColumnFilter: false,
   }),
   columnHelper.accessor((row) => row.status, {
     id: 'status',
     header: 'Status',
+    enableColumnFilter: true,
     cell: ({ row }) => {
       const status = row.getValue<Issue['status']>('status')
       const StatusIcon = status.icon
@@ -80,30 +82,17 @@ export const columns = [
         </div>
       )
     },
-    filterFn: filterFn('option'),
-    // meta: {
-    //   displayName: 'Status',
-    //   type: 'option',
-    //   icon: CircleDotDashedIcon,
-    //   transformOptionFn(value) {
-    //     return { value: value.id, label: value.name, icon: value.icon }
-    //   },
-    // },
   }),
   columnHelper.accessor((row) => row.title, {
     id: 'title',
     header: 'Title',
+    enableColumnFilter: true,
     cell: ({ row }) => <div>{row.getValue('title')}</div>,
-    // meta: {
-    //   displayName: 'Title',
-    //   type: 'text',
-    //   icon: Heading1Icon,
-    // },
-    filterFn: filterFn('text'),
   }),
   columnHelper.accessor('assignee', {
     id: 'assignee',
     header: 'Assignee',
+    enableColumnFilter: true,
     cell: ({ row }) => {
       const user = row.getValue<Issue['assignee']>('assignee')
 
@@ -124,28 +113,6 @@ export const columns = [
         </Avatar>
       )
     },
-    filterFn: filterFn('option'),
-    // meta: {
-    //   displayName: 'Assignee',
-    //   type: 'option',
-    //   icon: UserCheckIcon,
-    //   transformOptionFn: ({ id, name, picture }) => ({
-    //     value: id,
-    //     label: name,
-    //     icon: (
-    //       <Avatar className="size-4">
-    //         <AvatarImage src={picture} />
-    //         <AvatarFallback>
-    //           {name
-    //             .split(' ')
-    //             .map((x) => x[0])
-    //             .join('')
-    //             .toUpperCase()}
-    //         </AvatarFallback>
-    //       </Avatar>
-    //     ),
-    //   }),
-    // },
   }),
   columnHelper.accessor((row) => row.assignee?.name, {
     id: 'assigneeName',
@@ -164,6 +131,7 @@ export const columns = [
   columnHelper.accessor((row) => row.estimatedHours, {
     id: 'estimatedHours',
     header: 'Estimated Hours',
+    enableColumnFilter: true,
     cell: ({ row }) => {
       const estimatedHours = row.getValue<number>('estimatedHours')
 
@@ -180,13 +148,6 @@ export const columns = [
         </span>
       )
     },
-    // meta: {
-    //   displayName: 'Estimated Hours',
-    //   type: 'number',
-    //   icon: ClockIcon,
-    //   max: 16,
-    // },
-    filterFn: filterFn('number'),
   }),
   columnHelper.accessor((row) => row.startDate, {
     id: 'startDate',
@@ -202,12 +163,6 @@ export const columns = [
 
       return <span>{formatted}</span>
     },
-    // meta: {
-    //   displayName: 'Start Date',
-    //   type: 'date',
-    //   icon: CalendarArrowUpIcon,
-    // },
-    filterFn: filterFn('date'),
   }),
   columnHelper.accessor((row) => row.endDate, {
     id: 'endDate',
@@ -223,16 +178,11 @@ export const columns = [
 
       return <span>{formatted}</span>
     },
-    // meta: {
-    //   displayName: 'End Date',
-    //   type: 'date',
-    //   icon: CalendarArrowDownIcon,
-    // },
-    filterFn: filterFn('date'),
   }),
   columnHelper.accessor((row) => row.labels, {
     id: 'labels',
     header: 'Labels',
+    enableColumnFilter: true,
     cell: ({ row }) => {
       const labels = row.getValue<Issue['labels']>('labels')
 
@@ -255,26 +205,6 @@ export const columns = [
         </div>
       )
     },
-    filterFn: filterFn('multiOption'),
-    // meta: defineMeta((row) => row.labels, {
-    //   displayName: 'Labels',
-    //   type: 'multiOption',
-    //   icon: TagsIcon,
-    //   transformOptionFn(data) {
-    //     return {
-    //       value: data.id,
-    //       label: data.name,
-    //       icon: (
-    //         <div
-    //           className={cn(
-    //             'size-2.5 border-none rounded-full',
-    //             LABEL_STYLES_MAP[data.color as TW_COLOR],
-    //           )}
-    //         />
-    //       ),
-    //     }
-    //   },
-    // }),
   }),
 ]
 
@@ -298,11 +228,6 @@ export const columnsConfig = [
     orderFn(a, b) {
       return a.order - b.order
     },
-    // options: ISSUE_STATUSES.map((x) => ({
-    //   value: x.id,
-    //   label: x.name,
-    //   icon: x.icon,
-    // })),
   }),
   filtersHelper.accessor((row) => row.assignee, {
     id: 'assignee',

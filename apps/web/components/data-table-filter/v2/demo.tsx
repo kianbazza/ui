@@ -15,6 +15,11 @@ import { print } from '@/lib/utils'
 import { useDataTableFilters } from '@/registry/data-table-filter-v2/components/data-table-filter'
 import type { FiltersState } from '@/registry/data-table-filter-v2/lib/filters'
 import {
+  createTSTColumns,
+  createTSTFilters,
+} from '@/registry/data-table-filter-v2/lib/filters-tst'
+import {
+  type ColumnDef,
   type ColumnFiltersState,
   type SortingState,
   type VisibilityState,
@@ -32,6 +37,7 @@ import { z } from 'zod'
 import { columnsConfig, columns as tableColumns } from './columns'
 import { ISSUES } from './data'
 import DataTable from './data-table'
+import type { Issue } from './types'
 
 interface DemoConfig {
   state: 'internal' | 'external' | 'nuqs'
@@ -64,37 +70,52 @@ export default function DataTableDemo() {
 
   const [columnFiltersExternal, setColumnFiltersExternal] =
     useState<FiltersState>([])
-  const [columnFiltersNuqs, setColumnFiltersNuqs] = useQueryState<FiltersState>(
-    'filters',
-    parseAsJson(filtersSchema.parse).withDefault([]),
+
+  const tstFilters = useMemo(
+    () => createTSTFilters(columnFiltersExternal),
+    [columnFiltersExternal],
   )
 
-  const filtersState =
-    config.state === 'external'
-      ? [columnFiltersExternal, setColumnFiltersExternal]
-      : config.state === 'nuqs'
-        ? [columnFiltersNuqs, setColumnFiltersNuqs]
-        : undefined
+  // const [columnFiltersNuqs, setColumnFiltersNuqs] = useQueryState<FiltersState>(
+  //   'filters',
+  //   parseAsJson(filtersSchema.parse).withDefault([]),
+  // )
 
-  console.log('[DataTableDemo] re-rendering')
+  // const filtersState =
+  //   config.state === 'external'
+  //     ? [columnFiltersExternal, setColumnFiltersExternal]
+  //     : config.state === 'nuqs'
+  //       ? [columnFiltersNuqs, setColumnFiltersNuqs]
+  //       : undefined
+
+  // console.log('[DataTableDemo] re-rendering')
+  const tstColumns = useMemo(() => {
+    console.log('[DataTableDemo] Creating TST columns')
+    return createTSTColumns({
+      columns: tableColumns as ColumnDef<Issue>[],
+      configs: columnsConfig,
+    })
+  }, [])
 
   const table = useReactTable({
     data: ISSUES,
-    columns: tableColumns,
+    columns: tstColumns,
     getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     onRowSelectionChange: setRowSelection,
+    onColumnFiltersChange: setColumnFiltersExternal,
     state: {
       rowSelection,
+      columnFilters: tstFilters,
     },
   })
 
   const { filters, columns, actions } = useDataTableFilters(
     ISSUES,
     columnsConfig,
-    // @ts-ignore
-    filtersState ?? undefined,
+    [columnFiltersExternal, setColumnFiltersExternal],
   )
 
   return (

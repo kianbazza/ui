@@ -659,7 +659,7 @@ export function determineNewOperator<TType extends ColumnDataType>(
       ? nextVals[0].length
       : nextVals.length
 
-  console.log('[determineNewOperator] a:', a, 'b:', b)
+  // console.log('[determineNewOperator] a:', a, 'b:', b)
 
   // If filter size has not transitioned from single to multiple (or vice versa)
   // or is unchanged, return the current operator.

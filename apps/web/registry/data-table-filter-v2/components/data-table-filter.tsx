@@ -83,7 +83,7 @@ export function useDataTableFilters<TData>(
     setInternalFilters,
   ]
 
-  console.log('Filters:', print(filters))
+  // console.log('Filters:', print(filters))
 
   // This useMemo call ensures that createColumns() only recomputes when data or config.columns change.
   const columns = useMemo(() => {
@@ -293,7 +293,7 @@ export function useDataTableFilters<TData>(
           )
           filter.values = newValues
 
-          console.log('[setFilterValue] updated filter:', print(filter))
+          // console.log('[setFilterValue] updated filter:', print(filter))
 
           return prev.map((f) => (f.columnId === column.id ? filter : f))
         })
@@ -791,10 +791,10 @@ function FilterOperatorOptionController<TData>({
 }: FilterOperatorControllerProps<TData, 'option'>) {
   const filterDetails = optionFilterDetails[filter.operator]
 
-  console.log(
-    '[FilterOperatorOptionController] filterDetails:',
-    print(filterDetails),
-  )
+  // console.log(
+  //   '[FilterOperatorOptionController] filterDetails:',
+  //   print(filterDetails),
+  // )
 
   const relatedFilters = Object.values(optionFilterDetails).filter(
     (o) => o.target === filterDetails.target,
@@ -920,10 +920,10 @@ function FilterOperatorNumberController<TData>({
   // Show all related operators
   const filterDetails = numberFilterDetails[filter.operator]
 
-  console.log(
-    '[FilterOperatorOptionController] filterDetails:',
-    print(filterDetails),
-  )
+  // console.log(
+  //   '[FilterOperatorOptionController] filterDetails:',
+  //   print(filterDetails),
+  // )
 
   const relatedFilters = Object.values(numberFilterDetails).filter(
     (o) => o.target === filterDetails.target,
@@ -964,7 +964,7 @@ export function FilterValue<TData, TType extends ColumnDataType>({
   column,
   actions,
 }: FilterValueProps<TData, TType>) {
-  console.log('[FilterValue] Rendering')
+  // console.log('[FilterValue] Rendering')
   return (
     <Popover>
       <PopoverAnchor className="h-full" />
@@ -1307,7 +1307,7 @@ export function FilterValueOptionController<TData>({
   const options = useMemo(() => column.getOptions(), [column])
   const optionsCount = useMemo(() => column.getFacetedUniqueValues(), [column])
 
-  console.log('[FilterValueOptionController] filter:', print(filter))
+  // console.log('[FilterValueOptionController] filter:', print(filter))
 
   function handleOptionSelect(value: string, check: boolean) {
     // TODO: Implement logic
@@ -1620,7 +1620,10 @@ export function FilterValueNumberController<TData>({
   column,
   actions,
 }: FilterValueControllerProps<TData, 'number'>) {
-  const [datasetMin, datasetMax] = column.getFacetedMinMaxValues()
+  const [datasetMin, datasetMax] = useMemo(
+    () => column.getFacetedMinMaxValues(),
+    [column],
+  )
   const [sliderMin, sliderMax] = [
     column.min ?? datasetMin,
     column.max ?? datasetMax,

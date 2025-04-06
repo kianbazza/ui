@@ -11,9 +11,8 @@ import { DataTableFilter } from '@/registry/data-table-filter-v2/components/data
 import type {
   Column,
   DataTableFilterActions,
-  DataTableFilterConfig,
   FiltersState,
-} from '@/registry/data-table-filter-v2/lib/filters'
+} from '@/registry/data-table-filter-v2/lib/filters.types'
 import { type Table as TanStackTable, flexRender } from '@tanstack/react-table'
 
 interface DataTableProps<TData> {
