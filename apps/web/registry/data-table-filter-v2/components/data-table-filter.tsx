@@ -409,11 +409,11 @@ export function FilterableColumn<TData, TVal>({
 }) {
   const itemRef = useRef<HTMLDivElement>(null)
 
-  console.log(`[FilterableColumn] Rendering for column: ${column.id}`)
+  // console.log(`[FilterableColumn] Rendering for column: ${column.id}`)
 
-  // Wrap this in useCallback to prevent it from being called on every render
   const prefetch = useCallback(() => {
     column.prefetchOptions()
+    column.prefetchValues()
     column.prefetchFacetedUniqueValues()
   }, [column])
 
@@ -460,13 +460,104 @@ export function FilterableColumn<TData, TVal>({
   )
 }
 
-/****** Property Filter Subject ******/
-
-interface FilterSubjectProps<TData> {
-  column: Column<TData, unknown>
+interface ActiveFiltersProps<TData> {
+  columns: Column<TData>[]
+  filters: FiltersState
+  actions: DataTableFilterActions
 }
 
-export function FilterSubject<TData>({ column }: FilterSubjectProps<TData>) {
+export function ActiveFilters<TData>({
+  columns,
+  filters,
+  actions,
+}: ActiveFiltersProps<TData>) {
+  return (
+    <>
+      {filters.map((filter) => {
+        const id = filter.columnId
+
+        const column = getColumn(columns, id)
+
+        // Skip if no filter value
+        if (!filter.values) return null
+
+        // Narrow the type based on meta.type and cast filter accordingly
+        switch (column.type) {
+          case 'text':
+            return renderFilter<TData, 'text'>(
+              filter,
+              column as Column<TData, 'text'>,
+              actions,
+            )
+          case 'number':
+            return renderFilter<TData, 'number'>(
+              filter,
+              column as Column<TData, 'number'>,
+              actions,
+            )
+          case 'date':
+            return renderFilter<TData, 'date'>(
+              filter,
+              column as Column<TData, 'date'>,
+              actions,
+            )
+          case 'option':
+            return renderFilter<TData, 'option'>(
+              filter,
+              column as Column<TData, 'option'>,
+              actions,
+            )
+          case 'multiOption':
+            return renderFilter<TData, 'multiOption'>(
+              filter,
+              column as Column<TData, 'multiOption'>,
+              actions,
+            )
+          default:
+            return null // Handle unknown types gracefully
+        }
+      })}
+    </>
+  )
+}
+
+// Generic render function for a filter with type-safe value
+function renderFilter<TData, TType extends ColumnDataType>(
+  filter: FilterModel<TType>,
+  column: Column<TData, TType>,
+  actions: DataTableFilterActions,
+) {
+  return (
+    <div
+      key={`filter-${filter.columnId}`}
+      className="flex h-7 items-center rounded-2xl border border-border bg-background shadow-xs text-xs"
+    >
+      <FilterSubject column={column} />
+      <Separator orientation="vertical" />
+      <FilterOperator filter={filter} column={column} actions={actions} />
+      <Separator orientation="vertical" />
+      <FilterValue filter={filter} column={column} actions={actions} />
+      <Separator orientation="vertical" />
+      <Button
+        variant="ghost"
+        className="rounded-none rounded-r-2xl text-xs w-7 h-full"
+        onClick={() => actions.removeFilter(filter.columnId)}
+      >
+        <X className="size-4 -translate-x-0.5" />
+      </Button>
+    </div>
+  )
+}
+
+/****** Property Filter Subject ******/
+
+interface FilterSubjectProps<TData, TType extends ColumnDataType> {
+  column: Column<TData, TType>
+}
+
+export function FilterSubject<TData, TType extends ColumnDataType>({
+  column,
+}: FilterSubjectProps<TData, TType>) {
   const hasIcon = !!column.icon
   return (
     <span className="flex select-none items-center gap-1 whitespace-nowrap px-2 font-medium">
@@ -479,7 +570,7 @@ export function FilterSubject<TData>({ column }: FilterSubjectProps<TData>) {
 /****** Property Filter Operator ******/
 
 interface FilterOperatorProps<TData, TType extends ColumnDataType> {
-  column: Column<TData>
+  column: Column<TData, TType>
   filter: FilterModel<TType>
   actions: DataTableFilterActions
 }
@@ -543,7 +634,7 @@ export function FilterOperatorDisplay<TType extends ColumnDataType>({
 
 interface FilterOperatorControllerProps<TData, TType extends ColumnDataType> {
   filter: FilterModel<TType>
-  column: Column<TData>
+  column: Column<TData, TType>
   actions: DataTableFilterActions
   closeController: () => void
 }
@@ -564,7 +655,7 @@ export function FilterOperatorController<TData, TType extends ColumnDataType>({
       return (
         <FilterOperatorOptionController
           filter={filter as FilterModel<'option'>}
-          column={column}
+          column={column as Column<TData, 'option'>}
           actions={actions}
           closeController={closeController}
         />
@@ -573,7 +664,7 @@ export function FilterOperatorController<TData, TType extends ColumnDataType>({
       return (
         <FilterOperatorMultiOptionController
           filter={filter as FilterModel<'multiOption'>}
-          column={column}
+          column={column as Column<TData, 'multiOption'>}
           actions={actions}
           closeController={closeController}
         />
@@ -582,7 +673,7 @@ export function FilterOperatorController<TData, TType extends ColumnDataType>({
       return (
         <FilterOperatorDateController
           filter={filter as FilterModel<'date'>}
-          column={column}
+          column={column as Column<TData, 'date'>}
           actions={actions}
           closeController={closeController}
         />
@@ -591,7 +682,7 @@ export function FilterOperatorController<TData, TType extends ColumnDataType>({
       return (
         <FilterOperatorTextController
           filter={filter as FilterModel<'text'>}
-          column={column}
+          column={column as Column<TData, 'text'>}
           actions={actions}
           closeController={closeController}
         />
@@ -600,7 +691,7 @@ export function FilterOperatorController<TData, TType extends ColumnDataType>({
       return (
         <FilterOperatorNumberController
           filter={filter as FilterModel<'number'>}
-          column={column}
+          column={column as Column<TData, 'number'>}
           actions={actions}
           closeController={closeController}
         />
@@ -780,80 +871,11 @@ function FilterOperatorNumberController<TData>({
   )
 }
 
-interface ActiveFiltersProps<TData> {
-  columns: Column<TData>[]
-  filters: FiltersState
-  actions: DataTableFilterActions
-}
-
-export function ActiveFilters<TData>({
-  columns,
-  filters,
-  actions,
-}: ActiveFiltersProps<TData>) {
-  return (
-    <>
-      {filters.map((filter) => {
-        const id = filter.columnId
-
-        const column = getColumn(columns, id)
-
-        // Skip if no filter value
-        if (!filter.values) return null
-
-        // Narrow the type based on meta.type and cast filter accordingly
-        switch (column.type) {
-          case 'text':
-            return renderFilter<TData, 'text'>(filter, column, actions)
-          case 'number':
-            return renderFilter<TData, 'number'>(filter, column, actions)
-          case 'date':
-            return renderFilter<TData, 'date'>(filter, column, actions)
-          case 'option':
-            return renderFilter<TData, 'option'>(filter, column, actions)
-          case 'multiOption':
-            return renderFilter<TData, 'multiOption'>(filter, column, actions)
-          default:
-            return null // Handle unknown types gracefully
-        }
-      })}
-    </>
-  )
-}
-
-// Generic render function for a filter with type-safe value
-function renderFilter<TData, TType extends ColumnDataType>(
-  filter: FilterModel<TType>,
-  column: Column<TData>,
-  actions: DataTableFilterActions,
-) {
-  return (
-    <div
-      key={`filter-${filter.columnId}`}
-      className="flex h-7 items-center rounded-2xl border border-border bg-background shadow-xs text-xs"
-    >
-      <FilterSubject column={column} />
-      <Separator orientation="vertical" />
-      <FilterOperator filter={filter} column={column} actions={actions} />
-      <Separator orientation="vertical" />
-      <FilterValue filter={filter} column={column} actions={actions} />
-      <Separator orientation="vertical" />
-      <Button
-        variant="ghost"
-        className="rounded-none rounded-r-2xl text-xs w-7 h-full"
-        onClick={() => actions.removeFilter(filter.columnId)}
-      >
-        <X className="size-4 -translate-x-0.5" />
-      </Button>
-    </div>
-  )
-}
-
 /****** Property Filter Value ******/
 
 interface FilterValueProps<TData, TType extends ColumnDataType> {
   filter: FilterModel<TType>
-  column: Column<TData>
+  column: Column<TData, TType>
   actions: DataTableFilterActions
 }
 
@@ -882,11 +904,11 @@ export function FilterValue<TData, TType extends ColumnDataType>({
         side="bottom"
         className="w-fit p-0 origin-(--radix-popover-content-transform-origin)"
       >
-        {/* <FitlerValueController
+        <FilterValueController
           filter={filter}
           column={column}
           actions={actions}
-        /> */}
+        />
       </PopoverContent>
     </Popover>
   )
@@ -894,7 +916,7 @@ export function FilterValue<TData, TType extends ColumnDataType>({
 
 interface FilterValueDisplayProps<TData, TType extends ColumnDataType> {
   filter: FilterModel<TType>
-  column: Column<TData>
+  column: Column<TData, TType>
   actions: DataTableFilterActions
 }
 
@@ -908,7 +930,7 @@ export function FilterValueDisplay<TData, TType extends ColumnDataType>({
       return (
         <FilterValueOptionDisplay
           filter={filter as FilterModel<'option'>}
-          column={column}
+          column={column as Column<TData, 'option'>}
           actions={actions}
         />
       )
@@ -916,7 +938,7 @@ export function FilterValueDisplay<TData, TType extends ColumnDataType>({
       return (
         <FilterValueMultiOptionDisplay
           filter={filter as FilterModel<'multiOption'>}
-          column={column}
+          column={column as Column<TData, 'multiOption'>}
           actions={actions}
         />
       )
@@ -924,7 +946,7 @@ export function FilterValueDisplay<TData, TType extends ColumnDataType>({
       return (
         <FilterValueDateDisplay
           filter={filter as FilterModel<'date'>}
-          column={column}
+          column={column as Column<TData, 'date'>}
           actions={actions}
         />
       )
@@ -932,7 +954,7 @@ export function FilterValueDisplay<TData, TType extends ColumnDataType>({
       return (
         <FilterValueTextDisplay
           filter={filter as FilterModel<'text'>}
-          column={column}
+          column={column as Column<TData, 'text'>}
           actions={actions}
         />
       )
@@ -940,7 +962,7 @@ export function FilterValueDisplay<TData, TType extends ColumnDataType>({
       return (
         <FilterValueNumberDisplay
           filter={filter as FilterModel<'number'>}
-          column={column}
+          column={column as Column<TData, 'number'>}
           actions={actions}
         />
       )
