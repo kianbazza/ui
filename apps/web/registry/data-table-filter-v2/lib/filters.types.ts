@@ -13,6 +13,8 @@ import type { LucideIcon } from 'lucide-react'
 
 export type ElementType<T> = T extends (infer U)[] ? U : T
 
+export type Nullable<T> = T | null | undefined
+
 /*
  * The model of a column option.
  * Used for representing underlying column values of type `option` or `multiOption`.
@@ -103,6 +105,7 @@ export type ColumnConfig<
   icon: LucideIcon
   type: TType
   options?: TType extends OptionBasedColumnDataType ? ColumnOption[] : never
+  min?: TType extends 'number' ? number : never
   max?: TType extends 'number' ? number : never
   transformOptionFn?: TType extends OptionBasedColumnDataType
     ? TTransformOptionFn<TVal>

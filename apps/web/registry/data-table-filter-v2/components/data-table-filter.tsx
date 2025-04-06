@@ -26,6 +26,7 @@ import { cn, print } from '@/lib/utils'
 import {
   DEFAULT_OPERATORS,
   createColumns,
+  createNumberFilterValue,
   createNumberRange,
   dateFilterDetails,
   determineNewOperator,
@@ -56,6 +57,7 @@ import { FilterXIcon } from 'lucide-react'
 import { ArrowRight, Filter } from 'lucide-react'
 import { X } from 'lucide-react'
 import { Ellipsis } from 'lucide-react'
+import { Nullable } from 'nuqs'
 import {
   cloneElement,
   isValidElement,
@@ -261,6 +263,14 @@ export function useDataTableFilters<TData>(
           // Does this column already have a filter?
           const filter = prev.find((f) => f.columnId === column.id)
           const isColumnFiltered = filter && filter.values.length > 0
+
+          const newValues =
+            column.type === 'number'
+              ? createNumberFilterValue(values as number[])
+              : uniq(values)
+
+          if (newValues.length === 0) return prev
+
           if (!isColumnFiltered) {
             // Add a new filter
             return [
@@ -275,7 +285,6 @@ export function useDataTableFilters<TData>(
 
           // Column already has a filter - override it
           const oldValues = filter.values
-          const newValues = uniq(values)
           filter.operator = determineNewOperator(
             column.type,
             oldValues,
@@ -283,6 +292,8 @@ export function useDataTableFilters<TData>(
             filter.operator,
           )
           filter.values = newValues
+
+          console.log('[setFilterValue] updated filter:', print(filter))
 
           return prev.map((f) => (f.columnId === column.id ? filter : f))
         })
@@ -907,21 +918,19 @@ function FilterOperatorNumberController<TData>({
   closeController,
 }: FilterOperatorControllerProps<TData, 'number'>) {
   // Show all related operators
-  const relatedFilters = Object.values(numberFilterDetails)
-  const relatedFilterOperators = relatedFilters.map((r) => r.value)
+  const filterDetails = numberFilterDetails[filter.operator]
 
-  const changeOperator = (value: (typeof relatedFilterOperators)[number]) => {
-    // TODO: REPLACE THIS WITH NEW ACTIONS
-    //
-    // column.setFilterValue((old: typeof filter) => {
-    //   // Clear out the second value when switching to single-input operators
-    //   const target = numberFilterDetails[value].target
-    //
-    //   const newValues =
-    //     target === 'single' ? [old.values[0]] : createNumberRange(old.values)
-    //
-    //   return { ...old, operator: value, values: newValues }
-    // })
+  console.log(
+    '[FilterOperatorOptionController] filterDetails:',
+    print(filterDetails),
+  )
+
+  const relatedFilters = Object.values(numberFilterDetails).filter(
+    (o) => o.target === filterDetails.target,
+  )
+
+  const changeOperator = (value: string) => {
+    actions?.setFilterOperator(column.id, value as FilterOperators['number'])
     closeController()
   }
 
@@ -1611,29 +1620,45 @@ export function FilterValueNumberController<TData>({
   column,
   actions,
 }: FilterValueControllerProps<TData, 'number'>) {
-  const maxFromMeta = column.max
-  const cappedMax = maxFromMeta ?? Number.MAX_SAFE_INTEGER
+  const [datasetMin, datasetMax] = column.getFacetedMinMaxValues()
+  const [sliderMin, sliderMax] = [
+    column.min ?? datasetMin,
+    column.max ?? datasetMax,
+  ]
 
   const isNumberRange =
-    !!filter && numberFilterDetails[filter.operator].target === 'multiple'
+    filter && numberFilterDetails[filter.operator].target === 'multiple'
 
-  const [datasetMin] = column.getFacetedMinMaxValues()
+  const values = filter?.values ?? [0, 0]
+  const valuesStr = values.map((val) => val.toString())
 
-  const initialValues = () => {
-    if (filter?.values) {
-      return filter.values.map((val) =>
-        val >= cappedMax ? `${cappedMax}+` : val.toString(),
-      )
-    }
-    return [datasetMin.toString()]
-  }
+  // const initialValues = () => {
+  //   if (filter?.values) {
+  //     return filter.values.map((val) =>
+  //       val >= cappedMax ? `${cappedMax}+` : val.toString(),
+  //     )
+  //   }
+  //   return [datasetMin.toString()]
+  // }
 
-  const [inputValues, setInputValues] = useState<string[]>(initialValues)
+  // const initialValues = () => {
+  //   if (!filter?.values) {
+  //     return ['0']
+  //   }
+
+  //   return filter.values.map((val) => val.toString())
+  // }
+
+  // const [inputValues, setInputValues] = useState<string[]>(() =>
+  //   initialValues(),
+  // )
 
   const changeNumber = (value: number[]) => {
-    const sortedValues = [...value].sort((a, b) => a - b)
-
     // TODO: implement logic
+    actions.setFilterValue(column, value)
+
+    // *NOTE: PREVIOUS LOGIC, FOR REFERENCE
+    // const sortedValues = [...value].sort((a, b) => a - b)
     // column.setFilterValue((old: undefined | FilterModel<'number', TData>) => {
     //   if (!old || old.values.length === 0) {
     //     return {
@@ -1663,27 +1688,36 @@ export function FilterValueNumberController<TData>({
     // })
   }
 
-  const handleInputChange = (index: number, value: string) => {
-    const newValues = [...inputValues]
-    if (isNumberRange && Number.parseInt(value, 10) >= cappedMax) {
-      newValues[index] = `${cappedMax}+`
-    } else {
-      newValues[index] = value
-    }
+  // const handleInputChange = (index: number, value: string) => {
+  //   const newValues = [...inputValues]
+  //   if (isNumberRange && Number.parseInt(value, 10) >= cappedMax) {
+  //     newValues[index] = `${cappedMax}+`
+  //   } else {
+  //     newValues[index] = value
+  //   }
 
-    setInputValues(newValues)
+  //   setInputValues(newValues)
 
-    const parsedValues = newValues.map((val) => {
-      if (val.trim() === '') return 0
-      if (val === `${cappedMax}+`) return cappedMax
-      return Number.parseInt(val, 10)
-    })
+  //   const parsedValues = newValues.map((val) => {
+  //     if (val.trim() === '') return 0
+  //     if (val === `${cappedMax}+`) return cappedMax
+  //     return Number.parseInt(val, 10)
+  //   })
 
-    changeNumber(parsedValues)
-  }
+  //   changeNumber(parsedValues)
+  // }
 
   const changeType = (type: 'single' | 'range') => {
     // TODO: implement logic
+    if (type === 'single') actions.setFilterValue(column, [values[0]])
+    else {
+      const v1 = values[0] === datasetMin ? values[0] : datasetMax
+      const v2 = values[1] === datasetMax ? values[1] : datasetMin
+
+      actions.setFilterValue(column, [v1, v2])
+    }
+
+    // *NOTE: PREVIOUS LOGIC, FOR REFERENCE
     // column.setFilterValue((old: undefined | FilterModel<'number', TData>) => {
     //   if (type === 'single') {
     //     return {
@@ -1697,29 +1731,33 @@ export function FilterValueNumberController<TData>({
     //     values: [0, newMaxValue],
     //   }
     // })
-
-    if (type === 'single') {
-      setInputValues([inputValues[0]])
-    } else {
-      const maxValue = inputValues[0] || cappedMax.toString()
-      setInputValues(['0', maxValue])
-    }
+    //   if (type === 'single') {
+    //     setInputValues([inputValues[0]])
+    //   } else {
+    //     const maxValue = inputValues[0] || cappedMax.toString()
+    //     setInputValues(['0', maxValue])
+    //   }
   }
 
-  const slider = {
-    value: inputValues.map((val) =>
-      val === '' || val === `${cappedMax}+`
-        ? cappedMax
-        : Number.parseInt(val, 10),
-    ),
-    onValueChange: (value: number[]) => {
-      const values = value.map((val) => (val >= cappedMax ? cappedMax : val))
-      setInputValues(
-        values.map((v) => (v >= cappedMax ? `${cappedMax}+` : v.toString())),
-      )
-      changeNumber(values)
-    },
-  }
+  // const slider = {
+  //   value: inputValues.map((val) => Number.parseInt(val)),
+  // }
+
+  // *NOTE: PREVIOUS LOGIC, FOR REFERENCE
+  // const slider = {
+  //   value: inputValues.map((val) =>
+  //     val === '' || val === `${cappedMax}+`
+  //       ? cappedMax
+  //       : Number.parseInt(val, 10),
+  //   ),
+  //   onValueChange: (value: number[]) => {
+  //     const values = value.map((val) => (val >= cappedMax ? cappedMax : val))
+  //     setInputValues(
+  //       values.map((v) => (v >= cappedMax ? `${cappedMax}+` : v.toString())),
+  //     )
+  //     changeNumber(values)
+  //   },
+  // }
 
   return (
     <Command>
@@ -1738,12 +1776,15 @@ export function FilterValueNumberController<TData>({
               </TabsList>
               <TabsContent value="single" className="flex flex-col gap-4 mt-4">
                 <Slider
-                  value={[Number(inputValues[0])]}
-                  onValueChange={(value) => {
-                    handleInputChange(0, value[0].toString())
-                  }}
-                  min={datasetMin}
-                  max={cappedMax}
+                  value={[values[0]]}
+                  onValueChange={(value) => changeNumber(value)}
+                  // value={slider.value}
+                  // value={[Number(inputValues[0])]}
+                  // onValueChange={(value) => {
+                  //   handleInputChange(0, value[0].toString())
+                  // }}
+                  min={sliderMin}
+                  max={sliderMax}
                   step={1}
                   aria-orientation="horizontal"
                 />
@@ -1752,18 +1793,23 @@ export function FilterValueNumberController<TData>({
                   <Input
                     id="single"
                     type="number"
-                    value={inputValues[0]}
-                    onChange={(e) => handleInputChange(0, e.target.value)}
-                    max={cappedMax}
+                    value={valuesStr[0]}
+                    onChange={(e) => changeNumber([Number(e.target.value)])}
+                    // value={inputValues[0]}
+                    // onChange={(e) => handleInputChange(0, e.target.value)}
+                    min={datasetMin}
+                    max={datasetMax}
                   />
                 </div>
               </TabsContent>
               <TabsContent value="range" className="flex flex-col gap-4 mt-4">
                 <Slider
-                  value={slider.value}
-                  onValueChange={slider.onValueChange}
-                  min={datasetMin}
-                  max={cappedMax}
+                  value={values}
+                  onValueChange={changeNumber}
+                  // value={slider.value}
+                  // onValueChange={slider.onValueChange}
+                  min={sliderMin}
+                  max={sliderMax}
                   step={1}
                   aria-orientation="horizontal"
                 />
@@ -1772,19 +1818,20 @@ export function FilterValueNumberController<TData>({
                     <span className="text-xs font-medium">Min</span>
                     <Input
                       type="number"
-                      value={inputValues[0]}
-                      onChange={(e) => handleInputChange(0, e.target.value)}
-                      max={cappedMax}
+                      // value={inputValues[0]}
+                      // onChange={(e) => handleInputChange(0, e.target.value)}
+                      min={datasetMin}
+                      max={datasetMax}
                     />
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium">Max</span>
                     <Input
                       type="text"
-                      value={inputValues[1]}
-                      placeholder={`${cappedMax}+`}
-                      onChange={(e) => handleInputChange(1, e.target.value)}
-                      max={cappedMax}
+                      // value={inputValues[1]}
+                      // onChange={(e) => handleInputChange(1, e.target.value)}
+                      min={datasetMin}
+                      max={datasetMax}
                     />
                   </div>
                 </div>

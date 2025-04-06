@@ -11,6 +11,7 @@ import type {
   FilterOperators,
   FilterTypeOperatorDetails,
   FilterValues,
+  Nullable,
 } from './filters.types'
 import { memo } from './memo'
 
@@ -168,7 +169,24 @@ export function getFacetedMinMaxValues<
   TType extends ColumnDataType,
   TVal,
 >(column: ColumnConfig<TData, TType, TVal>, data: TData[]): number[] {
-  return [0, 0]
+  if (column.type !== 'number') return [0, 0] // Only applicable to number columns
+
+  const values = data
+    .flatMap((row) => column.accessor(row) as Nullable<number>)
+    .filter((v): v is number => typeof v === 'number' && !Number.isNaN(v))
+
+  if (values.length === 0) {
+    return [column.min ?? 0, column.max ?? 100] // Fallback to config or reasonable defaults
+  }
+
+  const min = Math.min(...values)
+  const max = Math.max(...values)
+
+  // Apply config overrides if provided
+  return [
+    column.min !== undefined ? Math.max(min, column.min) : min,
+    column.max !== undefined ? Math.min(max, column.max) : max,
+  ]
 }
 
 export function createColumns<TData>(
@@ -501,6 +519,7 @@ export const numberFilterDetails = {
     label: 'is',
     value: 'is',
     target: 'single',
+    singularOf: 'is between',
     relativeOf: [
       'is not',
       'is greater than',
@@ -515,6 +534,7 @@ export const numberFilterDetails = {
     label: 'is not',
     value: 'is not',
     target: 'single',
+    singularOf: 'is not between',
     relativeOf: [
       'is',
       'is greater than',
@@ -529,6 +549,7 @@ export const numberFilterDetails = {
     label: '>',
     value: 'is greater than',
     target: 'single',
+    singularOf: 'is between',
     relativeOf: [
       'is',
       'is not',
@@ -543,6 +564,7 @@ export const numberFilterDetails = {
     label: '>=',
     value: 'is greater than or equal to',
     target: 'single',
+    singularOf: 'is between',
     relativeOf: [
       'is',
       'is not',
@@ -557,6 +579,7 @@ export const numberFilterDetails = {
     label: '<',
     value: 'is less than',
     target: 'single',
+    singularOf: 'is between',
     relativeOf: [
       'is',
       'is not',
@@ -571,6 +594,7 @@ export const numberFilterDetails = {
     label: '<=',
     value: 'is less than or equal to',
     target: 'single',
+    singularOf: 'is between',
     relativeOf: [
       'is',
       'is not',
@@ -585,6 +609,7 @@ export const numberFilterDetails = {
     label: 'is between',
     value: 'is between',
     target: 'multiple',
+    pluralOf: 'is',
     relativeOf: 'is not between',
     isNegated: false,
     negation: 'is not between',
@@ -593,6 +618,7 @@ export const numberFilterDetails = {
     label: 'is not between',
     value: 'is not between',
     target: 'multiple',
+    pluralOf: 'is not',
     relativeOf: 'is between',
     isNegated: true,
     negationOf: 'is between',
@@ -647,6 +673,15 @@ export function determineNewOperator<TType extends ColumnDataType>(
   // Handle transition from multiple to single filter values.
   if (a > b && b <= 1) return opDetails.pluralOf ?? currentOperator
   return currentOperator
+}
+
+export function createNumberFilterValue(
+  values: number[] | undefined,
+): number[] {
+  if (!values || values.length === 0) return []
+  if (values.length === 1) return [values[0]]
+  if (values.length === 2) return createNumberRange(values)
+  return [values[0], values[1]]
 }
 
 export function createNumberRange(values: number[] | undefined) {

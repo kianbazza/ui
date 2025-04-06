@@ -346,4 +346,12 @@ export const columnsConfig = [
       }
     },
   }),
+  filtersHelper.accessor((row) => row.estimatedHours, {
+    id: 'estimatedHours',
+    type: 'number',
+    displayName: 'Estimated hours',
+    icon: ClockIcon,
+    min: 0,
+    max: 100,
+  }),
 ]
