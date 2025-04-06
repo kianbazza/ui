@@ -42,6 +42,10 @@ export type ColumnConfig<TData, TVal = unknown> = {
   options?: ColumnOption[]
   max?: number
   transformOptionFn?: (value: ElementType<NonNullable<TVal>>) => ColumnOption
+  orderFn?: (
+    a: ElementType<NonNullable<TVal>>,
+    b: ElementType<NonNullable<TVal>>,
+  ) => number
 }
 
 export type ColumnConfigHelper<TData> = {
@@ -100,11 +104,24 @@ export function getColumnOptions<TData, TVal>(
     return column.options
   }
 
-  const models = uniq(
-    data
-      .flatMap(column.accessor)
-      .filter((v): v is NonNullable<TVal> => v !== undefined && v !== null),
-  )
+  const filtered = data
+    .flatMap(column.accessor)
+    .filter((v): v is NonNullable<TVal> => v !== undefined && v !== null)
+
+  console.log(`[getColumnOptions] [${column.id}] filtered:`, filtered)
+
+  let models = uniq(filtered)
+
+  if (column.orderFn) {
+    models = models.sort((m1, m2) =>
+      column.orderFn!(
+        m1 as ElementType<NonNullable<TVal>>,
+        m2 as ElementType<NonNullable<TVal>>,
+      ),
+    )
+  }
+
+  console.log(`[getColumnOptions] [${column.id}] models:`, models)
 
   if (column.transformOptionFn) {
     // Memoize transformOptionFn calls
@@ -235,7 +252,7 @@ export function createColumns<TData>(
       { key: `values-${columnConfig.id}` },
     )
 
-    const getFacetedValues: () => Map<string, number> = memo(
+    const getUniqueValues: () => Map<string, number> = memo(
       () => [getValues()],
       (deps) => getFacetedUniqueValues(columnConfig, deps[0]),
       { key: `faceted-${columnConfig.id}` },
@@ -252,7 +269,7 @@ export function createColumns<TData>(
       ...columnConfig,
       getOptions,
       getValues,
-      getFacetedUniqueValues: getFacetedValues,
+      getFacetedUniqueValues: getUniqueValues,
       getFacetedMinMaxValues: getMinMaxValues,
       // Prefetch methods will be added below
       prefetchOptions: async () => {}, // Placeholder, defined below
@@ -294,10 +311,11 @@ export function createColumns<TData>(
       if (!column._prefetchedFacetedCache) {
         await new Promise((resolve) =>
           setTimeout(() => {
-            const values = getValues()
-            const facetedMap = getFacetedUniqueValues(columnConfig, values)
+            const facetedMap = getUniqueValues()
             column._prefetchedFacetedCache = facetedMap
-            // console.log(`Prefetched faceted unique values for ${columnConfig.id}`)
+            // console.log(
+            //   `Prefetched faceted unique values for ${columnConfig.id}`,
+            // )
             resolve(undefined)
           }, 0),
         )

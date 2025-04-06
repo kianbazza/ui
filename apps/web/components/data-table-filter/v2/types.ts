@@ -27,5 +27,6 @@ export type IssueLabel = {
 export type IssueStatus = {
   id: 'backlog' | 'todo' | 'in-progress' | 'done'
   name: string
+  order: number
   icon: LucideIcon
 }

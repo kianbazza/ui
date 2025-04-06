@@ -46,21 +46,25 @@ export const ISSUE_STATUSES: IssueStatus[] = [
     id: 'backlog',
     name: 'Backlog',
     icon: CircleDashedIcon,
+    order: 1,
   },
   {
     id: 'todo',
     name: 'Todo',
     icon: CircleIcon,
+    order: 2,
   },
   {
     id: 'in-progress',
     name: 'In Progress',
     icon: CircleDotIcon,
+    order: 3,
   },
   {
     id: 'done',
     name: 'Done',
     icon: CircleCheckIcon,
+    order: 4,
   },
 ] as const
 

@@ -84,10 +84,10 @@ export function useDataTableFilters<TData>(
   console.log('Filters:', print(filters))
 
   // This useMemo call ensures that createColumns() only recomputes when config.data or config.columns change.
-  const columns = useMemo(
-    () => createColumns(config.data, config.columns),
-    [config.data, config.columns],
-  )
+  const columns = useMemo(() => {
+    console.log('[useDataTableFilters] Computing columns')
+    return createColumns(config.data, config.columns)
+  }, [config.data, config.columns])
 
   const actions: DataTableFilterActions = useMemo(
     () => ({
@@ -409,8 +409,11 @@ export function FilterableColumn<TData, TVal>({
 }) {
   const itemRef = useRef<HTMLDivElement>(null)
 
+  console.log(`[FilterableColumn] Rendering for column: ${column.id}`)
+
   // Wrap this in useCallback to prevent it from being called on every render
   const prefetch = useCallback(() => {
+    column.prefetchOptions()
     column.prefetchFacetedUniqueValues()
   }, [column])
 
@@ -1198,8 +1201,8 @@ export function FilterValueOptionController<TData>({
   column,
   actions,
 }: FilterValueControllerProps<TData, 'option'>) {
-  const options = column.getOptions()
-  const optionsCount = column.getFacetedUniqueValues()
+  const options = useMemo(() => column.getOptions(), [column])
+  const optionsCount = useMemo(() => column.getFacetedUniqueValues(), [column])
 
   // console.log('[FilterValueOptionController] filter:', print(filter))
 
@@ -1295,8 +1298,8 @@ export function FilterValueMultiOptionController<TData>({
   column,
   actions,
 }: FilterValueControllerProps<TData, 'multiOption'>) {
-  const options = column.getOptions()
-  const optionsCount = column.getFacetedUniqueValues()
+  const options = useMemo(() => column.getOptions(), [column])
+  const optionsCount = useMemo(() => column.getFacetedUniqueValues(), [column])
 
   // Handles the selection/deselection of an option
   function handleOptionSelect(value: string, check: boolean) {

@@ -298,6 +298,9 @@ export const columnsConfig = [
     transformOptionFn(value) {
       return { value: value.id, label: value.name, icon: value.icon }
     },
+    orderFn(a, b) {
+      return a.order - b.order
+    },
     // options: ISSUE_STATUSES.map((x) => ({
     //   value: x.id,
     //   label: x.name,

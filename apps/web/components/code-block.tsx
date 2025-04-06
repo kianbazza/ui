@@ -18,7 +18,7 @@ export const CodeBlockWrapper = ({
   return (
     <div
       className={cn(
-        '**:font-mono text-sm rounded-2xl *:rounded-2xl border border-border bg-white dark:bg-neutral-900 shadow-xs',
+        '**:font-mono text-sm not-dark:font-[450] rounded-2xl *:rounded-2xl border border-border bg-white dark:bg-neutral-900 shadow-xs',
         className,
       )}
     >

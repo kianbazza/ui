@@ -1,6 +1,6 @@
 'use client'
 
-import { use, useState } from 'react'
+import { use, useMemo, useState } from 'react'
 
 import { CodeBlock } from '@/components/code-block'
 import { print } from '@/lib/utils'
@@ -29,6 +29,8 @@ export default function DataTableDemo() {
   // const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = useState({})
 
+  console.log('[DataTableDemo] re-rendering')
+
   const table = useReactTable({
     data: ISSUES,
     columns: tableColumns,
@@ -53,20 +55,26 @@ export default function DataTableDemo() {
     },
   })
 
-  const cols = createColumns(ISSUES, columnsConfig)
+  const cols = useMemo(() => {
+    console.log('[DataTableDemo] Computing columns')
+    return createColumns(ISSUES, columnsConfig)
+  }, [])
+
   const { filters, columns, actions } = useDataTableFilters({
     data: ISSUES,
     columns: cols,
   })
 
   return (
-    <div className="grid grid-cols-2 gap-8">
-      <DataTable
-        table={table}
-        filters={filters}
-        columns={columns}
-        actions={actions}
-      />
+    <div className="grid grid-cols-3 gap-8">
+      <div className="col-span-2">
+        <DataTable
+          table={table}
+          filters={filters}
+          columns={columns}
+          actions={actions}
+        />
+      </div>
       <CodeBlock lang="json" code={print(filters)} />
     </div>
   )
