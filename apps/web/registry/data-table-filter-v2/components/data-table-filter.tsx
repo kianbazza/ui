@@ -1574,6 +1574,9 @@ export function FilterValueTextController<TData>({
 }: FilterValueControllerProps<TData, 'text'>) {
   const changeText = (value: string | number) => {
     // TODO: implement logic
+    actions.setFilterValue(column, [String(value)])
+
+    // * NOTE: PREVIOUS LOGIC, FOR REFERENCE
     // column.setFilterValue((old: undefined | FilterModel<'text', TData>) => {
     //   if (!old || old.values.length === 0)
     //     return {
