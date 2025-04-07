@@ -13,11 +13,11 @@ import {
 } from '@/components/ui/select'
 import { print } from '@/lib/utils'
 import { useDataTableFilters } from '@/registry/data-table-filter-v2/components/data-table-filter'
-import type { FiltersState } from '@/registry/data-table-filter-v2/lib/filters'
 import {
   createTSTColumns,
   createTSTFilters,
 } from '@/registry/data-table-filter-v2/lib/filters-tst'
+import type { FiltersState } from '@/registry/data-table-filter-v2/lib/filters.types'
 import {
   type ColumnDef,
   type ColumnFiltersState,
