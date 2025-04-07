@@ -103,7 +103,6 @@ export default function DataTableDemo() {
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     onRowSelectionChange: setRowSelection,
-    onColumnFiltersChange: setColumnFiltersExternal,
     state: {
       rowSelection,
       columnFilters: tstFilters,
