@@ -31,6 +31,7 @@ import {
   getColumn,
   getColumnMeta,
   isColumnOptionArray,
+  isFilterableColumn,
   multiOptionFilterDetails,
   numberFilterDetails,
   optionFilterDetails,
@@ -182,9 +183,7 @@ export function FilterSelector<TData>({ table }: { table: Table<TData> }) {
   const column = property ? getColumn(table, property) : undefined
   const columnMeta = property ? getColumnMeta(table, property) : undefined
 
-  const properties = table
-    .getAllColumns()
-    .filter((column) => column.getCanFilter())
+  const properties = table.getAllColumns().filter(isFilterableColumn)
 
   const hasFilters = table.getState().columnFilters.length > 0
 
