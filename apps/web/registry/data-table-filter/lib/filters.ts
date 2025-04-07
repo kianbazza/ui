@@ -921,3 +921,49 @@ export function getColumnMeta<TData>(table: Table<TData>, id: string) {
 
   return column.columnDef.meta
 }
+
+/*** Table Filter Helpers ***/
+
+export function isFilterableColumn<TData>(column: Column<TData>) {
+  // 'auto' filterFn doesn't count!
+  const hasFilterFn =
+    column.columnDef.filterFn && column.columnDef.filterFn !== 'auto'
+
+  if (
+    column.getCanFilter() &&
+    column.accessorFn &&
+    hasFilterFn &&
+    column.columnDef.meta
+  )
+    return true
+
+  if (!column.accessorFn || !column.columnDef.meta) {
+    // 1) Column has no accessor function
+    //    We assume this is a display column and thus has no filterable data
+    // 2) Column has no meta
+    //    We assume this column is not intended to be filtered using this component
+    return false
+  }
+
+  if (!column.accessorFn) {
+    warn(`Column "${column.id}" ignored - no accessor function`)
+  }
+
+  if (!column.getCanFilter()) {
+    warn(`Column "${column.id}" ignored - not filterable`)
+  }
+
+  if (!hasFilterFn) {
+    warn(
+      `Column "${column.id}" ignored - no filter function. use the provided filterFn() helper function`,
+    )
+  }
+
+  return false
+}
+
+function warn(...messages: string[]) {
+  if (process.env.NODE_ENV !== 'production') {
+    console.warn('[◐] [filters]', ...messages)
+  }
+}
