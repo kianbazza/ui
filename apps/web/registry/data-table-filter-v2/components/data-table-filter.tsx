@@ -3,12 +3,14 @@
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Checkbox } from '@/components/ui/checkbox'
+// import { Checkbox as __Checkbox } from '@/components/ui/checkbox'
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
+  // CommandItem as __CommandItem,
   CommandList,
 } from '@/components/ui/command'
 import { Input } from '@/components/ui/input'
@@ -23,6 +25,25 @@ import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useIsMobile } from '@/hooks/use-mobile'
 import { cn, print } from '@/lib/utils'
+import { format, isEqual } from 'date-fns'
+import { FilterXIcon } from 'lucide-react'
+import { ArrowRight, Filter } from 'lucide-react'
+import { X } from 'lucide-react'
+import { Ellipsis } from 'lucide-react'
+import { Nullable } from 'nuqs'
+import {
+  cloneElement,
+  isValidElement,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import type { DateRange } from 'react-day-picker'
+import { take, uniq } from '../lib/array'
+import { addUniq, removeUniq } from '../lib/array'
 import {
   DEFAULT_OPERATORS,
   createColumns,
@@ -36,7 +57,7 @@ import {
   numberFilterDetails,
   optionFilterDetails,
   textFilterDetails,
-} from '@/registry/data-table-filter-v2/lib/filters'
+} from '../lib/filters'
 import type {
   Column,
   ColumnConfig,
@@ -50,25 +71,12 @@ import type {
   FilterValues,
   FiltersState,
   OptionBasedColumnDataType,
-} from '@/registry/data-table-filter-v2/lib/filters.types'
-import { take, uniq } from '@/registry/data-table-filter/lib/array'
-import { format, isEqual } from 'date-fns'
-import { FilterXIcon } from 'lucide-react'
-import { ArrowRight, Filter } from 'lucide-react'
-import { X } from 'lucide-react'
-import { Ellipsis } from 'lucide-react'
-import { Nullable } from 'nuqs'
-import {
-  cloneElement,
-  isValidElement,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
-import type { DateRange } from 'react-day-picker'
-import { addUniq, removeUniq } from '../lib/array'
+} from '../lib/filters.types'
+
+// const Checkbox = memo(__Checkbox) as typeof __Checkbox
+// const CommandItem = memo(__CommandItem) as typeof __CommandItem
+// const Checkbox = __Checkbox
+// const CommandItem = __CommandItem
 
 export function useDataTableFilters<TData>(
   data: TData[],
@@ -84,6 +92,10 @@ export function useDataTableFilters<TData>(
   ]
 
   // console.log('Filters:', print(filters))
+
+  useEffect(() => {
+    console.log('[useDataTableFilters] Filters:', print(filters))
+  }, [filters])
 
   // This useMemo call ensures that createColumns() only recomputes when data or config.columns change.
   const columns = useMemo(() => {
@@ -118,17 +130,24 @@ export function useDataTableFilters<TData>(
             // Column already has a filter - update it
             const oldValues = filter.values
             const newValues = addUniq(filter.values, values)
-            filter.operator = determineNewOperator(
+            const newOperator = determineNewOperator(
               'option',
               oldValues,
               newValues,
               filter.operator,
             )
-            filter.values = newValues
 
             // console.log('next filter values:', filter.values)
 
-            return prev.map((f) => (f.columnId === column.id ? filter : f))
+            return prev.map((f) =>
+              f.columnId === column.id
+                ? {
+                    columnId: column.id,
+                    operator: newOperator,
+                    values: newValues,
+                  }
+                : f,
+            )
           })
 
           return
@@ -155,20 +174,27 @@ export function useDataTableFilters<TData>(
             // Column already has a filter - update it
             const oldValues = filter.values
             const newValues = addUniq(filter.values, values)
-            filter.operator = determineNewOperator(
+            const newOperator = determineNewOperator(
               'multiOption',
               oldValues,
               newValues,
               filter.operator,
             )
-            filter.values = newValues
 
             // Remove filter if it's empty now
             if (filter.values.length === 0) {
               return prev.filter((f) => f.columnId !== column.id)
             }
 
-            return prev.map((f) => (f.columnId === column.id ? filter : f))
+            return prev.map((f) =>
+              f.columnId === column.id
+                ? {
+                    columnId: column.id,
+                    operator: newOperator,
+                    values: newValues,
+                  }
+                : f,
+            )
           })
 
           return
@@ -197,20 +223,27 @@ export function useDataTableFilters<TData>(
             const newValues = removeUniq(filter.values, value)
             const oldValues = filter.values
 
-            filter.operator = determineNewOperator(
+            const newOperator = determineNewOperator(
               'option',
               oldValues,
               newValues,
               filter.operator,
             )
-            filter.values = newValues
 
             // Remove filter if it's empty now
             if (filter.values.length === 0) {
               return prev.filter((f) => f.columnId !== column.id)
             }
 
-            return prev.map((f) => (f.columnId === column.id ? filter : f))
+            return prev.map((f) =>
+              f.columnId === column.id
+                ? {
+                    columnId: column.id,
+                    operator: newOperator,
+                    values: newValues,
+                  }
+                : f,
+            )
           })
 
           return
@@ -231,20 +264,27 @@ export function useDataTableFilters<TData>(
             const newValues = removeUniq(filter.values, value)
             const oldValues = filter.values
 
-            filter.operator = determineNewOperator(
+            const newOperator = determineNewOperator(
               'multiOption',
               oldValues,
               newValues,
               filter.operator,
             )
-            filter.values = newValues
 
             // Remove filter if it's empty now
             if (filter.values.length === 0) {
               return prev.filter((f) => f.columnId !== column.id)
             }
 
-            return prev.map((f) => (f.columnId === column.id ? filter : f))
+            return prev.map((f) =>
+              f.columnId === column.id
+                ? {
+                    columnId: column.id,
+                    operator: newOperator,
+                    values: newValues,
+                  }
+                : f,
+            )
           })
 
           return
@@ -285,17 +325,24 @@ export function useDataTableFilters<TData>(
 
           // Column already has a filter - override it
           const oldValues = filter.values
-          filter.operator = determineNewOperator(
+          const newOperator = determineNewOperator(
             column.type,
             oldValues,
             newValues,
             filter.operator,
           )
-          filter.values = newValues
 
           // console.log('[setFilterValue] updated filter:', print(filter))
 
-          return prev.map((f) => (f.columnId === column.id ? filter : f))
+          return prev.map((f) =>
+            f.columnId === column.id
+              ? {
+                  columnId: column.id,
+                  operator: newOperator,
+                  values: newValues,
+                }
+              : f,
+          )
         })
       },
       setFilterOperator<TType extends ColumnDataType>(
@@ -356,22 +403,21 @@ export function DataTableFilter<TData>({
   return (
     <div className="flex w-full items-start justify-between gap-2">
       <div className="flex md:flex-wrap gap-2 w-full flex-1">
-        <FilterSelector filters={filters} columns={columns} actions={actions} />
+        <FilterSelector columns={columns} filters={filters} actions={actions} />
         <ActiveFilters columns={columns} filters={filters} actions={actions} />
       </div>
-      <FilterActions filters={filters} actions={actions} />
+      <FilterActions hasFilters={filters.length > 0} actions={actions} />
     </div>
   )
 }
 
 interface FilterActionsProps {
-  filters: FiltersState
+  hasFilters: boolean
   actions?: DataTableFilterActions
 }
 
-export function FilterActions({ filters, actions }: FilterActionsProps) {
-  const hasFilters = filters.length > 0
-
+export const FilterActions = memo(__FilterActions)
+function __FilterActions({ hasFilters, actions }: FilterActionsProps) {
   return (
     <Button
       className={cn('h-7 !px-2', !hasFilters && 'hidden')}
@@ -390,7 +436,9 @@ interface FilterSelectorProps<TData> {
   actions: DataTableFilterActions
 }
 
-export function FilterSelector<TData>({
+export const FilterSelector = memo(__FilterSelector) as typeof __FilterSelector
+
+function __FilterSelector<TData>({
   filters,
   columns,
   actions,
@@ -404,8 +452,6 @@ export function FilterSelector<TData>({
   const filter = property
     ? filters.find((f) => f.columnId === property)
     : undefined
-
-  // console.log('[FilterSelector] filter:', print(filter))
 
   const hasFilters = filters.length > 0
 
@@ -491,8 +537,6 @@ export function FilterableColumn<TData, TType extends ColumnDataType, TVal>({
 }) {
   const itemRef = useRef<HTMLDivElement>(null)
 
-  // console.log(`[FilterableColumn] Rendering for column: ${column.id}`)
-
   const prefetch = useCallback(() => {
     column.prefetchOptions()
     column.prefetchValues()
@@ -563,57 +607,33 @@ export function ActiveFilters<TData>({
         // Skip if no filter value
         if (!filter.values) return null
 
-        // Narrow the type based on meta.type and cast filter accordingly
-        switch (column.type) {
-          case 'text':
-            return renderFilter<TData, 'text'>(
-              filter,
-              column as Column<TData, 'text'>,
-              actions,
-            )
-          case 'number':
-            return renderFilter<TData, 'number'>(
-              filter,
-              column as Column<TData, 'number'>,
-              actions,
-            )
-          case 'date':
-            return renderFilter<TData, 'date'>(
-              filter,
-              column as Column<TData, 'date'>,
-              actions,
-            )
-          case 'option':
-            return renderFilter<TData, 'option'>(
-              filter,
-              column as Column<TData, 'option'>,
-              actions,
-            )
-          case 'multiOption':
-            return renderFilter<TData, 'multiOption'>(
-              filter,
-              column as Column<TData, 'multiOption'>,
-              actions,
-            )
-          default:
-            return null // Handle unknown types gracefully
-        }
+        return (
+          <ActiveFilter
+            key={`active-filter-${filter.columnId}`}
+            filter={filter}
+            column={column}
+            actions={actions}
+          />
+        )
       })}
     </>
   )
 }
 
+interface ActiveFilterProps<TData, TType extends ColumnDataType> {
+  filter: FilterModel<TType>
+  column: Column<TData, TType>
+  actions: DataTableFilterActions
+}
+
 // Generic render function for a filter with type-safe value
-function renderFilter<TData, TType extends ColumnDataType>(
-  filter: FilterModel<TType>,
-  column: Column<TData, TType>,
-  actions: DataTableFilterActions,
-) {
+export function ActiveFilter<TData, TType extends ColumnDataType>({
+  filter,
+  column,
+  actions,
+}: ActiveFilterProps<TData, TType>) {
   return (
-    <div
-      key={`filter-${filter.columnId}`}
-      className="flex h-7 items-center rounded-2xl border border-border bg-background shadow-xs text-xs"
-    >
+    <div className="flex h-7 items-center rounded-2xl border border-border bg-background shadow-xs text-xs">
       <FilterSubject column={column} />
       <Separator orientation="vertical" />
       <FilterOperator filter={filter} column={column} actions={actions} />
@@ -959,12 +979,18 @@ interface FilterValueProps<TData, TType extends ColumnDataType> {
   actions: DataTableFilterActions
 }
 
-export function FilterValue<TData, TType extends ColumnDataType>({
+export const FilterValue = memo(__FilterValue) as typeof __FilterValue
+
+function __FilterValue<TData, TType extends ColumnDataType>({
   filter,
   column,
   actions,
 }: FilterValueProps<TData, TType>) {
   // console.log('[FilterValue] Rendering')
+  useEffect(() => {
+    console.log('[FilterValue] Filters:', print(filter))
+  }, [filter])
+
   return (
     <Popover>
       <PopoverAnchor className="h-full" />
@@ -1248,7 +1274,11 @@ interface FilterValueControllerProps<TData, TType extends ColumnDataType> {
   actions: DataTableFilterActions
 }
 
-export function FilterValueController<TData, TType extends ColumnDataType>({
+export const FilterValueController = memo(
+  __FilterValueController,
+) as typeof __FilterValueController
+
+function __FilterValueController<TData, TType extends ColumnDataType>({
   filter,
   column,
   actions,
@@ -1307,43 +1337,9 @@ export function FilterValueOptionController<TData>({
   const options = useMemo(() => column.getOptions(), [column])
   const optionsCount = useMemo(() => column.getFacetedUniqueValues(), [column])
 
-  // console.log('[FilterValueOptionController] filter:', print(filter))
-
   function handleOptionSelect(value: string, check: boolean) {
-    // TODO: Implement logic
     if (check) actions.addFilterValue(column, [value])
     else actions.removeFilterValue(column, [value])
-
-    // * PREVIOUS LOGIC, FOR REFERENCE
-    // if (check)
-    //   column?.setFilterValue(
-    //     (old: undefined | FilterModel<'option', TData>) => {
-    //       if (!old || old.values.length === 0)
-    //         return {
-    //           operator: 'is',
-    //           values: [value],
-    //           columnMeta: column.columnDef.meta,
-    //         } satisfies FilterModel<'option', TData>
-    //       const newValues = [...old.values, value]
-    //       return {
-    //         operator: 'is any of',
-    //         values: newValues,
-    //         columnMeta: column.columnDef.meta,
-    //       } satisfies FilterModel<'option', TData>
-    //     },
-    //   )
-    // else
-    //   column?.setFilterValue(
-    //     (old: undefined | FilterModel<'option', TData>) => {
-    //       if (!old || old.values.length <= 1) return undefined
-    //       const newValues = old.values.filter((v) => v !== value)
-    //       return {
-    //         operator: newValues.length > 1 ? 'is any of' : 'is',
-    //         values: newValues,
-    //         columnMeta: column.columnDef.meta,
-    //       } satisfies FilterModel<'option', TData>
-    //     },
-    //   )
   }
 
   return (
@@ -1406,57 +1402,8 @@ export function FilterValueMultiOptionController<TData>({
 
   // Handles the selection/deselection of an option
   function handleOptionSelect(value: string, check: boolean) {
-    // TODO: Implement logic
     if (check) actions.addFilterValue(column, [value])
     else actions.removeFilterValue(column, [value])
-
-    // * PREVIOUS LOGIC, FOR REFERENCE
-    // if (check) {
-    //   column.setFilterValue(
-    //     (old: undefined | FilterModel<'multiOption', TData>) => {
-    //       if (
-    //         !old ||
-    //         old.values.length === 0 ||
-    //         !old.values[0] ||
-    //         old.values[0].length === 0
-    //       )
-    //         return {
-    //           operator: 'include',
-    //           values: [[value]],
-    //           columnMeta: column.columnDef.meta,
-    //         } satisfies FilterModel<'multiOption', TData>
-    //       const newValues = [uniq([...old.values[0], value])]
-    //       return {
-    //         operator: determineNewOperator(
-    //           'multiOption',
-    //           old.values,
-    //           newValues,
-    //           old.operator,
-    //         ),
-    //         values: newValues,
-    //         columnMeta: column.columnDef.meta,
-    //       } satisfies FilterModel<'multiOption', TData>
-    //     },
-    //   )
-    // } else
-    //   column.setFilterValue(
-    //     (old: undefined | FilterModel<'multiOption', TData>) => {
-    //       if (!old?.values[0] || old.values[0].length <= 1) return undefined
-    //       const newValues = [
-    //         uniq([...old.values[0], value]).filter((v) => v !== value),
-    //       ]
-    //       return {
-    //         operator: determineNewOperator(
-    //           'multiOption',
-    //           old.values,
-    //           newValues,
-    //           old.operator,
-    //         ),
-    //         values: newValues,
-    //         columnMeta: column.columnDef.meta,
-    //       } satisfies FilterModel<'multiOption', TData>
-    //     },
-    //   )
   }
 
   return (

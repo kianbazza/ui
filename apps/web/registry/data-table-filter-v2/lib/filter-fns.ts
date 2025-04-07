@@ -12,8 +12,21 @@
  * *********************************************************************************************************/
 
 import type { Row } from '@tanstack/react-table'
+import {
+  endOfDay,
+  isAfter,
+  isBefore,
+  isSameDay,
+  isWithinInterval,
+  startOfDay,
+} from 'date-fns'
 import { intersection } from './array'
-import { isColumnOption, isColumnOptionArray, isStringArray } from './filters'
+import {
+  dateFilterDetails,
+  isColumnOption,
+  isColumnOptionArray,
+  isStringArray,
+} from './filters'
 import type { ColumnDataType, FilterModel } from './filters.types'
 
 /*
@@ -22,10 +35,10 @@ import type { ColumnDataType, FilterModel } from './filters.types'
  */
 export function filterFn(dataType: ColumnDataType) {
   switch (dataType) {
-    case 'option':
-      return optionFilterFn
-    case 'multiOption':
-      return multiOptionFilterFn
+    // case 'option':
+    //   return optionFilterFn
+    // case 'multiOption':
+    //   return multiOptionFilterFn
     case 'date':
       return dateFilterFn
     case 'text':

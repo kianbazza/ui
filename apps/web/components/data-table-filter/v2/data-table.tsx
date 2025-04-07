@@ -23,7 +23,7 @@ interface DataTableProps<TData> {
   actions: DataTableFilterActions
 }
 
-export const DataTable = memo(__DataTable)
+export const DataTable = memo(__DataTable) as typeof __DataTable
 
 function __DataTable<TData>({
   table,

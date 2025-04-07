@@ -136,12 +136,12 @@ export function getFacetedUniqueValues<
   column: ColumnConfig<TData, TType, TVal>,
   values: string[] | ColumnOption[],
 ): Map<string, number> {
-  console.time('getFacetedUniqueValues')
+  // console.time('getFacetedUniqueValues')
   if (!isAnyOf(column.type, ['option', 'multiOption'])) {
-    console.timeEnd('getFacetedUniqueValues')
-    console.warn(
-      'Faceted unique values can only be retrieved for option and multiOption columns',
-    )
+    // console.timeEnd('getFacetedUniqueValues')
+    // console.warn(
+    //   'Faceted unique values can only be retrieved for option and multiOption columns',
+    // )
     return new Map<string, number>()
   }
 
@@ -159,7 +159,7 @@ export function getFacetedUniqueValues<
     }
   }
 
-  console.timeEnd('getFacetedUniqueValues')
+  // console.timeEnd('getFacetedUniqueValues')
 
   return acc
 }

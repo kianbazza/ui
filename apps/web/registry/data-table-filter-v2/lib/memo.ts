@@ -13,11 +13,11 @@ export function memo<TDeps extends readonly any[], TResult>(
 
     // If no previous deps or deps have changed, recompute
     if (!prevDeps || !shallowEqual(prevDeps, deps)) {
-      console.log(`[memo] Cache MISS - ${options.key}`)
+      // console.log(`[memo] Cache MISS - ${options.key}`)
       cachedResult = compute(deps)
       prevDeps = deps
     } else {
-      console.log(`[memo] Cache HIT - ${options.key}`)
+      // console.log(`[memo] Cache HIT - ${options.key}`)
     }
 
     return cachedResult!

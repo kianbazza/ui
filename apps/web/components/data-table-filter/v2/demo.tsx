@@ -59,8 +59,6 @@ const demoConfigSchema = z.object({
 })
 
 export default function DataTableDemo() {
-  const searchParams = useSearchParams()
-
   const [rowSelection, setRowSelection] = useState({})
 
   const [config, setConfig] = useQueryState<DemoConfig>(
