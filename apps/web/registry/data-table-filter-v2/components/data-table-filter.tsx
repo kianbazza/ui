@@ -137,8 +137,6 @@ export function useDataTableFilters<TData>(
               filter.operator,
             )
 
-            // console.log('next filter values:', filter.values)
-
             return prev.map((f) =>
               f.columnId === column.id
                 ? {
@@ -182,7 +180,7 @@ export function useDataTableFilters<TData>(
             )
 
             // Remove filter if it's empty now
-            if (filter.values.length === 0) {
+            if (newValues.length === 0) {
               return prev.filter((f) => f.columnId !== column.id)
             }
 
@@ -231,7 +229,7 @@ export function useDataTableFilters<TData>(
             )
 
             // Remove filter if it's empty now
-            if (filter.values.length === 0) {
+            if (newValues.length === 0) {
               return prev.filter((f) => f.columnId !== column.id)
             }
 
@@ -256,7 +254,7 @@ export function useDataTableFilters<TData>(
 
             const isColumnFiltered = filter && filter.values.length > 0
             if (!isColumnFiltered) {
-              // Add a new filter
+              // Do nothing if column is not filtered
               return [...prev]
             }
 
@@ -272,7 +270,7 @@ export function useDataTableFilters<TData>(
             )
 
             // Remove filter if it's empty now
-            if (filter.values.length === 0) {
+            if (newValues.length === 0) {
               return prev.filter((f) => f.columnId !== column.id)
             }
 
