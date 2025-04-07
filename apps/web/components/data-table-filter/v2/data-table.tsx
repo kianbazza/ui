@@ -23,9 +23,7 @@ interface DataTableProps<TData> {
   actions: DataTableFilterActions
 }
 
-export const DataTable = memo(__DataTable) as typeof __DataTable
-
-function __DataTable<TData>({
+export function DataTable<TData>({
   table,
   filters,
   columns,
@@ -66,6 +64,7 @@ function __DataTable<TData>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && 'selected'}
+                  className="h-12"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
