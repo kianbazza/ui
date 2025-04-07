@@ -333,6 +333,18 @@ export const columns = [
     },
     filterFn: filterFn('date'),
   }),
+  // Test: Column with no filterFn should be ignored
+  // columnHelper.accessor('title', {
+  //   id: 'title_SHOULD_BE_IGNORED',
+  //   header: 'Title',
+  //   cell: ({ row }) => <div>{row.getValue('title')}</div>,
+  //   meta: {
+  //     displayName: 'Title',
+  //     type: 'text',
+  //     icon: Heading1Icon,
+  //   },
+  //   // filterFn: filterFn('text'),
+  // }),
 ]
 
 const dataTableFilterQuerySchema = z
