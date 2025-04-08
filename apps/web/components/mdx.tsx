@@ -5,7 +5,7 @@ import type { MDXComponents } from 'mdx/types'
 import Image from 'next/image'
 import { CodeBlockCommand } from './code-block-command'
 import CollapsibleCodeBlock from './collapsible-code-block'
-import DataTableDemo from './data-table-filter/demo'
+import DataTableDemo from './data-table-filter-demo/demo'
 import { ResponsiveImage } from './responsive-image'
 
 export const components: Readonly<MDXComponents> = {
