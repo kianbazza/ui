@@ -1,12 +1,12 @@
 import path from 'node:path'
-import { FRAMEWORKS, type Framework } from '@/src/utils/frameworks.js'
+import { FRAMEWORKS, type Framework } from '@/src/utils/frameworks'
 import {
   type Config,
   type RawConfig,
   getConfig,
   resolveConfigPaths,
-} from '@/src/utils/get-config.js'
-import { getPackageInfo } from '@/src/utils/get-package-info.js'
+} from '@/src/utils/get-config'
+import { getPackageInfo } from '@/src/utils/get-package-info'
 import fg from 'fast-glob'
 import fs from 'fs-extra'
 import { loadConfig } from 'tsconfig-paths'

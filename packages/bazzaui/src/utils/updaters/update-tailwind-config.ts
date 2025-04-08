@@ -4,11 +4,11 @@ import path from 'node:path'
 import type {
   registryItemCssVarsSchema,
   registryItemTailwindSchema,
-} from '@/src/registry/schema.js'
-import type { Config } from '@/src/utils/get-config.js'
-import type { TailwindVersion } from '@/src/utils/get-project-info.js'
-import { highlighter } from '@/src/utils/highlighter.js'
-import { spinner } from '@/src/utils/spinner.js'
+} from '@/src/registry/schema'
+import type { Config } from '@/src/utils/get-config'
+import type { TailwindVersion } from '@/src/utils/get-project-info'
+import { highlighter } from '@/src/utils/highlighter'
+import { spinner } from '@/src/utils/spinner'
 import deepmerge from 'deepmerge'
 import objectToString from 'stringify-object'
 import type { Config as TailwindConfig } from 'tailwindcss'

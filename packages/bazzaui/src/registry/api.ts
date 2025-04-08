@@ -1,13 +1,10 @@
 import path from 'node:path'
-import {
-  type Config,
-  getTargetStyleFromConfig,
-} from '@/src/utils/get-config.js'
-import { getProjectTailwindVersionFromConfig } from '@/src/utils/get-project-info.js'
-import { handleError } from '@/src/utils/handle-error.js'
-import { highlighter } from '@/src/utils/highlighter.js'
-import { logger } from '@/src/utils/logger.js'
-import { buildTailwindThemeColorsFromCssVars } from '@/src/utils/updaters/update-tailwind-config.js'
+import { type Config, getTargetStyleFromConfig } from '@/src/utils/get-config'
+import { getProjectTailwindVersionFromConfig } from '@/src/utils/get-project-info'
+import { handleError } from '@/src/utils/handle-error'
+import { highlighter } from '@/src/utils/highlighter'
+import { logger } from '@/src/utils/logger'
+import { buildTailwindThemeColorsFromCssVars } from '@/src/utils/updaters/update-tailwind-config'
 import deepmerge from 'deepmerge'
 import { HttpsProxyAgent } from 'https-proxy-agent'
 import fetch from 'node-fetch'
@@ -20,7 +17,7 @@ import {
   registryItemSchema,
   registryResolvedItemsTreeSchema,
   stylesSchema,
-} from './schema.js'
+} from './schema'
 
 const REGISTRY_URL = process.env.REGISTRY_URL ?? 'https://ui.bazza.dev/r'
 

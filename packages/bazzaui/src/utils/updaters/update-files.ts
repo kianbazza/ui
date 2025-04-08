@@ -1,24 +1,21 @@
 import { promises as fs, existsSync } from 'node:fs'
 import path, { basename } from 'node:path'
-import { getRegistryBaseColor } from '@/src/registry/api.js'
+import { getRegistryBaseColor } from '@/src/registry/api'
 import type {
   RegistryItem,
   registryItemFileSchema,
-} from '@/src/registry/schema.js'
-import type { Config } from '@/src/utils/get-config.js'
-import {
-  type ProjectInfo,
-  getProjectInfo,
-} from '@/src/utils/get-project-info.js'
-import { highlighter } from '@/src/utils/highlighter.js'
-import { logger } from '@/src/utils/logger.js'
-import { spinner } from '@/src/utils/spinner.js'
-import { transform } from '@/src/utils/transformers/index.js'
-import { transformCssVars } from '@/src/utils/transformers/transform-css-vars.js'
-import { transformIcons } from '@/src/utils/transformers/transform-icons.js'
-import { transformImport } from '@/src/utils/transformers/transform-import.js'
-import { transformRsc } from '@/src/utils/transformers/transform-rsc.js'
-import { transformTwPrefixes } from '@/src/utils/transformers/transform-tw-prefix.js'
+} from '@/src/registry/schema'
+import type { Config } from '@/src/utils/get-config'
+import { type ProjectInfo, getProjectInfo } from '@/src/utils/get-project-info'
+import { highlighter } from '@/src/utils/highlighter'
+import { logger } from '@/src/utils/logger'
+import { spinner } from '@/src/utils/spinner'
+import { transform } from '@/src/utils/transformers/index'
+import { transformCssVars } from '@/src/utils/transformers/transform-css-vars'
+import { transformIcons } from '@/src/utils/transformers/transform-icons'
+import { transformImport } from '@/src/utils/transformers/transform-import'
+import { transformRsc } from '@/src/utils/transformers/transform-rsc'
+import { transformTwPrefixes } from '@/src/utils/transformers/transform-tw-prefix'
 import prompts from 'prompts'
 import type { z } from 'zod'
 
@@ -84,7 +81,7 @@ export async function updateFiles(
 
     if (!config.tsx) {
       filePath = filePath.replace(/\.tsx?$/, (match) =>
-        match === '.tsx' ? '.jsx' : '.js',
+        match === '.tsx' ? '.jsx' : '',
       )
     }
 

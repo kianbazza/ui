@@ -3,12 +3,12 @@ import path from 'node:path'
 import type {
   registryItemCssVarsSchema,
   registryItemTailwindSchema,
-} from '@/src/registry/schema.js'
-import type { Config } from '@/src/utils/get-config.js'
-import { getPackageInfo } from '@/src/utils/get-package-info.js'
-import type { TailwindVersion } from '@/src/utils/get-project-info.js'
-import { highlighter } from '@/src/utils/highlighter.js'
-import { spinner } from '@/src/utils/spinner.js'
+} from '@/src/registry/schema'
+import type { Config } from '@/src/utils/get-config'
+import { getPackageInfo } from '@/src/utils/get-package-info'
+import type { TailwindVersion } from '@/src/utils/get-project-info'
+import { highlighter } from '@/src/utils/highlighter'
+import { spinner } from '@/src/utils/spinner'
 import postcss from 'postcss'
 import AtRule from 'postcss/lib/at-rule'
 import type Root from 'postcss/lib/root'

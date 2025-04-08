@@ -1,5 +1,5 @@
-import { highlighter } from '@/src/utils/highlighter.js'
-import { logger } from '@/src/utils/logger.js'
+import { highlighter } from '@/src/utils/highlighter'
+import { logger } from '@/src/utils/logger'
 import { z } from 'zod'
 
 export function handleError(error: unknown) {

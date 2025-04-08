@@ -1,2 +1,2 @@
-export * from './schema.js'
-export { registryResolveItemsTree as internal_registryResolveItemsTree } from './api.js'
+export * from './schema'
+export { registryResolveItemsTree as internal_registryResolveItemsTree } from './api'

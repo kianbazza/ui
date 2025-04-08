@@ -1,7 +1,7 @@
 // @ts-nocheck
 
-import type { registryBaseColorSchema } from '@/src/registry/schema.js'
-import type { Transformer } from '@/src/utils/transformers/index.js'
+import type { registryBaseColorSchema } from '@/src/registry/schema'
+import type { Transformer } from '@/src/utils/transformers/index'
 import { SyntaxKind } from 'ts-morph'
 import type { z } from 'zod'
 

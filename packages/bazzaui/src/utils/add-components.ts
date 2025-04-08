@@ -5,8 +5,8 @@ import {
   getRegistryTypeAliasMap,
   registryResolveItemsTree,
   resolveRegistryItems,
-} from '@/src/registry/api.js'
-import { registryItemSchema } from '@/src/registry/schema.js'
+} from '@/src/registry/api'
+import { registryItemSchema } from '@/src/registry/schema'
 import {
   type Config,
   type configSchema,
@@ -14,16 +14,16 @@ import {
   findPackageRoot,
   getWorkspaceConfig,
   type workspaceConfigSchema,
-} from '@/src/utils/get-config.js'
-import { getProjectTailwindVersionFromConfig } from '@/src/utils/get-project-info.js'
-import { handleError } from '@/src/utils/handle-error.js'
-import { logger } from '@/src/utils/logger.js'
-import { spinner } from '@/src/utils/spinner.js'
-import { updateCssVars } from '@/src/utils/updaters/update-css-vars.js'
-import { updateCss } from '@/src/utils/updaters/update-css.js'
-import { updateDependencies } from '@/src/utils/updaters/update-dependencies.js'
-import { updateFiles } from '@/src/utils/updaters/update-files.js'
-import { updateTailwindConfig } from '@/src/utils/updaters/update-tailwind-config.js'
+} from '@/src/utils/get-config'
+import { getProjectTailwindVersionFromConfig } from '@/src/utils/get-project-info'
+import { handleError } from '@/src/utils/handle-error'
+import { logger } from '@/src/utils/logger'
+import { spinner } from '@/src/utils/spinner'
+import { updateCss } from '@/src/utils/updaters/update-css'
+import { updateCssVars } from '@/src/utils/updaters/update-css-vars'
+import { updateDependencies } from '@/src/utils/updaters/update-dependencies'
+import { updateFiles } from '@/src/utils/updaters/update-files'
+import { updateTailwindConfig } from '@/src/utils/updaters/update-tailwind-config'
 import { z } from 'zod'
 
 export async function addComponents(

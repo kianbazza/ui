@@ -1,7 +1,7 @@
 import fs from 'node:fs/promises'
 import path from 'node:path'
-import { getRegistryItem } from '@/src/registry/api.js'
-import type { Config } from '@/src/utils/get-config.js'
+import { getRegistryItem } from '@/src/registry/api'
+import type { Config } from '@/src/utils/get-config'
 
 export async function updateAppIndex(component: string, config: Config) {
   const indexPath = path.join(config.resolvedPaths.cwd, 'app/page.tsx')

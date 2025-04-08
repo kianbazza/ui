@@ -4,17 +4,17 @@ import path from 'node:path'
 import type {
   RegistryItem,
   registryBaseColorSchema,
-} from '@/src/registry/schema.js'
-import type { Config } from '@/src/utils/get-config.js'
-import { transformCssVars } from '@/src/utils/transformers/transform-css-vars.js'
-import { transformIcons } from '@/src/utils/transformers/transform-icons.js'
-import { transformImport } from '@/src/utils/transformers/transform-import.js'
-import { transformJsx } from '@/src/utils/transformers/transform-jsx.js'
-import { transformRsc } from '@/src/utils/transformers/transform-rsc.js'
+} from '@/src/registry/schema'
+import type { Config } from '@/src/utils/get-config'
+import { transformCssVars } from '@/src/utils/transformers/transform-css-vars'
+import { transformIcons } from '@/src/utils/transformers/transform-icons'
+import { transformImport } from '@/src/utils/transformers/transform-import'
+import { transformJsx } from '@/src/utils/transformers/transform-jsx'
+import { transformRsc } from '@/src/utils/transformers/transform-rsc'
 import { Project, ScriptKind, type SourceFile } from 'ts-morph'
 import type { z } from 'zod'
 
-import { transformTwPrefixes } from './transform-tw-prefix.js'
+import { transformTwPrefixes } from './transform-tw-prefix'
 
 export type TransformOpts = {
   files: RegistryItem['files']

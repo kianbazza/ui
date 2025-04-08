@@ -1,4 +1,4 @@
-import { highlighter } from '@/src/utils/highlighter.js'
+import { highlighter } from '@/src/utils/highlighter'
 
 export const logger = {
   error(...args: unknown[]) {

@@ -1,7 +1,7 @@
 export const FRAMEWORKS = {
   'next-app': {
     name: 'next-app',
-    label: 'Next.js',
+    label: 'Next',
     links: {
       installation: 'https://ui.shadcn.com/docs/installation/next',
       tailwind: 'https://tailwindcss.com/docs/guides/nextjs',
@@ -9,7 +9,7 @@ export const FRAMEWORKS = {
   },
   'next-pages': {
     name: 'next-pages',
-    label: 'Next.js',
+    label: 'Next',
     links: {
       installation: 'https://ui.shadcn.com/docs/installation/next',
       tailwind: 'https://tailwindcss.com/docs/guides/nextjs',

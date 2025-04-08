@@ -1,4 +1,4 @@
-import type { Transformer } from '@/src/utils/transformers/index.js'
+import type { Transformer } from '@/src/utils/transformers/index'
 import { SyntaxKind } from 'ts-morph'
 
 const directiveRegex = /^["']use client["']$/g

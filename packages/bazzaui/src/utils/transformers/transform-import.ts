@@ -1,8 +1,8 @@
 // @ts-nocheck
 
-import type { RegistryItem } from '@/src/registry/schema.js'
-import type { Config } from '@/src/utils/get-config.js'
-import type { Transformer } from '@/src/utils/transformers/index.js'
+import type { RegistryItem } from '@/src/registry/schema'
+import type { Config } from '@/src/utils/get-config'
+import type { Transformer } from '@/src/utils/transformers/index'
 
 export const transformImport: Transformer = async ({
   sourceFile,

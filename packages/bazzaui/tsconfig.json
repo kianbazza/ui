@@ -2,6 +2,8 @@
   "$schema": "https://json.schemastore.org/tsconfig",
   "extends": "@repo/typescript-config/base.json",
   "compilerOptions": {
+    "module": "ES6",
+    "moduleResolution": "Node",
     "isolatedModules": false,
     "resolveJsonModule": true,
     "baseUrl": ".",

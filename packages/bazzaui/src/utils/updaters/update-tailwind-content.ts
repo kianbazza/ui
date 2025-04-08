@@ -1,12 +1,12 @@
 import { promises as fs } from 'node:fs'
 import path from 'node:path'
-import type { Config } from '@/src/utils/get-config.js'
-import { highlighter } from '@/src/utils/highlighter.js'
-import { spinner } from '@/src/utils/spinner.js'
+import type { Config } from '@/src/utils/get-config'
+import { highlighter } from '@/src/utils/highlighter'
+import { spinner } from '@/src/utils/spinner'
 import {
   _createSourceFile,
   _getQuoteChar,
-} from '@/src/utils/updaters/update-tailwind-config.js'
+} from '@/src/utils/updaters/update-tailwind-config'
 import { type ObjectLiteralExpression, SyntaxKind } from 'ts-morph'
 
 export async function updateTailwindContent(
