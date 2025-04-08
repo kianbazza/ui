@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic'
 
 const DataTableDemo = dynamic(
-  () => import('@/components/data-table-filter/v2/demo'),
+  () => import('@/components/data-table-filter-demo/v2/demo'),
   { ssr: false },
 )
 // import DataTableDemo from '@/components/data-table-filter/v2/demo'
