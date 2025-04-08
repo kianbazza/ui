@@ -1,9 +1,8 @@
 'use client'
 
-import { use, useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import { CodeBlock } from '@/components/code-block'
-import { Button } from '@/components/ui/button'
 import {
   Select,
   SelectContent,
@@ -12,26 +11,19 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { print } from '@/lib/utils'
-import { useDataTableFilters } from '@/registry/data-table-filter-v2/core/data-table-filter'
+import { useDataTableFilters } from '@/registry/data-table-filter-v2'
 import type { FiltersState } from '@/registry/data-table-filter-v2/core/types'
 import {
   createTSTColumns,
   createTSTFilters,
-} from '@/registry/data-table-filter-v2/lib/filters-tst'
+} from '@/registry/data-table-filter-v2/integrations/tanstack-table'
 import {
   type ColumnDef,
-  type ColumnFiltersState,
-  type SortingState,
-  type VisibilityState,
   getCoreRowModel,
-  getFacetedMinMaxValues,
-  getFacetedRowModel,
   getFilteredRowModel,
   getPaginationRowModel,
-  getSortedRowModel,
   useReactTable,
 } from '@tanstack/react-table'
-import { useSearchParams } from 'next/navigation'
 import { parseAsJson, useQueryState } from 'nuqs'
 import { z } from 'zod'
 import { columnsConfig, columns as tableColumns } from './columns'
