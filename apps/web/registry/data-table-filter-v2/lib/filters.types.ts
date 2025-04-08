@@ -256,6 +256,8 @@ export type FilterDetails<T extends ColumnDataType> = {
   [key in FilterOperators[T]]: FilterOperatorDetails<key, T>
 }
 
+export type FilterOperatorTarget = 'single' | 'multiple'
+
 export type FilterOperatorDetailsBase<
   OperatorValue,
   T extends ColumnDataType,
@@ -265,7 +267,7 @@ export type FilterOperatorDetailsBase<
   /* The label for the operator, to show in the UI. */
   label: string
   /* How much data the operator applies to. */
-  target: 'single' | 'multiple'
+  target: FilterOperatorTarget
   /* The plural form of the operator, if applicable. */
   singularOf?: FilterOperators[T]
   /* The singular form of the operator, if applicable. */

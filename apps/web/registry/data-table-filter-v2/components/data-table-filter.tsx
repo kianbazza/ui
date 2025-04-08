@@ -121,7 +121,10 @@ export function useDataTableFilters<TData>(
                 ...prev,
                 {
                   columnId: column.id,
-                  operator: DEFAULT_OPERATORS[column.type],
+                  operator:
+                    values.length > 1
+                      ? DEFAULT_OPERATORS[column.type].multiple
+                      : DEFAULT_OPERATORS[column.type].single,
                   values,
                 },
               ]
@@ -163,7 +166,10 @@ export function useDataTableFilters<TData>(
                 ...prev,
                 {
                   columnId: column.id,
-                  operator: DEFAULT_OPERATORS[column.type],
+                  operator:
+                    values.length > 1
+                      ? DEFAULT_OPERATORS[column.type].multiple
+                      : DEFAULT_OPERATORS[column.type].single,
                   values,
                 },
               ]
@@ -297,6 +303,7 @@ export function useDataTableFilters<TData>(
         column: ColumnConfig<TData, TType>,
         values: FilterModel<TType>['values'],
       ) {
+        console.log('here!')
         setFilters((prev) => {
           // Does this column already have a filter?
           const filter = prev.find((f) => f.columnId === column.id)
@@ -315,8 +322,11 @@ export function useDataTableFilters<TData>(
               ...prev,
               {
                 columnId: column.id,
-                operator: DEFAULT_OPERATORS[column.type],
-                values,
+                operator:
+                  values.length > 1
+                    ? DEFAULT_OPERATORS[column.type].multiple
+                    : DEFAULT_OPERATORS[column.type].single,
+                values: newValues,
               },
             ]
           }
@@ -330,17 +340,13 @@ export function useDataTableFilters<TData>(
             filter.operator,
           )
 
-          // console.log('[setFilterValue] updated filter:', print(filter))
+          const newFilter = {
+            columnId: column.id,
+            operator: newOperator,
+            values: newValues as any,
+          } satisfies FilterModel<TType>
 
-          return prev.map((f) =>
-            f.columnId === column.id
-              ? {
-                  columnId: column.id,
-                  operator: newOperator,
-                  values: newValues,
-                }
-              : f,
-          )
+          return prev.map((f) => (f.columnId === column.id ? newFilter : f))
         })
       },
       setFilterOperator<TType extends ColumnDataType>(
@@ -1574,138 +1580,62 @@ export function FilterValueNumberController<TData>({
     column.max ?? datasetMax,
   ]
 
+  // Local state for values
+  const [values, setValues] = useState(filter?.values ?? [0, 0])
+
+  // Sync with parent filter changes
+  useEffect(() => {
+    // console.log('a')
+    if (
+      filter?.values &&
+      filter.values.length === values.length &&
+      filter.values.every((v, i) => v === values[i])
+    ) {
+      setValues(filter.values)
+    }
+  }, [filter?.values, values])
+
   const isNumberRange =
     filter && numberFilterDetails[filter.operator].target === 'multiple'
 
-  const values = filter?.values ?? [0, 0]
-  const valuesStr = values.map((val) => val.toString())
-
-  // const initialValues = () => {
-  //   if (filter?.values) {
-  //     return filter.values.map((val) =>
-  //       val >= cappedMax ? `${cappedMax}+` : val.toString(),
-  //     )
-  //   }
-  //   return [datasetMin.toString()]
-  // }
-
-  // const initialValues = () => {
-  //   if (!filter?.values) {
-  //     return ['0']
-  //   }
-
-  //   return filter.values.map((val) => val.toString())
-  // }
-
-  // const [inputValues, setInputValues] = useState<string[]>(() =>
-  //   initialValues(),
-  // )
-
   const changeNumber = (value: number[]) => {
-    // TODO: implement logic
+    setValues(value)
+    // console.log('a')
     actions.setFilterValue(column, value)
-
-    // *NOTE: PREVIOUS LOGIC, FOR REFERENCE
-    // const sortedValues = [...value].sort((a, b) => a - b)
-    // column.setFilterValue((old: undefined | FilterModel<'number', TData>) => {
-    //   if (!old || old.values.length === 0) {
-    //     return {
-    //       operator: 'is',
-    //       values: sortedValues,
-    //     }
-    //   }
-
-    //   const operator = numberFilterDetails[old.operator]
-    //   let newValues: number[]
-
-    //   if (operator.target === 'single') {
-    //     newValues = [sortedValues[0]]
-    //   } else {
-    //     newValues = [
-    //       sortedValues[0] >= cappedMax ? cappedMax : sortedValues[0],
-    //       sortedValues[1] >= cappedMax
-    //         ? Number.POSITIVE_INFINITY
-    //         : sortedValues[1],
-    //     ]
-    //   }
-
-    //   return {
-    //     operator: old.operator,
-    //     values: newValues,
-    //   }
-    // })
   }
 
-  // const handleInputChange = (index: number, value: string) => {
-  //   const newValues = [...inputValues]
-  //   if (isNumberRange && Number.parseInt(value, 10) >= cappedMax) {
-  //     newValues[index] = `${cappedMax}+`
-  //   } else {
-  //     newValues[index] = value
-  //   }
-
-  //   setInputValues(newValues)
-
-  //   const parsedValues = newValues.map((val) => {
-  //     if (val.trim() === '') return 0
-  //     if (val === `${cappedMax}+`) return cappedMax
-  //     return Number.parseInt(val, 10)
-  //   })
-
-  //   changeNumber(parsedValues)
-  // }
-
-  const changeType = (type: 'single' | 'range') => {
-    // TODO: implement logic
-    if (type === 'single') actions.setFilterValue(column, [values[0]])
-    else {
-      const v1 = values[0] === datasetMin ? values[0] : datasetMax
-      const v2 = values[1] === datasetMax ? values[1] : datasetMin
-
-      actions.setFilterValue(column, [v1, v2])
-    }
-
-    // *NOTE: PREVIOUS LOGIC, FOR REFERENCE
-    // column.setFilterValue((old: undefined | FilterModel<'number', TData>) => {
-    //   if (type === 'single') {
-    //     return {
-    //       operator: 'is',
-    //       values: [old?.values[0] ?? 0],
-    //     }
-    //   }
-    //   const newMaxValue = old?.values[0] ?? cappedMax
-    //   return {
-    //     operator: 'is between',
-    //     values: [0, newMaxValue],
-    //   }
-    // })
-    //   if (type === 'single') {
-    //     setInputValues([inputValues[0]])
-    //   } else {
-    //     const maxValue = inputValues[0] || cappedMax.toString()
-    //     setInputValues(['0', maxValue])
-    //   }
+  const changeMinNumber = (value: number) => {
+    const newValues = [value, values[1]]
+    setValues(newValues)
+    console.log('[FilterValueNumberController] changeMinNumber')
+    actions.setFilterValue(column, newValues)
   }
 
-  // const slider = {
-  //   value: inputValues.map((val) => Number.parseInt(val)),
-  // }
+  const changeMaxNumber = (value: number) => {
+    const newValues = [values[0], value]
+    setValues(newValues)
+    console.log('[FilterValueNumberController] changeMaxNumber')
+    actions.setFilterValue(column, newValues)
+  }
 
-  // *NOTE: PREVIOUS LOGIC, FOR REFERENCE
-  // const slider = {
-  //   value: inputValues.map((val) =>
-  //     val === '' || val === `${cappedMax}+`
-  //       ? cappedMax
-  //       : Number.parseInt(val, 10),
-  //   ),
-  //   onValueChange: (value: number[]) => {
-  //     const values = value.map((val) => (val >= cappedMax ? cappedMax : val))
-  //     setInputValues(
-  //       values.map((v) => (v >= cappedMax ? `${cappedMax}+` : v.toString())),
-  //     )
-  //     changeNumber(values)
-  //   },
-  // }
+  const changeType = useCallback(
+    (type: 'single' | 'range') => {
+      console.log('changeType to:', type)
+      const newValues =
+        type === 'single'
+          ? [values[0]] // Keep the first value for single mode
+          : [values[0], values[1] ?? datasetMax] // Use two values for range mode
+      const newOperator = type === 'single' ? 'is' : 'is between'
+
+      // Update local state
+      setValues(newValues)
+
+      // Update global filter state atomically
+      actions.setFilterOperator(column.id, newOperator)
+      actions.setFilterValue(column, newValues)
+    },
+    [values, datasetMax, column, actions],
+  )
 
   return (
     <Command>
@@ -1714,9 +1644,7 @@ export function FilterValueNumberController<TData>({
           <div className="flex flex-col w-full">
             <Tabs
               value={isNumberRange ? 'range' : 'single'}
-              onValueChange={(v) =>
-                changeType(v === 'range' ? 'range' : 'single')
-              }
+              onValueChange={(v) => changeType(v as 'single' | 'range')}
             >
               <TabsList className="w-full *:text-xs">
                 <TabsTrigger value="single">Single</TabsTrigger>
@@ -1726,11 +1654,6 @@ export function FilterValueNumberController<TData>({
                 <Slider
                   value={[values[0]]}
                   onValueChange={(value) => changeNumber(value)}
-                  // value={slider.value}
-                  // value={[Number(inputValues[0])]}
-                  // onValueChange={(value) => {
-                  //   handleInputChange(0, value[0].toString())
-                  // }}
                   min={sliderMin}
                   max={sliderMax}
                   step={1}
@@ -1741,10 +1664,8 @@ export function FilterValueNumberController<TData>({
                   <Input
                     id="single"
                     type="number"
-                    value={valuesStr[0]}
+                    value={values[0].toString()} // Use values[0] directly
                     onChange={(e) => changeNumber([Number(e.target.value)])}
-                    // value={inputValues[0]}
-                    // onChange={(e) => handleInputChange(0, e.target.value)}
                     min={datasetMin}
                     max={datasetMax}
                   />
@@ -1752,10 +1673,8 @@ export function FilterValueNumberController<TData>({
               </TabsContent>
               <TabsContent value="range" className="flex flex-col gap-4 mt-4">
                 <Slider
-                  value={values}
+                  value={values} // Use values directly
                   onValueChange={changeNumber}
-                  // value={slider.value}
-                  // onValueChange={slider.onValueChange}
                   min={sliderMin}
                   max={sliderMax}
                   step={1}
@@ -1764,20 +1683,20 @@ export function FilterValueNumberController<TData>({
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium">Min</span>
-                    <Input
+                    <DebouncedInput
                       type="number"
-                      // value={inputValues[0]}
-                      // onChange={(e) => handleInputChange(0, e.target.value)}
+                      value={values[0]}
+                      onChange={(v) => changeMinNumber(Number(v))}
                       min={datasetMin}
                       max={datasetMax}
                     />
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium">Max</span>
-                    <Input
-                      type="text"
-                      // value={inputValues[1]}
-                      // onChange={(e) => handleInputChange(1, e.target.value)}
+                    <DebouncedInput
+                      type="number"
+                      value={values[1]}
+                      onChange={(v) => changeMaxNumber(Number(v))}
                       min={datasetMin}
                       max={datasetMax}
                     />
@@ -1863,35 +1782,49 @@ export function ActiveFiltersMobileContainer({
   )
 }
 
+function debounce<T extends (...args: any[]) => void>(
+  func: T,
+  wait: number,
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout
+  return (...args: Parameters<T>) => {
+    clearTimeout(timeout)
+    timeout = setTimeout(() => func(...args), wait)
+  }
+}
+
 export function DebouncedInput({
   value: initialValue,
   onChange,
-  debounce = 500,
+  debounceMs = 500, // This is the wait time, not the function
   ...props
 }: {
   value: string | number
   onChange: (value: string | number) => void
-  debounce?: number
+  debounceMs?: number
 } & Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'>) {
   const [value, setValue] = useState(initialValue)
 
+  // Sync with initialValue when it changes
   useEffect(() => {
     setValue(initialValue)
   }, [initialValue])
 
-  useEffect(() => {
-    const timeout = setTimeout(() => {
-      onChange(value)
-    }, debounce)
-
-    return () => clearTimeout(timeout)
-  }, [value, onChange, debounce])
-
-  return (
-    <Input
-      {...props}
-      value={value}
-      onChange={(e) => setValue(e.target.value)}
-    />
+  // Define the debounced function with useCallback
+  const debouncedOnChange = useCallback(
+    debounce((newValue: string | number) => {
+      onChange(newValue)
+    }, debounceMs), // Pass the wait time here
+    [debounceMs, onChange], // Dependencies
   )
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = e.target.value
+    setValue(newValue) // Update local state immediately
+    debouncedOnChange(newValue) // Call debounced version
+  }
+
+  return <Input {...props} value={value} onChange={handleChange} />
 }
+
+// Local debounce function

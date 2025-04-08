@@ -8,6 +8,7 @@ import type {
   ColumnOption,
   ElementType,
   FilterDetails,
+  FilterOperatorTarget,
   FilterOperators,
   FilterTypeOperatorDetails,
   FilterValues,
@@ -292,13 +293,28 @@ export function getColumn<TData>(columns: Column<TData>[], id: string) {
 
 export const DEFAULT_OPERATORS: Record<
   ColumnDataType,
-  FilterOperators[ColumnDataType]
+  Record<FilterOperatorTarget, FilterOperators[ColumnDataType]>
 > = {
-  text: 'contains',
-  number: 'is',
-  date: 'is',
-  option: 'is',
-  multiOption: 'include',
+  text: {
+    single: 'contains',
+    multiple: 'contains',
+  },
+  number: {
+    single: 'is',
+    multiple: 'is between',
+  },
+  date: {
+    single: 'is',
+    multiple: 'is between',
+  },
+  option: {
+    single: 'is',
+    multiple: 'is any of',
+  },
+  multiOption: {
+    single: 'include',
+    multiple: 'include any of',
+  },
 }
 
 /* Details for all the filter operators for option data type */
