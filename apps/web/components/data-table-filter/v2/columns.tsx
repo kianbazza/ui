@@ -117,16 +117,7 @@ export const columns = [
   columnHelper.accessor((row) => row.assignee?.name, {
     id: 'assigneeName',
     header: 'Assignee (Name)',
-    filterFn: filterFn('option'),
-    // meta: defineMeta((row) => row.assignee?.name, {
-    //   displayName: 'Assignee (Name)',
-    //   type: 'option',
-    //   icon: UserCheckIcon,
-    //   transformOptionFn: (firstName) => ({
-    //     value: firstName,
-    //     label: firstName,
-    //   }),
-    // }),
+    enableColumnFilter: true,
   }),
   columnHelper.accessor((row) => row.estimatedHours, {
     id: 'estimatedHours',
@@ -152,6 +143,7 @@ export const columns = [
   columnHelper.accessor((row) => row.startDate, {
     id: 'startDate',
     header: 'Start Date',
+    enableColumnFilter: true,
     cell: ({ row }) => {
       const startDate = row.getValue<Issue['startDate']>('startDate')
 
@@ -278,5 +270,11 @@ export const columnsConfig = [
     icon: ClockIcon,
     min: 0,
     max: 100,
+  }),
+  filtersHelper.accessor((row) => row.startDate, {
+    id: 'startDate',
+    type: 'date',
+    displayName: 'Start Date',
+    icon: CalendarArrowUpIcon,
   }),
 ]
