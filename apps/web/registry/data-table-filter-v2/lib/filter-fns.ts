@@ -160,9 +160,9 @@ export function dateFilterFn<TData>(
   columnId: string,
   filterValue: FilterModel<'date'>,
 ) {
-  const valueStr = row.getValue<Date>(columnId)
+  const value = row.getValue<Date>(columnId)
 
-  return __dateFilterFn(valueStr, filterValue)
+  return __dateFilterFn(value, filterValue)
 }
 
 export function __dateFilterFn<TData>(

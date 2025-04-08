@@ -1480,35 +1480,13 @@ export function FilterValueDateController<TData>({
     setDate({ from: start, to: end })
 
     const isRange = start && end
-
     const newValues = isRange ? [start, end] : start ? [start] : []
 
-    // TODO: implement logic
-    // column.setFilterValue((old: undefined | FilterModel<'date', TData>) => {
-    //   if (!old || old.values.length === 0)
-    //     return {
-    //       operator: newValues.length > 1 ? 'is between' : 'is',
-    //       values: newValues,
-    //       columnMeta: column.columnDef.meta,
-    //     } satisfies FilterModel<'date', TData>
-
-    //   return {
-    //     operator:
-    //       old.values.length < newValues.length
-    //         ? 'is between'
-    //         : old.values.length > newValues.length
-    //           ? 'is'
-    //           : old.operator,
-    //     values: newValues,
-    //     columnMeta: column.columnDef.meta,
-    //   } satisfies FilterModel<'date', TData>
-    // })
+    actions.setFilterValue(column, newValues)
   }
 
   return (
     <Command>
-      {/* <CommandInput placeholder="Search..." /> */}
-      {/* <CommandEmpty>No results.</CommandEmpty> */}
       <CommandList className="max-h-fit">
         <CommandGroup>
           <div>
@@ -1533,19 +1511,7 @@ export function FilterValueTextController<TData>({
   actions,
 }: FilterValueControllerProps<TData, 'text'>) {
   const changeText = (value: string | number) => {
-    // TODO: implement logic
     actions.setFilterValue(column, [String(value)])
-
-    // * NOTE: PREVIOUS LOGIC, FOR REFERENCE
-    // column.setFilterValue((old: undefined | FilterModel<'text', TData>) => {
-    //   if (!old || old.values.length === 0)
-    //     return {
-    //       operator: 'contains',
-    //       values: [String(value)],
-    //       columnMeta: column.columnDef.meta,
-    //     } satisfies FilterModel<'text', TData>
-    //   return { operator: old.operator, values: [String(value)] }
-    // })
   }
 
   return (
