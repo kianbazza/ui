@@ -11,6 +11,17 @@
  * __optionFilterFn is a private function that is used by filterFn to perform the actual filtering.
  * *********************************************************************************************************/
 
+import {
+  isColumnOption,
+  isColumnOptionArray,
+  isStringArray,
+} from '@/registry/data-table-filter-v2/core/filters'
+import { dateFilterDetails } from '@/registry/data-table-filter-v2/core/operators'
+import type {
+  ColumnDataType,
+  FilterModel,
+} from '@/registry/data-table-filter-v2/core/types'
+import { intersection } from '@/registry/data-table-filter-v2/lib/array'
 import type { Row } from '@tanstack/react-table'
 import {
   endOfDay,
@@ -20,14 +31,6 @@ import {
   isWithinInterval,
   startOfDay,
 } from 'date-fns'
-import { intersection } from './array'
-import {
-  dateFilterDetails,
-  isColumnOption,
-  isColumnOptionArray,
-  isStringArray,
-} from './filters'
-import type { ColumnDataType, FilterModel } from './filters.types'
 
 /*
  * Returns a filter function for a given column data type.

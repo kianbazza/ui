@@ -1,7 +1,7 @@
 import {
   type DataTableFilterConfig,
   createColumnConfigHelper,
-} from '@/registry/data-table-filter-v2/lib/filters'
+} from '@/registry/data-table-filter-v2/core/filters'
 import { CircleDotDashedIcon } from 'lucide-react'
 
 type Issue = {

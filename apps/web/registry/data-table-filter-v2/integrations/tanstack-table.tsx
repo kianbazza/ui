@@ -1,8 +1,20 @@
+import {
+  isColumnOption,
+  isColumnOptionArray,
+  isStringArray,
+} from '@/registry/data-table-filter-v2/core/filters'
+import type {
+  ColumnConfig,
+  FilterModel,
+  FiltersState,
+} from '@/registry/data-table-filter-v2/core/types'
+import { isAnyOf } from '@/registry/data-table-filter-v2/lib/array'
+import {
+  __multiOptionFilterFn,
+  __optionFilterFn,
+  filterFn,
+} from '@/registry/data-table-filter-v2/lib/filter-fns'
 import type { ColumnDef, ColumnFiltersState } from '@tanstack/react-table'
-import { isAnyOf } from './array'
-import { __multiOptionFilterFn, __optionFilterFn, filterFn } from './filter-fns'
-import { isColumnOption, isColumnOptionArray, isStringArray } from './filters'
-import type { ColumnConfig, FilterModel, FiltersState } from './filters.types'
 
 interface CreateTSTColumns<TData> {
   columns: ColumnDef<TData>[]
