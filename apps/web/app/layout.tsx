@@ -5,6 +5,8 @@ import { env } from '@/lib/env'
 import { berkeleyMono, inter } from '@/lib/fonts'
 import { ThemeProvider } from '@/providers/theme-provider'
 import type { Viewport } from 'next'
+import Head from 'next/head'
+import Script from 'next/script'
 import { NuqsAdapter } from 'nuqs/adapters/next/app'
 
 const title = 'bazza/ui — Hand-crafted, modern React components'
@@ -75,7 +77,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <OneDollarStatsScript />
+      <Script src="https://cdn.jsdelivr.net/npm/react-scan/dist/auto.global.js" />
+      {/* <OneDollarStatsScript /> */}
       <body
         className={`${inter.variable} ${berkeleyMono.variable} font-sans antialiased bg-site-background min-h-svh`}
       >
