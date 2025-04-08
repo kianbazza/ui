@@ -7,14 +7,13 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { DataTableFilter } from '@/registry/data-table-filter-v2/components/data-table-filter'
+import { DataTableFilter } from '@/registry/data-table-filter-v2'
 import type {
   Column,
   DataTableFilterActions,
   FiltersState,
-} from '@/registry/data-table-filter-v2/lib/filters.types'
+} from '@/registry/data-table-filter-v2/core/types'
 import { type Table as TanStackTable, flexRender } from '@tanstack/react-table'
-import { memo } from 'react'
 
 interface DataTableProps<TData> {
   table: TanStackTable<TData>
