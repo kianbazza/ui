@@ -3,14 +3,12 @@
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Checkbox } from '@/components/ui/checkbox'
-// import { Checkbox as __Checkbox } from '@/components/ui/checkbox'
 import {
   Command,
   CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
-  // CommandItem as __CommandItem,
   CommandList,
 } from '@/components/ui/command'
 import { Input } from '@/components/ui/input'
@@ -23,14 +21,12 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { useIsMobile } from '@/hooks/use-mobile'
 import { cn, print } from '@/lib/utils'
 import { format, isEqual } from 'date-fns'
 import { FilterXIcon } from 'lucide-react'
 import { ArrowRight, Filter } from 'lucide-react'
 import { X } from 'lucide-react'
 import { Ellipsis } from 'lucide-react'
-import { Nullable } from 'nuqs'
 import {
   cloneElement,
   isValidElement,
@@ -48,7 +44,6 @@ import {
   DEFAULT_OPERATORS,
   createColumns,
   createNumberFilterValue,
-  createNumberRange,
   dateFilterDetails,
   determineNewOperator,
   filterTypeOperatorDetails,
@@ -62,21 +57,12 @@ import type {
   Column,
   ColumnConfig,
   ColumnDataType,
-  ColumnOption,
   DataTableFilterActions,
-  DataTableFilterConfig,
-  ElementType,
   FilterModel,
   FilterOperators,
-  FilterValues,
   FiltersState,
   OptionBasedColumnDataType,
 } from '../lib/filters.types'
-
-// const Checkbox = memo(__Checkbox) as typeof __Checkbox
-// const CommandItem = memo(__CommandItem) as typeof __CommandItem
-// const Checkbox = __Checkbox
-// const CommandItem = __CommandItem
 
 export function useDataTableFilters<TData>(
   data: TData[],
