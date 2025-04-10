@@ -98,8 +98,9 @@ export type ColumnConfig<
   TData,
   TType extends ColumnDataType = any,
   TVal = unknown,
+  TId extends string = string,
 > = {
-  id: string
+  id: TId
   accessor: TAccessorFn<TData, TVal>
   displayName: string
   icon: LucideIcon
@@ -112,6 +113,21 @@ export type ColumnConfig<
     : never
   orderFn?: TType extends OptionBasedColumnDataType ? TOrderFn<TVal> : never
 }
+
+export type OptionColumnId<T> = T extends ColumnConfig<
+  infer TData,
+  'option' | 'multiOption',
+  infer TVal,
+  infer TId
+>
+  ? TId
+  : never
+
+export type OptionColumnIds<
+  T extends ReadonlyArray<ColumnConfig<any, any, any, any>>,
+> = {
+  [K in keyof T]: OptionColumnId<T[K]>
+}[number]
 
 /*
  * Describes a helper function for creating column configurations.

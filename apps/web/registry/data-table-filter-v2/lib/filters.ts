@@ -1,3 +1,4 @@
+import type { LucideIcon } from 'lucide-react'
 import { isAnyOf, uniq } from './array'
 import type {
   Column,
@@ -13,18 +14,187 @@ import type {
   FilterTypeOperatorDetails,
   FilterValues,
   Nullable,
+  TAccessorFn,
+  TOrderFn,
+  TTransformOptionFn,
 } from './filters.types'
 import { memo } from './memo'
 
-export function createColumnConfigHelper<TData>(): ColumnConfigHelper<TData> {
-  return {
-    accessor: (accessor, config) =>
-      ({
-        ...config,
-        accessor,
-      }) as any,
+class ColumnConfigBuilder<
+  TData,
+  TType extends ColumnDataType = any,
+  TVal = unknown,
+  TId extends string = string, // Add TId generic
+> {
+  private config: Partial<ColumnConfig<TData, TType, TVal, TId>>
+
+  constructor(type: TType) {
+    this.config = { type } as Partial<ColumnConfig<TData, TType, TVal, TId>>
+  }
+
+  private clone(): ColumnConfigBuilder<TData, TType, TVal, TId> {
+    const newInstance = new ColumnConfigBuilder<TData, TType, TVal, TId>(
+      this.config.type as TType,
+    )
+    newInstance.config = { ...this.config }
+    return newInstance
+  }
+
+  id<TNewId extends string>(
+    value: TNewId,
+  ): ColumnConfigBuilder<TData, TType, TVal, TNewId> {
+    const newInstance = this.clone() as any // We'll refine this
+    newInstance.config.id = value
+    return newInstance as ColumnConfigBuilder<TData, TType, TVal, TNewId>
+  }
+
+  accessor<TNewVal>(
+    accessor: TAccessorFn<TData, TNewVal>,
+  ): ColumnConfigBuilder<TData, TType, TNewVal, TId> {
+    const newInstance = this.clone() as any
+    newInstance.config.accessor = accessor
+    return newInstance as ColumnConfigBuilder<TData, TType, TNewVal, TId>
+  }
+
+  displayName(value: string): ColumnConfigBuilder<TData, TType, TVal, TId> {
+    const newInstance = this.clone()
+    newInstance.config.displayName = value
+    return newInstance
+  }
+
+  icon(value: any): ColumnConfigBuilder<TData, TType, TVal, TId> {
+    const newInstance = this.clone()
+    newInstance.config.icon = value
+    return newInstance
+  }
+
+  min(
+    value: number,
+  ): ColumnConfigBuilder<
+    TData,
+    TType extends 'number' ? TType : never,
+    TVal,
+    TId
+  > {
+    if (this.config.type !== 'number') {
+      throw new Error('min() is only applicable to number columns')
+    }
+    const newInstance = this.clone() as any
+    newInstance.config.min = value
+    return newInstance
+  }
+
+  max(
+    value: number,
+  ): ColumnConfigBuilder<
+    TData,
+    TType extends 'number' ? TType : never,
+    TVal,
+    TId
+  > {
+    if (this.config.type !== 'number') {
+      throw new Error('max() is only applicable to number columns')
+    }
+    const newInstance = this.clone() as any
+    newInstance.config.max = value
+    return newInstance
+  }
+
+  options(
+    value: ColumnOption[],
+  ): ColumnConfigBuilder<
+    TData,
+    TType extends 'option' | 'multiOption' ? TType : never,
+    TVal,
+    TId
+  > {
+    if (!isAnyOf(this.config.type, ['option', 'multiOption'])) {
+      throw new Error(
+        'options() is only applicable to option or multiOption columns',
+      )
+    }
+    const newInstance = this.clone() as any
+    newInstance.config.options = value
+    return newInstance
+  }
+
+  transformOptionFn(
+    fn: TTransformOptionFn<TVal>,
+  ): ColumnConfigBuilder<
+    TData,
+    TType extends 'option' | 'multiOption' ? TType : never,
+    TVal,
+    TId
+  > {
+    if (!isAnyOf(this.config.type, ['option', 'multiOption'])) {
+      throw new Error(
+        'transformOptionFn() is only applicable to option or multiOption columns',
+      )
+    }
+    const newInstance = this.clone() as any
+    newInstance.config.transformOptionFn = fn
+    return newInstance
+  }
+
+  orderFn(
+    fn: TOrderFn<TVal>,
+  ): ColumnConfigBuilder<
+    TData,
+    TType extends 'option' | 'multiOption' ? TType : never,
+    TVal,
+    TId
+  > {
+    if (!isAnyOf(this.config.type, ['option', 'multiOption'])) {
+      throw new Error(
+        'orderFn() is only applicable to option or multiOption columns',
+      )
+    }
+    const newInstance = this.clone() as any
+    newInstance.config.orderFn = fn
+    return newInstance
+  }
+
+  build(): ColumnConfig<TData, TType, TVal, TId> {
+    if (!this.config.id) throw new Error('id is required')
+    if (!this.config.accessor) throw new Error('accessor is required')
+    if (!this.config.displayName) throw new Error('displayName is required')
+    if (!this.config.icon) throw new Error('icon is required')
+    return this.config as ColumnConfig<TData, TType, TVal, TId>
   }
 }
+
+// Update the helper interface
+interface FluentColumnConfigHelper<TData> {
+  text: () => ColumnConfigBuilder<TData, 'text', string>
+  number: () => ColumnConfigBuilder<TData, 'number', number>
+  date: () => ColumnConfigBuilder<TData, 'date', Date>
+  option: () => ColumnConfigBuilder<TData, 'option', string>
+  multiOption: () => ColumnConfigBuilder<TData, 'multiOption', string[]>
+}
+
+// Factory function remains mostly the same
+export function createColumnConfigHelper<
+  TData,
+>(): FluentColumnConfigHelper<TData> {
+  return {
+    text: () => new ColumnConfigBuilder<TData, 'text', string>('text'),
+    number: () => new ColumnConfigBuilder<TData, 'number', number>('number'),
+    date: () => new ColumnConfigBuilder<TData, 'date', Date>('date'),
+    option: () => new ColumnConfigBuilder<TData, 'option', string>('option'),
+    multiOption: () =>
+      new ColumnConfigBuilder<TData, 'multiOption', string[]>('multiOption'),
+  }
+}
+
+// export function createColumnConfigHelper<TData>(): ColumnConfigHelper<TData> {
+//   return {
+//     accessor: (accessor, config) =>
+//       ({
+//         ...config,
+//         accessor,
+//       }) as any,
+//   }
+// }
 
 export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
   column: ColumnConfig<TData, TType, TVal>,
@@ -192,7 +362,7 @@ export function getFacetedMinMaxValues<
 
 export function createColumns<TData>(
   data: TData[],
-  columnConfigs: ColumnConfig<TData>[],
+  columnConfigs: ReadonlyArray<ColumnConfig<TData, any, any, any>>,
 ): Column<TData>[] {
   return columnConfigs.map((columnConfig) => {
     const getOptions: () => ColumnOption[] = memo(

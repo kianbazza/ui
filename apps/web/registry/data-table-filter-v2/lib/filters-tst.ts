@@ -6,7 +6,7 @@ import type { ColumnConfig, FilterModel, FiltersState } from './filters.types'
 
 interface CreateTSTColumns<TData> {
   columns: ColumnDef<TData>[]
-  configs: ColumnConfig<TData>[]
+  configs: ReadonlyArray<ColumnConfig<TData, any, any, any>>
 }
 
 export function createTSTColumns<TData>({
