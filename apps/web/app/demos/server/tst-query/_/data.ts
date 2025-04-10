@@ -9,14 +9,7 @@ import {
 import { nanoid } from 'nanoid'
 import { randomInteger, sample } from 'remeda'
 import type { Issue, IssueLabel, IssueStatus, User } from './types'
-import { isAnyOf } from './utils'
-
-export const calculateEndDate = (start: Date) => {
-  const diff = differenceInDays(new Date(), start)
-  const offset = randomInteger(0, diff + 1)
-
-  return add(start, { days: offset })
-}
+import { calculateEndDate, isAnyOf } from './utils'
 
 export const USERS: User[] = [
   {
@@ -540,5 +533,3 @@ export function generateIssues(count: number) {
 
   return arr
 }
-
-export const ISSUES = generateIssues(10)
