@@ -3,6 +3,9 @@
   "private": true,
   "scripts": {
     "dev": "turbo run dev",
+    "dev:up": "turbo run dev test:watch",
+    "test": "turbo run test",
+    "test:watch": "turbo run test:watch",
     "check": "biome check .",
     "check:fix": "biome check --fix .",
     "vercel:install": "turbo run vercel:install",
