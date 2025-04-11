@@ -25,3 +25,7 @@ For details on how to get started with `bazza/ui`, check out our [documentation]
 ## Contributing
 
 *Coming soon!*
+
+## License
+
+bazza/ui is licensed under the [MIT License](https://github.com/kianbazza/ui/blob/main/LICENSE.md).
