@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "test": "vitest",
-    "test:watch": "vitest --watch",
+    "test:watch": "vitest --watch --disable-console-intercept",
     "build": "next build",
     "vercel:install": "./vercel-submodule.sh && bun install",
     "start": "next start",
