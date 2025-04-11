@@ -368,6 +368,14 @@ The `PropertyFilterOperatorController` has a similar composition and can be infe
 
 ## Changelog
 
+### 2025.04.11
+
+We've squashed a pesky bug where inferred column options would show duplicate entries in the filter menu.
+
+We've updated the implementation of `uniq()` to use deep equality checks, instead of the previous referencial equality checks via `new Set()`.
+
+The original GitHub issue is linked here: https://github.com/kianbazza/ui/issues/49
+
 ### 2025.04.01
 
 > [!DANGER] This is a breaking change.
