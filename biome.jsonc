@@ -27,6 +27,9 @@
           "level": "off"
         }
       },
+      "suspicious": {
+        "noExplicitAny": "off"
+      },
       "correctness": {
         "useExhaustiveDependencies": {
           "level": "warn"
