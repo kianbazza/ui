@@ -24,53 +24,24 @@ export const columnsConfig = [
     .build(),
   dtf
     .option()
-    .accessor((row) => row.status)
+    .accessor((row) => row.status.id)
     .id('status')
     .displayName('Status')
     .icon(CircleDotDashedIcon)
-    .transformOptionFn((v) => ({ value: v.id, label: v.name, icon: v.icon }))
     .build(),
   dtf
     .option()
-    .accessor((row) => row.assignee)
+    .accessor((row) => row.assignee?.id)
     .id('assignee')
     .displayName('Assignee')
     .icon(UserCheckIcon)
-    .transformOptionFn((v) => ({
-      value: v.id,
-      label: v.name,
-      icon: (
-        <Avatar className="size-4">
-          <AvatarImage src={v.picture} />
-          <AvatarFallback>
-            {v.name
-              .split(' ')
-              .map((x) => x[0])
-              .join('')
-              .toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-      ),
-    }))
     .build(),
   dtf
     .multiOption()
-    .accessor((row) => row.labels)
+    .accessor((row) => row.labels?.map((l) => l.id))
     .id('labels')
     .displayName('Labels')
     .icon(TagsIcon)
-    .transformOptionFn((data) => ({
-      value: data.id,
-      label: data.name,
-      icon: (
-        <div
-          className={cn(
-            'size-2.5 border-none rounded-full',
-            LABEL_STYLES_MAP[data.color as TW_COLOR],
-          )}
-        />
-      ),
-    }))
     .build(),
   dtf
     .number()

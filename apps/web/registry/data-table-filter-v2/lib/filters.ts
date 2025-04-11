@@ -11,6 +11,7 @@ import type {
   FilterDetails,
   FilterOperatorTarget,
   FilterOperators,
+  FilterStrategy,
   FilterTypeOperatorDetails,
   FilterValues,
   Nullable,
@@ -186,25 +187,23 @@ export function createColumnConfigHelper<
   }
 }
 
-// export function createColumnConfigHelper<TData>(): ColumnConfigHelper<TData> {
-//   return {
-//     accessor: (accessor, config) =>
-//       ({
-//         ...config,
-//         accessor,
-//       }) as any,
-//   }
-// }
-
 export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
   column: ColumnConfig<TData, TType, TVal>,
   data: TData[],
+  strategy: FilterStrategy,
 ): ColumnOption[] {
   if (!isAnyOf(column.type, ['option', 'multiOption'])) {
     console.warn(
       'Column options can only be retrieved for option and multiOption columns',
     )
     return []
+  }
+
+  if (strategy === 'server') {
+    if (!column.options)
+      throw new Error('column options are required for server-side filtering')
+
+    return column.options
   }
 
   if (column.options) {
@@ -306,14 +305,17 @@ export function getFacetedUniqueValues<
 >(
   column: ColumnConfig<TData, TType, TVal>,
   values: string[] | ColumnOption[],
-): Map<string, number> {
-  // console.time('getFacetedUniqueValues')
+  strategy: FilterStrategy,
+): Map<string, number> | undefined {
   if (!isAnyOf(column.type, ['option', 'multiOption'])) {
-    // console.timeEnd('getFacetedUniqueValues')
-    // console.warn(
-    //   'Faceted unique values can only be retrieved for option and multiOption columns',
-    // )
+    console.warn(
+      'Faceted unique values can only be retrieved for option and multiOption columns',
+    )
     return new Map<string, number>()
+  }
+
+  if (strategy === 'server') {
+    return column.facetedOptions
   }
 
   const acc = new Map<string, number>()
@@ -329,8 +331,6 @@ export function getFacetedUniqueValues<
       acc.set(option as string, curr + 1)
     }
   }
-
-  // console.timeEnd('getFacetedUniqueValues')
 
   return acc
 }
@@ -363,29 +363,33 @@ export function getFacetedMinMaxValues<
 export function createColumns<TData>(
   data: TData[],
   columnConfigs: ReadonlyArray<ColumnConfig<TData, any, any, any>>,
+  strategy: FilterStrategy,
 ): Column<TData>[] {
   return columnConfigs.map((columnConfig) => {
     const getOptions: () => ColumnOption[] = memo(
-      () => [data],
-      () => getColumnOptions(columnConfig, data),
+      () => [data, strategy, columnConfig.options],
+      ([data, strategy]) =>
+        getColumnOptions(columnConfig, data as any, strategy as any),
       { key: `options-${columnConfig.id}` },
     )
 
     const getValues: () => ElementType<NonNullable<any>>[] = memo(
-      () => [data],
-      () => getColumnValues(columnConfig, data),
+      () => [data, strategy],
+      () => (strategy === 'client' ? getColumnValues(columnConfig, data) : []),
       { key: `values-${columnConfig.id}` },
     )
 
-    const getUniqueValues: () => Map<string, number> = memo(
-      () => [getValues()],
-      (deps) => getFacetedUniqueValues(columnConfig, deps[0]),
+    const getUniqueValues: () => Map<string, number> | undefined = memo(
+      () => [getValues(), strategy],
+      ([values, strategy]) =>
+        getFacetedUniqueValues(columnConfig, values as any, strategy as any),
       { key: `faceted-${columnConfig.id}` },
     )
 
     const getMinMaxValues: () => number[] = memo(
-      () => [data],
-      () => getFacetedMinMaxValues(columnConfig, data),
+      () => [data, strategy],
+      () =>
+        strategy === 'client' ? getFacetedMinMaxValues(columnConfig, data) : [],
       { key: `minmax-${columnConfig.id}` },
     )
 
@@ -405,45 +409,47 @@ export function createColumns<TData>(
       _prefetchedFacetedCache: null,
     }
 
-    // Define prefetch methods with access to the column instance
-    column.prefetchOptions = async (): Promise<void> => {
-      if (!column._prefetchedOptionsCache) {
-        await new Promise((resolve) =>
-          setTimeout(() => {
-            const options = getOptions()
-            column._prefetchedOptionsCache = options
-            // console.log(`Prefetched options for ${columnConfig.id}`)
-            resolve(undefined)
-          }, 0),
-        )
+    if (strategy === 'client') {
+      // Define prefetch methods with access to the column instance
+      column.prefetchOptions = async (): Promise<void> => {
+        if (!column._prefetchedOptionsCache) {
+          await new Promise((resolve) =>
+            setTimeout(() => {
+              const options = getOptions()
+              column._prefetchedOptionsCache = options
+              // console.log(`Prefetched options for ${columnConfig.id}`)
+              resolve(undefined)
+            }, 0),
+          )
+        }
       }
-    }
 
-    column.prefetchValues = async (): Promise<void> => {
-      if (!column._prefetchedValuesCache) {
-        await new Promise((resolve) =>
-          setTimeout(() => {
-            const values = getValues()
-            column._prefetchedValuesCache = values
-            // console.log(`Prefetched values for ${columnConfig.id}`)
-            resolve(undefined)
-          }, 0),
-        )
+      column.prefetchValues = async (): Promise<void> => {
+        if (!column._prefetchedValuesCache) {
+          await new Promise((resolve) =>
+            setTimeout(() => {
+              const values = getValues()
+              column._prefetchedValuesCache = values
+              // console.log(`Prefetched values for ${columnConfig.id}`)
+              resolve(undefined)
+            }, 0),
+          )
+        }
       }
-    }
 
-    column.prefetchFacetedUniqueValues = async (): Promise<void> => {
-      if (!column._prefetchedFacetedCache) {
-        await new Promise((resolve) =>
-          setTimeout(() => {
-            const facetedMap = getUniqueValues()
-            column._prefetchedFacetedCache = facetedMap
-            // console.log(
-            //   `Prefetched faceted unique values for ${columnConfig.id}`,
-            // )
-            resolve(undefined)
-          }, 0),
-        )
+      column.prefetchFacetedUniqueValues = async (): Promise<void> => {
+        if (!column._prefetchedFacetedCache) {
+          await new Promise((resolve) =>
+            setTimeout(() => {
+              const facetedMap = getUniqueValues()
+              column._prefetchedFacetedCache = facetedMap ?? null
+              // console.log(
+              //   `Prefetched faceted unique values for ${columnConfig.id}`,
+              // )
+              resolve(undefined)
+            }, 0),
+          )
+        }
       }
     }
 

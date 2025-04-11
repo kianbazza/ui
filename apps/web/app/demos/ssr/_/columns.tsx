@@ -65,12 +65,12 @@ export const tstColumnDefs = [
     enableHiding: false,
     enableColumnFilter: false,
   }),
-  columnHelper.accessor((row) => row.status, {
+  columnHelper.accessor((row) => row.status.id, {
     id: 'status',
     header: 'Status',
     enableColumnFilter: true,
     cell: ({ row }) => {
-      const status = row.getValue<Issue['status']>('status')
+      const { status } = row.original
       const StatusIcon = status.icon
 
       return (
@@ -87,12 +87,12 @@ export const tstColumnDefs = [
     enableColumnFilter: true,
     cell: ({ row }) => <div>{row.getValue('title')}</div>,
   }),
-  columnHelper.accessor('assignee', {
+  columnHelper.accessor((row) => row.assignee?.id, {
     id: 'assignee',
     header: 'Assignee',
     enableColumnFilter: true,
     cell: ({ row }) => {
-      const user = row.getValue<Issue['assignee']>('assignee')
+      const user = row.original.assignee
 
       if (!user) {
         return <CircleDashedIcon className="size-5 text-border" />
@@ -112,11 +112,11 @@ export const tstColumnDefs = [
       )
     },
   }),
-  columnHelper.accessor((row) => row.assignee?.name, {
-    id: 'assigneeName',
-    header: 'Assignee (Name)',
-    enableColumnFilter: true,
-  }),
+  // columnHelper.accessor((row) => row.assignee?.name, {
+  //   id: 'assigneeName',
+  //   header: 'Assignee (Name)',
+  //   enableColumnFilter: true,
+  // }),
   columnHelper.accessor((row) => row.estimatedHours, {
     id: 'estimatedHours',
     header: 'Estimated Hours',
@@ -169,12 +169,12 @@ export const tstColumnDefs = [
       return <span>{formatted}</span>
     },
   }),
-  columnHelper.accessor((row) => row.labels, {
+  columnHelper.accessor((row) => row.labels?.map((l) => l.id), {
     id: 'labels',
     header: 'Labels',
     enableColumnFilter: true,
     cell: ({ row }) => {
-      const labels = row.getValue<Issue['labels']>('labels')
+      const labels = row.original.labels
 
       if (!labels) return null
 

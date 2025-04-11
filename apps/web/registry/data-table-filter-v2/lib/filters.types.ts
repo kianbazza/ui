@@ -106,6 +106,9 @@ export type ColumnConfig<
   icon: LucideIcon
   type: TType
   options?: TType extends OptionBasedColumnDataType ? ColumnOption[] : never
+  facetedOptions?: TType extends OptionBasedColumnDataType
+    ? Map<string, number>
+    : never
   min?: TType extends 'number' ? number : never
   max?: TType extends 'number' ? number : never
   transformOptionFn?: TType extends OptionBasedColumnDataType
@@ -151,7 +154,7 @@ export type DataTableFilterConfig<TData> = {
 export type ColumnProperties<TData, TVal> = {
   getOptions: () => ColumnOption[]
   getValues: () => ElementType<NonNullable<TVal>>[]
-  getFacetedUniqueValues: () => Map<string, number>
+  getFacetedUniqueValues: () => Map<string, number> | undefined
   getFacetedMinMaxValues: () => number[]
   prefetchOptions: () => Promise<void> // Prefetch options
   prefetchValues: () => Promise<void> // Prefetch values
@@ -201,6 +204,8 @@ export interface DataTableFilterActions {
 
   removeAllFilters: () => void
 }
+
+export type FilterStrategy = 'client' | 'server'
 
 /* Operators for text data */
 export type TextFilterOperator = 'contains' | 'does not contain'

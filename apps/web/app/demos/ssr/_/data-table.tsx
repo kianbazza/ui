@@ -1,5 +1,3 @@
-'use client'
-
 import { Button } from '@/components/ui/button'
 import {
   Table,
@@ -9,122 +7,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { cn } from '@/lib/utils'
-import {
-  DataTableFilter,
-  useDataTableFilters,
-} from '@/registry/data-table-filter-v2/components/data-table-filter'
-import {
-  createColumnConfigHelper,
-  createColumns,
-} from '@/registry/data-table-filter-v2/lib/filters'
-import {
-  createTSTColumns,
-  createTSTFilters,
-} from '@/registry/data-table-filter-v2/lib/filters-tst'
-import type {
-  Column,
-  DataTableFilterActions,
-  FiltersState,
-} from '@/registry/data-table-filter-v2/lib/filters.types'
-import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
-import { useQuery } from '@tanstack/react-query'
-import {
-  type ColumnDef,
-  type Table as TanStackTable,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getPaginationRowModel,
-  useReactTable,
-} from '@tanstack/react-table'
-import {
-  CalendarArrowUpIcon,
-  CircleDotDashedIcon,
-  ClockIcon,
-  Heading1Icon,
-  TagsIcon,
-  UserCheckIcon,
-} from 'lucide-react'
-import { useMemo, useState } from 'react'
-import { columnsConfig } from './column-filters'
-import { LABEL_STYLES_MAP, type TW_COLOR, tstColumnDefs } from './columns'
-import { fetchIssues, fetchLabels, fetchStatuses, fetchUsers } from './fetch'
-import type { Issue } from './types'
+import { type Table as TanStackTable, flexRender } from '@tanstack/react-table'
 
-interface DataTableProps<TData> {
-  table: TanStackTable<TData>
-  filters: FiltersState
-  columns: Column<TData>[]
-  actions: DataTableFilterActions
-}
-
-export function DataTable() {
-  const labels = useQuery({
-    queryKey: ['labels'],
-    queryFn: fetchLabels,
-  })
-
-  const statuses = useQuery({
-    queryKey: ['statuses'],
-    queryFn: fetchStatuses,
-  })
-
-  const users = useQuery({
-    queryKey: ['users'],
-    queryFn: fetchUsers,
-  })
-
-  const issues = useQuery({
-    queryKey: ['issues'],
-    queryFn: fetchIssues,
-  })
-
-  const { columns, filters, actions } = useDataTableFilters(
-    issues.data ?? [],
-    createColumns(issues.data ?? [], columnsConfig),
-  )
-
-  const [rowSelection, setRowSelection] = useState({})
-  const [columnFiltersExternal, setColumnFiltersExternal] =
-    useState<FiltersState>([])
-
-  const tstFilters = useMemo(
-    () => createTSTFilters(columnFiltersExternal),
-    [columnFiltersExternal],
-  )
-
-  const tstColumns = useMemo(() => {
-    console.log('[DataTableDemo] Creating TST columns')
-    return createTSTColumns({
-      columns: tstColumnDefs as ColumnDef<Issue>[],
-      configs: columnsConfig,
-    })
-  }, [])
-
-  const table = useReactTable({
-    data: issues.data ?? [],
-    columns: tstColumns,
-    getRowId: (row) => row.id,
-    getCoreRowModel: getCoreRowModel(),
-    getPaginationRowModel: getPaginationRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onRowSelectionChange: setRowSelection,
-    state: {
-      rowSelection,
-      columnFilters: tstFilters,
-    },
-  })
-
+export function DataTable({ table }: { table: TanStackTable<any> }) {
   return (
-    <div className="w-full">
-      <div className="flex items-center pb-4 gap-2">
-        <DataTableFilter
-          filters={filters}
-          columns={columns}
-          actions={actions}
-        />
-      </div>
+    <>
       <div className="rounded-md border bg-white dark:bg-inherit">
         <Table>
           <TableHeader>
@@ -203,6 +90,6 @@ export function DataTable() {
           </Button>
         </div>
       </div>
-    </div>
+    </>
   )
 }
