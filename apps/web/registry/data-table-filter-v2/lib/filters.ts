@@ -199,11 +199,8 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
     return []
   }
 
-  if (strategy === 'server') {
-    if (!column.options)
-      throw new Error('column options are required for server-side filtering')
-
-    return column.options
+  if (strategy === 'server' && !column.options) {
+    throw new Error('column options are required for server-side filtering')
   }
 
   if (column.options) {
@@ -908,4 +905,14 @@ export function isColumnOptionArray(value: unknown): value is ColumnOption[] {
 
 export function isStringArray(value: unknown): value is string[] {
   return Array.isArray(value) && value.every((v) => typeof v === 'string')
+}
+
+export function isColumnOptionMap(
+  value: unknown,
+): value is Map<string, number> {
+  return (
+    value instanceof Map &&
+    value.keys().every((k) => typeof k === 'string') &&
+    value.values().every((v) => typeof v === 'number')
+  )
 }

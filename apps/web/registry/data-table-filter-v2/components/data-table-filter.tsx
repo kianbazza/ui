@@ -21,6 +21,7 @@ import {
 import { Separator } from '@/components/ui/separator'
 import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useIsMobile } from '@/hooks/use-mobile'
 import { cn, print } from '@/lib/utils'
 import { format, isEqual } from 'date-fns'
 import { FilterXIcon } from 'lucide-react'
@@ -49,6 +50,7 @@ import {
   filterTypeOperatorDetails,
   getColumn,
   isColumnOptionArray,
+  isColumnOptionMap,
   multiOptionFilterDetails,
   numberFilterDetails,
   optionFilterDetails,
@@ -71,7 +73,7 @@ import type {
 export interface DataTableFiltersOptions<
   TData,
   TColumns extends ReadonlyArray<ColumnConfig<TData, any, any, any>>,
-  TStrategy extends 'client' | 'server',
+  TStrategy extends FilterStrategy,
 > {
   strategy: TStrategy
   data: TData[]
@@ -91,7 +93,7 @@ export interface DataTableFiltersOptions<
 export function useDataTableFilters<
   TData,
   TColumns extends ReadonlyArray<ColumnConfig<TData, any, any, any>>,
-  TStrategy extends 'client' | 'server',
+  TStrategy extends FilterStrategy,
 >({
   strategy,
   data,
@@ -105,34 +107,36 @@ export function useDataTableFilters<
     setInternalFilters,
   ]
 
-  useEffect(() => {
-    console.log('[useDataTableFilters] Filters:', filters)
-  }, [filters])
-
-  // Convert ColumnConfig to Column, applying options if provided
+  // Convert ColumnConfig to Column, applying options and faceted options if provided
   const columns = useMemo(() => {
-    console.log('[useDataTableFilters] Computing columns')
     const enhancedConfigs = columnsConfig.map((config) => {
       if (
         options &&
         (config.type === 'option' || config.type === 'multiOption')
       ) {
         const optionsInput = options[config.id as OptionColumnIds<TColumns>]
-        if (optionsInput && isColumnOptionArray(optionsInput)) {
-          return { ...config, options: optionsInput } // Add options to ColumnConfig
+
+        if (!optionsInput) return config
+
+        if (isColumnOptionArray(optionsInput)) {
+          return { ...config, options: optionsInput }
         }
 
-        if (optionsInput && isColumnOptionArray(optionsInput[0])) {
+        if (
+          isColumnOptionArray(optionsInput[0]) &&
+          isColumnOptionMap(optionsInput[1])
+        ) {
           return {
             ...config,
             options: optionsInput[0],
             facetedOptions: optionsInput[1],
-          } // Add options to ColumnConfig
+          }
         }
       }
+
       return config
     })
-    return createColumns(data, enhancedConfigs, strategy) // Converts to Column<TData>[]
+    return createColumns(data, enhancedConfigs, strategy)
   }, [data, columnsConfig, options, strategy])
 
   const actions: DataTableFilterActions = useMemo(
@@ -364,28 +368,30 @@ export function DataTableFilter<TData>({
   actions,
   strategy,
 }: DataTableFilterProps<TData>) {
-  // const isMobile = useIsMobile()
-  // if (isMobile) {
-  //   return (
-  //     <div className="flex w-full items-start justify-between gap-2">
-  //       <div className="flex gap-1">
-  //         <FilterSelector
-  //           filters={filters}
-  //           columns={columns}
-  //           actions={actions}
-  //         />
-  //         <FilterActions filters={filters} actions={actions} />
-  //       </div>
-  //       <ActiveFiltersMobileContainer>
-  //         <ActiveFilters
-  //           columns={columns}
-  //           filters={filters}
-  //           actions={actions}
-  //         />
-  //       </ActiveFiltersMobileContainer>
-  //     </div>
-  //   )
-  // }
+  const isMobile = useIsMobile()
+  if (isMobile) {
+    return (
+      <div className="flex w-full items-start justify-between gap-2">
+        <div className="flex gap-1">
+          <FilterSelector
+            columns={columns}
+            filters={filters}
+            actions={actions}
+            strategy={strategy}
+          />
+          <FilterActions hasFilters={filters.length > 0} actions={actions} />
+        </div>
+        <ActiveFiltersMobileContainer>
+          <ActiveFilters
+            columns={columns}
+            filters={filters}
+            actions={actions}
+            strategy={strategy}
+          />
+        </ActiveFiltersMobileContainer>
+      </div>
+    )
+  }
 
   return (
     <div className="flex w-full items-start justify-between gap-2">
