@@ -1,6 +1,4 @@
-import { cn } from '@/lib/utils'
 import { createColumnConfigHelper } from '@/registry/data-table-filter-v2/lib/filters'
-import { Avatar, AvatarFallback, AvatarImage } from '@radix-ui/react-avatar'
 import {
   CalendarArrowUpIcon,
   CircleDotDashedIcon,
@@ -9,7 +7,6 @@ import {
   TagsIcon,
   UserCheckIcon,
 } from 'lucide-react'
-import { LABEL_STYLES_MAP, type TW_COLOR } from './columns'
 import type { Issue } from './types'
 
 const dtf = createColumnConfigHelper<Issue>()

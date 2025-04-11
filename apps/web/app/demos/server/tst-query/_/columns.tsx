@@ -1,19 +1,9 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
-import { createColumnConfigHelper } from '@/registry/data-table-filter-v2/lib/filters'
 import { createColumnHelper } from '@tanstack/react-table'
 import { format } from 'date-fns'
-import {
-  CalendarArrowDownIcon,
-  CalendarArrowUpIcon,
-  CircleDashedIcon,
-  CircleDotDashedIcon,
-  ClockIcon,
-  Heading1Icon,
-  TagsIcon,
-  UserCheckIcon,
-} from 'lucide-react'
+import { CircleDashedIcon } from 'lucide-react'
 import type { Issue } from './types'
 
 export const LABEL_STYLES_MAP = {
@@ -112,11 +102,6 @@ export const tstColumnDefs = [
       )
     },
   }),
-  // columnHelper.accessor((row) => row.assignee?.name, {
-  //   id: 'assigneeName',
-  //   header: 'Assignee (Name)',
-  //   enableColumnFilter: true,
-  // }),
   columnHelper.accessor((row) => row.estimatedHours, {
     id: 'estimatedHours',
     header: 'Estimated Hours',

@@ -7,8 +7,8 @@ import {
 } from '@/registry/data-table-filter-v2/lib/filter-fns'
 import { getFacetedUniqueValues } from '@/registry/data-table-filter-v2/lib/filters'
 import type { FiltersState } from '@/registry/data-table-filter-v2/lib/filters.types'
-import { columnsConfig } from './column-filters'
 import { ISSUE_LABELS, ISSUE_STATUSES, USERS, generateIssues } from './data'
+import { columnsConfig } from './filters'
 import type { Issue } from './types'
 import { isAnyOf, sleep } from './utils'
 
