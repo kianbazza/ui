@@ -20,6 +20,7 @@ import {
 import { useMemo, useState } from 'react'
 import { columnsConfig } from './column-filters'
 import { LABEL_STYLES_MAP, type TW_COLOR, tstColumnDefs } from './columns'
+import { DataTable } from './data-table'
 import {
   fetchFacetedLabels,
   fetchFacetedStatuses,
@@ -147,7 +148,7 @@ export function IssuesTable({
       columns: tstColumnDefs,
       configs: columns,
     })
-  }, [])
+  }, [columns])
 
   const table = useReactTable({
     data: issues.data ?? [],
@@ -163,18 +164,16 @@ export function IssuesTable({
 
   return (
     <div className="w-full col-span-2">
-      <div className="flex items-center pb-4 gap-2">
-        {isOptionsPending ? (
-          <div className="h-7 w-full" />
-        ) : (
+      {!isOptionsPending && (
+        <div className="flex items-center pb-4 gap-2">
           <DataTableFilter
             filters={filters}
             columns={columns}
             actions={actions}
             strategy={strategy}
           />
-        )}
-      </div>
+        </div>
+      )}
       {issues.isLoading ? (
         <div className="w-full col-span-2">
           <TableSkeleton numCols={tstColumns.length} numRows={10} />
