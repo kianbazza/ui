@@ -7,37 +7,11 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { DataTableFilter } from '@/registry/data-table-filter-v2/components/data-table-filter'
-import type {
-  Column,
-  DataTableFilterActions,
-  FiltersState,
-} from '@/registry/data-table-filter-v2/lib/filters.types'
 import { type Table as TanStackTable, flexRender } from '@tanstack/react-table'
-import { memo } from 'react'
 
-interface DataTableProps<TData> {
-  table: TanStackTable<TData>
-  filters: FiltersState
-  columns: Column<TData>[]
-  actions: DataTableFilterActions
-}
-
-export function DataTable<TData>({
-  table,
-  filters,
-  columns,
-  actions,
-}: DataTableProps<TData>) {
+export function DataTable({ table }: { table: TanStackTable<any> }) {
   return (
-    <div className="w-full">
-      <div className="flex items-center pb-4 gap-2">
-        <DataTableFilter
-          filters={filters}
-          columns={columns}
-          actions={actions}
-        />
-      </div>
+    <>
       <div className="rounded-md border bg-white dark:bg-inherit">
         <Table>
           <TableHeader>
@@ -116,8 +90,6 @@ export function DataTable<TData>({
           </Button>
         </div>
       </div>
-    </div>
+    </>
   )
 }
-
-export default DataTable

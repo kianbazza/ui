@@ -98,13 +98,17 @@ export type ColumnConfig<
   TData,
   TType extends ColumnDataType = any,
   TVal = unknown,
+  TId extends string = string,
 > = {
-  id: string
+  id: TId
   accessor: TAccessorFn<TData, TVal>
   displayName: string
   icon: LucideIcon
   type: TType
   options?: TType extends OptionBasedColumnDataType ? ColumnOption[] : never
+  facetedOptions?: TType extends OptionBasedColumnDataType
+    ? Map<string, number>
+    : never
   min?: TType extends 'number' ? number : never
   max?: TType extends 'number' ? number : never
   transformOptionFn?: TType extends OptionBasedColumnDataType
@@ -112,6 +116,21 @@ export type ColumnConfig<
     : never
   orderFn?: TType extends OptionBasedColumnDataType ? TOrderFn<TVal> : never
 }
+
+export type OptionColumnId<T> = T extends ColumnConfig<
+  infer TData,
+  'option' | 'multiOption',
+  infer TVal,
+  infer TId
+>
+  ? TId
+  : never
+
+export type OptionColumnIds<
+  T extends ReadonlyArray<ColumnConfig<any, any, any, any>>,
+> = {
+  [K in keyof T]: OptionColumnId<T[K]>
+}[number]
 
 /*
  * Describes a helper function for creating column configurations.
@@ -135,7 +154,7 @@ export type DataTableFilterConfig<TData> = {
 export type ColumnProperties<TData, TVal> = {
   getOptions: () => ColumnOption[]
   getValues: () => ElementType<NonNullable<TVal>>[]
-  getFacetedUniqueValues: () => Map<string, number>
+  getFacetedUniqueValues: () => Map<string, number> | undefined
   getFacetedMinMaxValues: () => number[]
   prefetchOptions: () => Promise<void> // Prefetch options
   prefetchValues: () => Promise<void> // Prefetch values
@@ -185,6 +204,8 @@ export interface DataTableFilterActions {
 
   removeAllFilters: () => void
 }
+
+export type FilterStrategy = 'client' | 'server'
 
 /* Operators for text data */
 export type TextFilterOperator = 'contains' | 'does not contain'

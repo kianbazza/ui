@@ -1,24 +1,12 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
 import { cn } from '@/lib/utils'
-import { createColumnConfigHelper } from '@/registry/data-table-filter-v2/lib/filters'
-import { filterFn } from '@/registry/data-table-filter/lib/filters'
 import { createColumnHelper } from '@tanstack/react-table'
 import { format } from 'date-fns'
-import {
-  CalendarArrowDownIcon,
-  CalendarArrowUpIcon,
-  CircleDashedIcon,
-  CircleDotDashedIcon,
-  ClockIcon,
-  Heading1Icon,
-  TagsIcon,
-  UserCheckIcon,
-} from 'lucide-react'
-import { ISSUE_STATUSES } from './data'
+import { CircleDashedIcon } from 'lucide-react'
 import type { Issue } from './types'
 
-const LABEL_STYLES_MAP = {
+export const LABEL_STYLES_MAP = {
   red: 'bg-red-500 border-red-500',
   orange: 'bg-orange-500 border-orange-500',
   amber: 'bg-amber-500 border-amber-500',
@@ -39,11 +27,11 @@ const LABEL_STYLES_MAP = {
   neutral: 'bg-neutral-500 border-neutral-500',
 } as const
 
-type TW_COLOR = keyof typeof LABEL_STYLES_MAP
+export type TW_COLOR = keyof typeof LABEL_STYLES_MAP
 
 const columnHelper = createColumnHelper<Issue>()
 
-export const columns = [
+export const tstColumnDefs = [
   columnHelper.display({
     id: 'select',
     header: ({ table }) => (
@@ -67,12 +55,12 @@ export const columns = [
     enableHiding: false,
     enableColumnFilter: false,
   }),
-  columnHelper.accessor((row) => row.status, {
+  columnHelper.accessor((row) => row.status.id, {
     id: 'status',
     header: 'Status',
     enableColumnFilter: true,
     cell: ({ row }) => {
-      const status = row.getValue<Issue['status']>('status')
+      const { status } = row.original
       const StatusIcon = status.icon
 
       return (
@@ -89,12 +77,12 @@ export const columns = [
     enableColumnFilter: true,
     cell: ({ row }) => <div>{row.getValue('title')}</div>,
   }),
-  columnHelper.accessor('assignee', {
+  columnHelper.accessor((row) => row.assignee?.id, {
     id: 'assignee',
     header: 'Assignee',
     enableColumnFilter: true,
     cell: ({ row }) => {
-      const user = row.getValue<Issue['assignee']>('assignee')
+      const user = row.original.assignee
 
       if (!user) {
         return <CircleDashedIcon className="size-5 text-border" />
@@ -113,11 +101,6 @@ export const columns = [
         </Avatar>
       )
     },
-  }),
-  columnHelper.accessor((row) => row.assignee?.name, {
-    id: 'assigneeName',
-    header: 'Assignee (Name)',
-    enableColumnFilter: true,
   }),
   columnHelper.accessor((row) => row.estimatedHours, {
     id: 'estimatedHours',
@@ -171,12 +154,12 @@ export const columns = [
       return <span>{formatted}</span>
     },
   }),
-  columnHelper.accessor((row) => row.labels, {
+  columnHelper.accessor((row) => row.labels?.map((l) => l.id), {
     id: 'labels',
     header: 'Labels',
     enableColumnFilter: true,
     cell: ({ row }) => {
-      const labels = row.getValue<Issue['labels']>('labels')
+      const labels = row.original.labels
 
       if (!labels) return null
 
@@ -197,84 +180,5 @@ export const columns = [
         </div>
       )
     },
-  }),
-]
-
-const filtersHelper = createColumnConfigHelper<Issue>()
-
-export const columnsConfig = [
-  filtersHelper.accessor((row) => row.title, {
-    id: 'title',
-    type: 'text',
-    displayName: 'Title',
-    icon: Heading1Icon,
-  }),
-  filtersHelper.accessor((row) => row.status, {
-    id: 'status',
-    type: 'option',
-    displayName: 'Status',
-    icon: CircleDotDashedIcon,
-    transformOptionFn(value) {
-      return { value: value.id, label: value.name, icon: value.icon }
-    },
-    orderFn(a, b) {
-      return a.order - b.order
-    },
-  }),
-  filtersHelper.accessor((row) => row.assignee, {
-    id: 'assignee',
-    type: 'option',
-    displayName: 'Assignee',
-    icon: UserCheckIcon,
-    transformOptionFn: ({ id, name, picture }) => ({
-      value: id,
-      label: name,
-      icon: (
-        <Avatar className="size-4">
-          <AvatarImage src={picture} />
-          <AvatarFallback>
-            {name
-              .split(' ')
-              .map((x) => x[0])
-              .join('')
-              .toUpperCase()}
-          </AvatarFallback>
-        </Avatar>
-      ),
-    }),
-  }),
-  filtersHelper.accessor((row) => row.labels, {
-    id: 'labels',
-    type: 'multiOption',
-    displayName: 'Labels',
-    icon: TagsIcon,
-    transformOptionFn(data) {
-      return {
-        value: data.id,
-        label: data.name,
-        icon: (
-          <div
-            className={cn(
-              'size-2.5 border-none rounded-full',
-              LABEL_STYLES_MAP[data.color as TW_COLOR],
-            )}
-          />
-        ),
-      }
-    },
-  }),
-  filtersHelper.accessor((row) => row.estimatedHours, {
-    id: 'estimatedHours',
-    type: 'number',
-    displayName: 'Estimated hours',
-    icon: ClockIcon,
-    min: 0,
-    max: 100,
-  }),
-  filtersHelper.accessor((row) => row.startDate, {
-    id: 'startDate',
-    type: 'date',
-    displayName: 'Start Date',
-    icon: CalendarArrowUpIcon,
   }),
 ]
