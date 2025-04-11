@@ -533,5 +533,3 @@ export function generateIssues(count: number) {
 
   return arr
 }
-
-export const ISSUES = generateIssues(10)

@@ -30,7 +30,7 @@ import {
   fetchStatuses,
   fetchUsers,
 } from './fetch'
-import { TableSkeleton } from './table-skeleton'
+import { TableFilterSkeleton, TableSkeleton } from './table-skeleton'
 
 export function IssuesTable({
   state,
@@ -164,16 +164,18 @@ export function IssuesTable({
 
   return (
     <div className="w-full col-span-2">
-      {!isOptionsPending && (
-        <div className="flex items-center pb-4 gap-2">
+      <div className="flex items-center pb-4 gap-2">
+        {isOptionsPending ? (
+          <TableFilterSkeleton />
+        ) : (
           <DataTableFilter
             filters={filters}
             columns={columns}
             actions={actions}
             strategy={strategy}
           />
-        </div>
-      )}
+        )}
+      </div>
       {issues.isLoading ? (
         <div className="w-full col-span-2">
           <TableSkeleton numCols={tstColumns.length} numRows={10} />

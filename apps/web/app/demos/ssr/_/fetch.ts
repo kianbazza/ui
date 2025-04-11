@@ -12,7 +12,9 @@ import { ISSUE_LABELS, ISSUE_STATUSES, USERS, generateIssues } from './data'
 import type { Issue } from './types'
 import { isAnyOf, sleep } from './utils'
 
-const ISSUES = generateIssues(1000)
+const ISSUES_COUNT = process.env.NODE_ENV === 'production' ? 100000 : 1000
+
+const ISSUES = generateIssues(ISSUES_COUNT)
 
 export async function fetchIssues(filters?: FiltersState) {
   await sleep(1500)

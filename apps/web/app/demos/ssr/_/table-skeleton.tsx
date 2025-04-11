@@ -21,12 +21,6 @@ export function TableSkeleton({ numRows, numCols }: TableSkeletonProps) {
 
   return (
     <>
-      <div className="pb-4">
-        <Button variant="outline" className="h-7" disabled>
-          <FilterIcon className="size-4" />
-          <span>Filter</span>
-        </Button>
-      </div>
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -69,5 +63,16 @@ export function TableSkeleton({ numRows, numCols }: TableSkeletonProps) {
         </div>
       </div>
     </>
+  )
+}
+
+export function TableFilterSkeleton() {
+  return (
+    <div>
+      <Button variant="outline" className="h-7" disabled>
+        <FilterIcon className="size-4" />
+        <span>Filter</span>
+      </Button>
+    </div>
   )
 }
