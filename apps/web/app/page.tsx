@@ -1,4 +1,4 @@
-import DataTableDemo from '@/components/data-table-filter/demo'
+import DataTableDemo from '@/components/data-table-filter-demo/demo'
 import { GithubIcon, XIcon } from '@/components/icons'
 import { CodeBlock } from '@/components/landing/code-block'
 import { FadeBlurContainer } from '@/components/landing/fade-blur-container'
