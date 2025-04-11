@@ -30,6 +30,7 @@ import {
   fetchStatuses,
   fetchUsers,
 } from './fetch'
+import { queries } from './queries'
 import { TableFilterSkeleton, TableSkeleton } from './table-skeleton'
 
 export function IssuesTable({
@@ -40,40 +41,15 @@ export function IssuesTable({
     setFilters: React.Dispatch<React.SetStateAction<FiltersState>>
   }
 }) {
-  const labels = useQuery({
-    queryKey: ['labels'],
-    queryFn: fetchLabels,
-  })
+  const labels = useQuery(queries.labels.all())
+  const statuses = useQuery(queries.statuses.all())
+  const users = useQuery(queries.users.all())
 
-  const statuses = useQuery({
-    queryKey: ['statuses'],
-    queryFn: fetchStatuses,
-  })
+  const facetedLabels = useQuery(queries.labels.faceted())
+  const facetedStatuses = useQuery(queries.statuses.faceted())
+  const facetedUsers = useQuery(queries.users.faceted())
 
-  const users = useQuery({
-    queryKey: ['users'],
-    queryFn: fetchUsers,
-  })
-
-  const facetedLabels = useQuery({
-    queryKey: ['facetedLabels'],
-    queryFn: fetchFacetedLabels,
-  })
-
-  const facetedStatuses = useQuery({
-    queryKey: ['facetedStatuses'],
-    queryFn: fetchFacetedStatuses,
-  })
-
-  const facetedUsers = useQuery({
-    queryKey: ['facetedUsers'],
-    queryFn: fetchFacetedUsers,
-  })
-
-  const issues = useQuery({
-    queryKey: ['issues', state.filters],
-    queryFn: () => fetchIssues(state.filters),
-  })
+  const issues = useQuery(queries.issues.all(state.filters))
 
   const labelOptions = labels.data?.map(
     (l) =>
