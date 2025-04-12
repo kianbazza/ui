@@ -13,7 +13,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { memo, useEffect, useState } from 'react'
+import { useState } from 'react'
 import {
   dateFilterDetails,
   filterTypeOperatorDetails,
@@ -30,7 +30,6 @@ import type {
   FilterOperators,
   FilterStrategy,
 } from '../core/types'
-import { FilterValueController, FilterValueDisplay } from './filter-value'
 
 interface FilterOperatorProps<TData, TType extends ColumnDataType> {
   column: Column<TData, TType>
@@ -172,11 +171,6 @@ function FilterOperatorOptionController<TData>({
 }: FilterOperatorControllerProps<TData, 'option'>) {
   const filterDetails = optionFilterDetails[filter.operator]
 
-  // console.log(
-  //   '[FilterOperatorOptionController] filterDetails:',
-  //   print(filterDetails),
-  // )
-
   const relatedFilters = Object.values(optionFilterDetails).filter(
     (o) => o.target === filterDetails.target,
   )
@@ -301,11 +295,6 @@ function FilterOperatorNumberController<TData>({
   // Show all related operators
   const filterDetails = numberFilterDetails[filter.operator]
 
-  // console.log(
-  //   '[FilterOperatorOptionController] filterDetails:',
-  //   print(filterDetails),
-  // )
-
   const relatedFilters = Object.values(numberFilterDetails).filter(
     (o) => o.target === filterDetails.target,
   )
@@ -329,58 +318,5 @@ function FilterOperatorNumberController<TData>({
         ))}
       </CommandGroup>
     </div>
-  )
-}
-
-/****** Property Filter Value ******/
-
-interface FilterValueProps<TData, TType extends ColumnDataType> {
-  filter: FilterModel<TType>
-  column: Column<TData, TType>
-  actions: DataTableFilterActions
-  strategy: FilterStrategy
-}
-
-export const FilterValue = memo(__FilterValue) as typeof __FilterValue
-
-function __FilterValue<TData, TType extends ColumnDataType>({
-  filter,
-  column,
-  actions,
-  strategy,
-}: FilterValueProps<TData, TType>) {
-  // console.log('[FilterValue] Rendering')
-  useEffect(() => {
-    console.log('[FilterValue] Filters:', print(filter))
-  }, [filter])
-
-  return (
-    <Popover>
-      <PopoverAnchor className="h-full" />
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          className="m-0 h-full w-fit whitespace-nowrap rounded-none p-0 px-2 text-xs"
-        >
-          <FilterValueDisplay
-            filter={filter}
-            column={column}
-            actions={actions}
-          />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent
-        align="start"
-        side="bottom"
-        className="w-fit p-0 origin-(--radix-popover-content-transform-origin)"
-      >
-        <FilterValueController
-          filter={filter}
-          column={column}
-          actions={actions}
-          strategy={strategy}
-        />
-      </PopoverContent>
-    </Popover>
   )
 }

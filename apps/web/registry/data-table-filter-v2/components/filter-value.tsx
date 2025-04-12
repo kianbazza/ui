@@ -1,3 +1,4 @@
+import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { Checkbox } from '@/components/ui/checkbox'
 import {
@@ -9,6 +10,12 @@ import {
   CommandList,
 } from '@/components/ui/command'
 import { Input } from '@/components/ui/input'
+import {
+  Popover,
+  PopoverAnchor,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
 import { Slider } from '@/components/ui/slider'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
@@ -35,6 +42,52 @@ import type {
 } from '../core/types'
 import { take } from '../lib/array'
 import { DebouncedInput } from '../ui/debounced-input'
+
+interface FilterValueProps<TData, TType extends ColumnDataType> {
+  filter: FilterModel<TType>
+  column: Column<TData, TType>
+  actions: DataTableFilterActions
+  strategy: FilterStrategy
+}
+
+export const FilterValue = memo(__FilterValue) as typeof __FilterValue
+
+function __FilterValue<TData, TType extends ColumnDataType>({
+  filter,
+  column,
+  actions,
+  strategy,
+}: FilterValueProps<TData, TType>) {
+  return (
+    <Popover>
+      <PopoverAnchor className="h-full" />
+      <PopoverTrigger asChild>
+        <Button
+          variant="ghost"
+          className="m-0 h-full w-fit whitespace-nowrap rounded-none p-0 px-2 text-xs"
+        >
+          <FilterValueDisplay
+            filter={filter}
+            column={column}
+            actions={actions}
+          />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent
+        align="start"
+        side="bottom"
+        className="w-fit p-0 origin-(--radix-popover-content-transform-origin)"
+      >
+        <FilterValueController
+          filter={filter}
+          column={column}
+          actions={actions}
+          strategy={strategy}
+        />
+      </PopoverContent>
+    </Popover>
+  )
+}
 
 interface FilterValueDisplayProps<TData, TType extends ColumnDataType> {
   filter: FilterModel<TType>
@@ -573,7 +626,6 @@ export function FilterValueNumberController<TData>({
 
   // Sync with parent filter changes
   useEffect(() => {
-    // console.log('a')
     if (
       filter?.values &&
       filter.values.length === values.length &&
@@ -588,27 +640,23 @@ export function FilterValueNumberController<TData>({
 
   const changeNumber = (value: number[]) => {
     setValues(value)
-    // console.log('a')
     actions.setFilterValue(column, value)
   }
 
   const changeMinNumber = (value: number) => {
     const newValues = [value, values[1]]
     setValues(newValues)
-    console.log('[FilterValueNumberController] changeMinNumber')
     actions.setFilterValue(column, newValues)
   }
 
   const changeMaxNumber = (value: number) => {
     const newValues = [values[0], value]
     setValues(newValues)
-    console.log('[FilterValueNumberController] changeMaxNumber')
     actions.setFilterValue(column, newValues)
   }
 
   const changeType = useCallback(
     (type: 'single' | 'range') => {
-      console.log('changeType to:', type)
       const newValues =
         type === 'single'
           ? [values[0]] // Keep the first value for single mode

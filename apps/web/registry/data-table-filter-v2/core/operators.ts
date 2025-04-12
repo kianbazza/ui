@@ -391,8 +391,6 @@ export function determineNewOperator<TType extends ColumnDataType>(
       ? nextVals[0].length
       : nextVals.length
 
-  // console.log('[determineNewOperator] a:', a, 'b:', b)
-
   // If filter size has not transitioned from single to multiple (or vice versa)
   // or is unchanged, return the current operator.
   if (a === b || (a >= 2 && b >= 2) || (a <= 1 && b <= 1))

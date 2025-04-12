@@ -204,8 +204,6 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
     .flatMap(column.accessor)
     .filter((v): v is NonNullable<TVal> => v !== undefined && v !== null)
 
-  // console.log(`[getColumnOptions] [${column.id}] filtered:`, filtered)
-
   let models = uniq(filtered)
 
   if (column.orderFn) {
@@ -216,8 +214,6 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
       ),
     )
   }
-
-  // console.log(`[getColumnOptions] [${column.id}] models:`, models)
 
   if (column.transformOptionFn) {
     // Memoize transformOptionFn calls

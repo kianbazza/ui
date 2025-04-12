@@ -11,8 +11,9 @@ import type {
   FiltersState,
 } from '../core/types'
 import { getColumn } from '../lib/helpers'
-import { FilterOperator, FilterValue } from './filter-operator'
+import { FilterOperator } from './filter-operator'
 import { FilterSubject } from './filter-subject'
+import { FilterValue } from './filter-value'
 
 interface ActiveFiltersProps<TData> {
   columns: Column<TData>[]
