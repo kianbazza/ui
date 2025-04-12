@@ -1,17 +1,3 @@
-/**********************************************************************************************************
- ***** Filter Functions ******
- **********************************************************************************************************
- * These are functions that filter data based on the current filter values, column data type, and operator.
- * There exists a separate filter function for each column data type.
- *
- * Two variants of the filter functions are provided - as an example, we will take the optionFilterFn:
- * 1. optionFilterFn: takes in a row, columnId, and filterValue.
- * 2. __optionFilterFn: takes in an inputData and filterValue.
- *
- * __optionFilterFn is a private function that is used by filterFn to perform the actual filtering.
- * *********************************************************************************************************/
-
-import type { Row } from '@tanstack/react-table'
 import {
   endOfDay,
   isAfter,
@@ -20,58 +6,11 @@ import {
   isWithinInterval,
   startOfDay,
 } from 'date-fns'
+import { dateFilterDetails } from '../core/operators'
+import type { FilterModel } from '../core/types'
 import { intersection } from './array'
-import {
-  dateFilterDetails,
-  isColumnOption,
-  isColumnOptionArray,
-  isStringArray,
-} from './filters'
-import type { ColumnDataType, FilterModel } from './filters.types'
 
-/*
- * Returns a filter function for a given column data type.
- * This function is used to determine the appropriate filter function to use based on the column data type.
- */
-export function filterFn(dataType: ColumnDataType) {
-  switch (dataType) {
-    // case 'option':
-    //   return optionFilterFn
-    // case 'multiOption':
-    //   return multiOptionFilterFn
-    case 'date':
-      return dateFilterFn
-    case 'text':
-      return textFilterFn
-    case 'number':
-      return numberFilterFn
-    default:
-      throw new Error('Invalid column data type')
-  }
-}
-
-// export function optionFilterFn<TData>(
-//   row: Row<TData>,
-//   columnId: string,
-//   filterValue: FilterModel<'option'>,
-// ) {
-//   const value = row.getValue(columnId)
-
-//   if (!value) return false
-
-//   if (typeof value === 'string') {
-//     return __optionFilterFn(value, filterValue)
-//   }
-
-//   if (isColumnOption(value)) {
-//     return __optionFilterFn(value.value, filterValue)
-//   }
-
-//   const sanitizedValue = columnMeta.transformOptionFn!(value as never)
-//   return __optionFilterFn(sanitizedValue.value, filterValue)
-// }
-
-export function __optionFilterFn<TData>(
+export function optionFilterFn<TData>(
   inputData: string,
   filterValue: FilterModel<'option'>,
 ) {
@@ -92,37 +31,7 @@ export function __optionFilterFn<TData>(
   }
 }
 
-// export function multiOptionFilterFn<TData>(
-//   row: Row<TData>,
-//   columnId: string,
-//   filterValue: FilterModel<'multiOption'>,
-// ) {
-//   const value = row.getValue(columnId)
-
-//   if (!value) return false
-
-//   if (isStringArray(value)) {
-//     return __multiOptionFilterFn(value, filterValue)
-//   }
-
-//   if (isColumnOptionArray(value)) {
-//     return __multiOptionFilterFn(
-//       value.map((v) => v.value),
-//       filterValue,
-//     )
-//   }
-
-//   const sanitizedValue = (value as never[]).map((v) =>
-//     columnMeta.transformOptionFn!(v),
-//   )
-
-//   return __multiOptionFilterFn(
-//     sanitizedValue.map((v) => v.value),
-//     filterValue,
-//   )
-// }
-
-export function __multiOptionFilterFn(
+export function multiOptionFilterFn(
   inputData: string[],
   filterValue: FilterModel<'multiOption'>,
 ) {
@@ -156,16 +65,6 @@ export function __multiOptionFilterFn(
 }
 
 export function dateFilterFn<TData>(
-  row: Row<TData>,
-  columnId: string,
-  filterValue: FilterModel<'date'>,
-) {
-  const value = row.getValue<Date>(columnId)
-
-  return __dateFilterFn(value, filterValue)
-}
-
-export function __dateFilterFn<TData>(
   inputData: Date,
   filterValue: FilterModel<'date'>,
 ) {
@@ -216,16 +115,6 @@ export function __dateFilterFn<TData>(
 }
 
 export function textFilterFn<TData>(
-  row: Row<TData>,
-  columnId: string,
-  filterValue: FilterModel<'text'>,
-) {
-  const value = row.getValue<string>(columnId) ?? ''
-
-  return __textFilterFn(value, filterValue)
-}
-
-export function __textFilterFn<TData>(
   inputData: string,
   filterValue: FilterModel<'text'>,
 ) {
@@ -247,16 +136,6 @@ export function __textFilterFn<TData>(
 }
 
 export function numberFilterFn<TData>(
-  row: Row<TData>,
-  columnId: string,
-  filterValue: FilterModel<'number'>,
-) {
-  const value = row.getValue<number>(columnId)
-
-  return __numberFilterFn(value, filterValue)
-}
-
-export function __numberFilterFn<TData>(
   inputData: number,
   filterValue: FilterModel<'number'>,
 ) {
