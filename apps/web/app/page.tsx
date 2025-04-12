@@ -1,7 +1,4 @@
-import { IssuesTableWrapper } from '@/app/demos/client/tst-static/_/issues-table-wrapper'
-import { GithubIcon, XIcon } from '@/components/icons'
-import { CodeBlock } from '@/components/landing/code-block'
-import { FadeBlurContainer } from '@/components/landing/fade-blur-container'
+import { BazzaUIIcon, GithubIcon, UserJotIcon, XIcon } from '@/components/icons'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import logoSrc from '@/public/bazzaui-v3-color.png'
@@ -20,6 +17,7 @@ import {
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense } from 'react'
+import { IssuesTableWrapper } from './demos/server/tst-query/_/issues-table-wrapper'
 
 export default function Page() {
   return (
@@ -97,10 +95,23 @@ export default function Page() {
         </div>
       </div>
       <div className="border-b border-border border-dashed">
-        <div className="xl:border-x border-border border-dashed px-4 py-24 max-w-screen-xl w-full mx-auto space-y-4 h-[800px]">
-          <h2 className="text-5xl tracking-[-0.03em] font-semibold drop-shadow-xs text-center">
-            Check out the demo.
-          </h2>
+        <div className="px-4 py-12 max-w-screen-xl w-full mx-auto border-border border-dashed xl:border-x flex flex-col items-center gap-12 sm:gap-16">
+          <div className="space-y-6 sm:space-y-8 text-center">
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-[538] tracking-[-0.03em] drop-shadow-xs">
+              Playground
+            </h2>
+            <div className="text-base sm:text-lg lg:text-lg tracking-[-0.01em] font-[510] text-neutral-600 dark:text-neutral-300 space-y-1 sm:space-y-0">
+              <p>
+                Our first component is a data table filter, built with shadcn/ui
+                and TanStack Table.
+              </p>
+              <p>
+                It's a powerful component that allows you to filter your data
+                table with ease.
+              </p>
+              <p>Take it for a spin in the playground below.</p>
+            </div>
+          </div>
           <Suspense>
             <IssuesTableWrapper />
           </Suspense>
