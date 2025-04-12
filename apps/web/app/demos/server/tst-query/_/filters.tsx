@@ -1,4 +1,4 @@
-import { createColumnConfigHelper } from '@/registry/data-table-filter-v2/lib/filters'
+import { createColumnConfigHelper } from '@/registry/data-table-filter-v2/core/filters'
 import {
   CalendarArrowUpIcon,
   CircleDotDashedIcon,

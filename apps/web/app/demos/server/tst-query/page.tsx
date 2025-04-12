@@ -2,7 +2,7 @@
 
 import { CodeBlock } from '@/components/code-block'
 import { NavBar } from '@/components/nav-bar'
-import type { FiltersState } from '@/registry/data-table-filter-v2/lib/filters.types'
+import type { FiltersState } from '@/registry/data-table-filter-v2/core/types'
 import { parseAsJson, useQueryState } from 'nuqs'
 import { z } from 'zod'
 import { IssuesTable } from './_/issues-table'
