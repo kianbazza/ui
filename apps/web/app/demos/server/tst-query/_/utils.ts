@@ -11,3 +11,7 @@ export const calculateEndDate = (start: Date) => {
 export function isAnyOf<T>(value: T, array: T[]) {
   return array.includes(value)
 }
+
+export async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms))
+}

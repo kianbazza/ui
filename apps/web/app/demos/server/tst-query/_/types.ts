@@ -1,3 +1,5 @@
+import type { LucideIcon } from 'lucide-react'
+
 export type Issue = {
   id: string
   title: string
@@ -9,8 +11,6 @@ export type Issue = {
   endDate?: Date
   estimatedHours?: number
 }
-
-import type { LucideIcon } from 'lucide-react'
 
 export type User = {
   id: string

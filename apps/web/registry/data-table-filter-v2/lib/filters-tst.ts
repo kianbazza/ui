@@ -2,11 +2,16 @@ import type { ColumnDef, ColumnFiltersState } from '@tanstack/react-table'
 import { isAnyOf } from './array'
 import { __multiOptionFilterFn, __optionFilterFn, filterFn } from './filter-fns'
 import { isColumnOption, isColumnOptionArray, isStringArray } from './filters'
-import type { ColumnConfig, FilterModel, FiltersState } from './filters.types'
+import type {
+  Column,
+  ColumnConfig,
+  FilterModel,
+  FiltersState,
+} from './filters.types'
 
 interface CreateTSTColumns<TData> {
-  columns: ColumnDef<TData>[]
-  configs: ColumnConfig<TData>[]
+  columns: ColumnDef<TData, any>[]
+  configs: Column<TData>[]
 }
 
 export function createTSTColumns<TData>({
