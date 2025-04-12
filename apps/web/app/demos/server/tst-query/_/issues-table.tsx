@@ -163,7 +163,7 @@ export function IssuesTable({
           <TableSkeleton numCols={tstColumns.length} numRows={10} />
         </div>
       ) : (
-        <DataTable table={table} />
+        <DataTable table={table} actions={actions} />
       )}
     </div>
   )
