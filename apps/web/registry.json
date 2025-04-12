@@ -129,9 +129,9 @@
           "target": "components/data-table-filter/integrations/tanstack-table/index.tsx"
         },
         {
-          "path": "registry/data-table-filter-v2/integrations/tanstack-table/filter-fns.tsx",
+          "path": "registry/data-table-filter-v2/integrations/tanstack-table/filter-fns.ts",
           "type": "registry:file",
-          "target": "components/data-table-filter/integrations/tanstack-table/filter-fns.tsx"
+          "target": "components/data-table-filter/integrations/tanstack-table/filter-fns.ts"
         },
         {
           "path": "registry/data-table-filter-v2/lib/array.ts",
