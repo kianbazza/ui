@@ -64,8 +64,15 @@ function createUserOptions(users: User[] | undefined) {
   }))
 }
 
-export function IssuesTable() {
-  const [filtersState, setFiltersState] = useState<FiltersState>([])
+interface IssuesTableProps {
+  state: {
+    filters: FiltersState
+    setFilters: React.Dispatch<React.SetStateAction<FiltersState>>
+  }
+}
+
+export function IssuesTable({ state }: IssuesTableProps) {
+  // const [filtersState, setFiltersState] = useState<FiltersState>([])
 
   // Step 1: Fetch data from the server
   const labels = useQuery(queries.labels.all())
@@ -76,7 +83,7 @@ export function IssuesTable() {
   const facetedStatuses = useQuery(queries.statuses.faceted())
   const facetedUsers = useQuery(queries.users.faceted())
 
-  const issues = useQuery(queries.issues.all(filtersState))
+  const issues = useQuery(queries.issues.all(state.filters))
 
   // Step 2: Create ColumnOption[] for each option-based column
   const labelOptions = createLabelOptions(labels.data)
@@ -100,7 +107,7 @@ export function IssuesTable() {
     strategy: 'server',
     data: issues.data ?? [],
     columnsConfig,
-    controlledState: [filtersState, setFiltersState],
+    controlledState: [state.filters, state.setFilters],
     options: {
       status: [statusOptions, facetedStatuses.data],
       assignee: [userOptions, facetedUsers.data],
