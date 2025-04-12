@@ -1,5 +1,3 @@
-'use client'
-
 import { useIsMobile } from '@/hooks/use-mobile'
 import type {
   Column,

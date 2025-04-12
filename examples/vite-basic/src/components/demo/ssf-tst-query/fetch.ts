@@ -1,11 +1,11 @@
-import type { FiltersState } from '@/registry/data-table-filter-v2/core/types'
+import type { FiltersState } from '@/components/data-table-filter/core/types'
 import {
   dateFilterFn,
   multiOptionFilterFn,
   numberFilterFn,
   optionFilterFn,
   textFilterFn,
-} from '@/registry/data-table-filter-v2/lib/filter-fns'
+} from '@/components/data-table-filter/lib/filter-fns'
 import { ISSUE_LABELS, ISSUE_STATUSES, USERS, generateIssues } from './data'
 import type { Issue } from './types'
 import { isAnyOf, sleep } from './utils'

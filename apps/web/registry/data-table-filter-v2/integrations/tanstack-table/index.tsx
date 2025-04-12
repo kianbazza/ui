@@ -1,13 +1,12 @@
 import type { ColumnDef, ColumnFiltersState } from '@tanstack/react-table'
-import { isAnyOf } from './array'
-import { __multiOptionFilterFn, __optionFilterFn, filterFn } from './filter-fns'
-import { isColumnOption, isColumnOptionArray, isStringArray } from './filters'
-import type {
-  Column,
-  ColumnConfig,
-  FilterModel,
-  FiltersState,
-} from './filters.types'
+import type { Column, FilterModel, FiltersState } from '../../core/types'
+import { multiOptionFilterFn, optionFilterFn } from '../../lib/filter-fns'
+import {
+  isColumnOption,
+  isColumnOptionArray,
+  isStringArray,
+} from '../../lib/helpers'
+import { dateFilterFn, numberFilterFn, textFilterFn } from './filter-fns'
 
 interface CreateTSTColumns<TData> {
   columns: ColumnDef<TData, any>[]
@@ -30,28 +29,40 @@ export function createTSTColumns<TData>({
       continue
     }
 
-    if (isAnyOf(config.type, ['text', 'number', 'date'])) {
-      col.filterFn = filterFn(config.type)
+    if (config.type === 'text') {
+      col.filterFn = textFilterFn
+      _cols.push(col)
+      continue
+    }
+
+    if (config.type === 'number') {
+      col.filterFn = numberFilterFn
+      _cols.push(col)
+      continue
+    }
+
+    if (config.type === 'date') {
+      col.filterFn = dateFilterFn
       _cols.push(col)
       continue
     }
 
     if (config.type === 'option') {
       col.filterFn = (row, columnId, filterValue: FilterModel<'option'>) => {
-        const value = row.getValue(columnId)
+        const value = row.getValue<unknown>(columnId)
 
         if (!value) return false
 
         if (typeof value === 'string') {
-          return __optionFilterFn(value, filterValue)
+          return optionFilterFn(value, filterValue)
         }
 
         if (isColumnOption(value)) {
-          return __optionFilterFn(value.value, filterValue)
+          return optionFilterFn(value.value, filterValue)
         }
 
         const sanitizedValue = config.transformOptionFn!(value as never)
-        return __optionFilterFn(sanitizedValue.value, filterValue)
+        return optionFilterFn(sanitizedValue.value, filterValue)
       }
     }
 
@@ -66,11 +77,11 @@ export function createTSTColumns<TData>({
         if (!value) return false
 
         if (isStringArray(value)) {
-          return __multiOptionFilterFn(value, filterValue)
+          return multiOptionFilterFn(value, filterValue)
         }
 
         if (isColumnOptionArray(value)) {
-          return __multiOptionFilterFn(
+          return multiOptionFilterFn(
             value.map((v) => v.value),
             filterValue,
           )
@@ -80,7 +91,7 @@ export function createTSTColumns<TData>({
           config.transformOptionFn!(v),
         )
 
-        return __multiOptionFilterFn(
+        return multiOptionFilterFn(
           sanitizedValue.map((v) => v.value),
           filterValue,
         )

@@ -1,13 +1,13 @@
 'use client'
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { cn } from '@/lib/utils'
+import type { FiltersState } from '@/components/data-table-filter/core/types'
 import {
   DataTableFilter,
   useDataTableFilters,
-} from '@/registry/data-table-filter-v2'
-import type { FiltersState } from '@/registry/data-table-filter-v2/core/types'
-import { createTSTColumns } from '@/registry/data-table-filter-v2/integrations/tanstack-table'
+} from '@/components/data-table-filter/index'
+import { createTSTColumns } from '@/components/data-table-filter/integrations/tanstack-table'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { cn } from '@/lib/utils'
 import { useQuery } from '@tanstack/react-query'
 import {
   getCoreRowModel,
@@ -64,14 +64,16 @@ function createUserOptions(users: User[] | undefined) {
   }))
 }
 
-export function IssuesTable({
-  state,
-}: {
+interface IssuesTableProps {
   state: {
     filters: FiltersState
     setFilters: React.Dispatch<React.SetStateAction<FiltersState>>
   }
-}) {
+}
+
+export function IssuesTable({ state }: IssuesTableProps) {
+  // const [filtersState, setFiltersState] = useState<FiltersState>([])
+
   // Step 1: Fetch data from the server
   const labels = useQuery(queries.labels.all())
   const statuses = useQuery(queries.statuses.all())
