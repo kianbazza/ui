@@ -1,4 +1,4 @@
-import type { FiltersState } from '@/registry/data-table-filter-v2/lib/filters.types'
+import type { FiltersState } from '@/registry/data-table-filter-v2/core/types'
 import type { QueryOptions } from '@tanstack/react-query'
 import {
   fetchFacetedLabels,

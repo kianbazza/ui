@@ -5,9 +5,9 @@ import { cn } from '@/lib/utils'
 import {
   DataTableFilter,
   useDataTableFilters,
-} from '@/registry/data-table-filter-v2/components/data-table-filter'
-import { createTSTColumns } from '@/registry/data-table-filter-v2/lib/filters-tst'
-import type { FiltersState } from '@/registry/data-table-filter-v2/lib/filters.types'
+} from '@/registry/data-table-filter-v2'
+import type { FiltersState } from '@/registry/data-table-filter-v2/core/types'
+import { createTSTColumns } from '@/registry/data-table-filter-v2/integrations/tanstack-table'
 import { useQuery } from '@tanstack/react-query'
 import {
   getCoreRowModel,

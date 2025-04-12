@@ -1,14 +1,12 @@
+import type { FiltersState } from '@/registry/data-table-filter-v2/core/types'
 import {
-  __dateFilterFn,
-  __multiOptionFilterFn,
-  __numberFilterFn,
-  __optionFilterFn,
-  __textFilterFn,
+  dateFilterFn,
+  multiOptionFilterFn,
+  numberFilterFn,
+  optionFilterFn,
+  textFilterFn,
 } from '@/registry/data-table-filter-v2/lib/filter-fns'
-import { getFacetedUniqueValues } from '@/registry/data-table-filter-v2/lib/filters'
-import type { FiltersState } from '@/registry/data-table-filter-v2/lib/filters.types'
 import { ISSUE_LABELS, ISSUE_STATUSES, USERS, generateIssues } from './data'
-import { columnsConfig } from './filters'
 import type { Issue } from './types'
 import { isAnyOf, sleep } from './utils'
 
@@ -31,30 +29,30 @@ export async function fetchIssues(filters?: FiltersState) {
         const value = issue[columnId] as string | undefined
 
         if (!value) return false
-        return __textFilterFn(value, filter)
+        return textFilterFn(value, filter)
       }
 
       if (isAnyOf(columnId, ['status', 'assignee'])) {
         const value = (issue[columnId] as any)?.id
         if (!value) return false
-        return __optionFilterFn(value, filter)
+        return optionFilterFn(value, filter)
       }
 
       if (isAnyOf(columnId, ['labels'])) {
         const value = ((issue[columnId] as any) ?? []).map((l: any) => l.id)
         if (!value) return false
-        return __multiOptionFilterFn(value, filter)
+        return multiOptionFilterFn(value, filter)
       }
 
       if (isAnyOf(columnId, ['estimatedHours'])) {
         const value = issue[columnId] as number
-        return __numberFilterFn(value, filter)
+        return numberFilterFn(value, filter)
       }
 
       if (isAnyOf(columnId, ['startDate', 'endDate'])) {
         const value = issue[columnId] as Date | undefined
         if (!value) return false
-        return __dateFilterFn(value, filter)
+        return dateFilterFn(value, filter)
       }
 
       throw new Error(`Unknown columnId: ${columnId}`)
