@@ -1,12 +1,9 @@
 import { act, renderHook } from '@testing-library/react'
 import { CircleIcon } from 'lucide-react'
 import { describe, expect, it } from 'vitest'
-import { useDataTableFilters } from '../components/data-table-filter'
-import {
-  DEFAULT_OPERATORS,
-  createColumnConfigHelper,
-  determineNewOperator,
-} from '../lib/filters'
+import { createColumnConfigHelper } from '../core/filters'
+import { DEFAULT_OPERATORS, determineNewOperator } from '../core/operators'
+import { useDataTableFilters } from '../hooks/use-data-table-filters'
 
 // Dummy icon component for column configuration
 const DummyIcon = CircleIcon
