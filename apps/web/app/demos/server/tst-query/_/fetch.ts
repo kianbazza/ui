@@ -13,9 +13,10 @@ import { isAnyOf, sleep } from './utils'
 const ISSUES_COUNT = process.env.NODE_ENV === 'production' ? 100000 : 1000
 
 const ISSUES = generateIssues(ISSUES_COUNT)
+const SLEEP = 1000
 
 export async function fetchIssues(filters?: FiltersState) {
-  await sleep(1500)
+  await sleep(SLEEP)
 
   if (!filters || filters.length === 0) return ISSUES
 
@@ -63,17 +64,17 @@ export async function fetchIssues(filters?: FiltersState) {
 }
 
 export async function fetchLabels() {
-  await sleep(1500)
+  await sleep(SLEEP)
   return ISSUE_LABELS
 }
 
 export async function fetchUsers() {
-  await sleep(1500)
+  await sleep(SLEEP)
   return USERS
 }
 
 export async function fetchStatuses() {
-  await sleep(1500)
+  await sleep(SLEEP)
   return ISSUE_STATUSES
 }
 
