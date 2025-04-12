@@ -91,7 +91,7 @@ export function FilterOperatorDisplay<TType extends ColumnDataType>({
 }: FilterOperatorDisplayProps<TType>) {
   const operator = filterTypeOperatorDetails[columnType][filter.operator]
 
-  return <span>{operator.label}</span>
+  return <span className="text-muted-foreground">{operator.label}</span>
 }
 
 interface FilterOperatorControllerProps<TData, TType extends ColumnDataType> {
