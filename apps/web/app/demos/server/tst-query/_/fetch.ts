@@ -10,8 +10,7 @@ import { ISSUE_LABELS, ISSUE_STATUSES, USERS, generateIssues } from './data'
 import type { Issue } from './types'
 import { isAnyOf, sleep } from './utils'
 
-const ISSUES_COUNT = process.env.NODE_ENV === 'production' ? 100000 : 1000
-
+const ISSUES_COUNT = process.env.NODE_ENV === 'production' ? 30000 : 1000
 const ISSUES = generateIssues(ISSUES_COUNT)
 const SLEEP = 1000
 
