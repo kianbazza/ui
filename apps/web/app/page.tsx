@@ -17,6 +17,7 @@ import {
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense } from 'react'
+import { IssuesTableFallback } from './demos/server/tst-query/_/issues-table-fallback'
 import { IssuesTableWrapper } from './demos/server/tst-query/_/issues-table-wrapper'
 
 export default function Page() {
@@ -112,7 +113,7 @@ export default function Page() {
               <p>Take it for a spin in the playground below.</p>
             </div>
           </div>
-          <Suspense>
+          <Suspense fallback={<IssuesTableFallback />}>
             <IssuesTableWrapper />
           </Suspense>
         </div>
