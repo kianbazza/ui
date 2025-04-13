@@ -15,7 +15,7 @@ This library is an add-on to your existing data table for filtering your data, p
 
 - A React hook, `useDataTableFilters()`, which exposes your data table filters state.
 - A `<DataTableFilter />` component, built with [shadcn/ui](https://ui.shadcn.com) and inspired by [Linear](https://linear.app/homepage)'s design.
-- Integrations for key libraries, such as [TanStack Table](https://tanstack.com/table).
+- Integrations for key libraries, such as [TanStack Table](https://tanstack.com/table) and [nuqs](https://nuqs.47ng.com/).
 
 Some answers to the most common questions:
 
@@ -31,18 +31,44 @@ From the command line, install the component into your project:
 npx shadcn@latest add https://ui.bazza.dev/r/filters
 ```
 
-## Concepts
+## Quick Start
+
+> [!WARNING] This section is under development.
+
+### Blocks
+
+> [!WARNING] This section is under development.
+
+You can install pre-built blocks directly into your codebase.
+
+These have been tested with Next.js, but should work with any React framework.
+
+### Concepts
 
 Let's take a look at the most important concepts for using this component.
 
-### Column data types
+#### Filters
 
-Whenever you want to filter a column, you need to define what type of data it contains. `ColumnDataType` identifies the types of data we currently support filtering for.
-
-Set the `type` property of the column meta (explained below) to one of the following values:
+The state of the applied filters on a table is represented as `FiltersState`, which is a `FilterModel[]`:
 
 ```ts
-export type ColumnDataType =
+type FilterModel<TType extends ColumnDataType = any> = {
+  columnId: string
+  operator: FilterOperators[TType] // i.e. 'is', 'is not', 'is any of', etc.
+  values: FilterValues<TType>
+}
+```
+
+Each `FilterModel` represents a single filter for a specific column.
+
+#### Column data types
+
+When you want to make a column filterable, you first need to define what type of data it contains.
+
+`ColumnDataType` identifies the types of data we currently support filtering for:
+
+```ts
+type ColumnDataType =
   | 'text'         /* Text data */
   | 'number'       /* Numerical data */
   | 'date'         /* Dates */
@@ -50,12 +76,21 @@ export type ColumnDataType =
   | 'multiOption'  /* Multi-valued option (e.g. labels) */
 ```
 
-### Column options
+#### Column options
 
-For `option` and `multiOption` columns, we represent each possible option as a `ColumnOption`:
+For `option` and `multiOption` columns *(we'll refer to these as **option-based columns**)*, there exists a set of possible **options** for each column - we call these **column options**.
+
+> For example, an issues table could have a `status` column with the options "Backlog", "To Do", "In Progress", and "Done".
+
+{/* Option-based columns can get their options data from two sources:
+
+- The table data itself; we infer the options from the available data.
+- The column's `options` property. */}
+
+We represent each option as a `ColumnOption`:
 
 ```ts
-export interface ColumnOption {
+interface ColumnOption {
   /* The label to display for the option. */
   label: string
   /* The internal value of the option. */
@@ -65,82 +100,164 @@ export interface ColumnOption {
 }
 ```
 
-#### `label`
+### Column configuration
 
-This is the label or display name for the option.
+We describe each column in our data table as a `ColumnConfig`.
 
-#### `value`
+We create a `ColumnConfig` using a builder instance:
 
-This is the interval value for the option and must be unique across all options for a given column.
+```ts
+/* Create the configuration builder instance. */
+const dtf = createColumnConfigHelper<Issue>()
 
-For an `option` column, the filter value is a `string` which matches the `value` property of chosen column option.
+/* Create the column configurations. */
+export const columnsConfig = [
+  dtf
+    .text()
+    .id('title')
+    .accessor((row) => row.title)
+    .displayName('Title')
+    .icon(Heading1Icon)
+    .build(),
+  dtf
+    .option()
+    .accessor((row) => row.status.id)
+    .id('status')
+    .displayName('Status')
+    .icon(CircleDotDashedIcon)
+    .build(),
+  /* ... */
+] as const
+```
 
-For a `multiOption` column, the filter value is a `string[]` where each array member is the `value` property of the chosen column option.
+#### Filters instance
 
-#### `icon`
+We use the `useDataTableFilters()` hook to create our data table filters instance.
 
-Optionally, you can provide an icon to represent the column option.
+This hooks handles the logic for filtering the data (if using the `client` strategy) and updating the filters state.
 
-An icon must be provided for every column option. Otherwise, icons will not be displayed for the column's options.
+```tsx
+const { columns, filters, actions, strategy } = useDataTableFilters({
+  strategy: 'client',       
+  data: issues.data ?? [], 
+  columnsConfig,          
+})
+```
 
-## Usage
+Given those inputs, the hook creates your data table filters instance.
 
-### Add component
+The instance has the following properties:
 
-Import the `<DataTableFilter />` component and pass it your `table` instance:
+- `columns`: The `Column[]` for your data table filters. A `Column` is a superset of a `ColumnConfig`, with additional properties & methods.
+- `filters`: The filters state, represented as a `FilterState` object.
+- `actions`: A collection of mutators for the filters state.
+- `strategy`: The strategy used for filtering (`client` or `server` side filtering).
 
-```tsx {6}
+#### Filters component
+
+The visual component for the data table filter is the `<DataTableFilter />` component.
+
+It takes the `columns`, `filters`, `actions` and `strategy` from the hook as input.
+
+```tsx {6-11}
 import { DataTableFilter } from '@/components/data-table-filter'
 
-export default function DataTable() {
+export function IssuesTable() {
   return (
     <div>
-      <DataTableFilter table={table} />
-      <div className="rounded-md border">
-        <Table>
-          {/* ... */}
-        </Table>
-      </div>
+      <DataTableFilter 
+        filters={filters} 
+        columns={columns} 
+        actions={actions} 
+        strategy={strategy} 
+      />
+      <DataTable />
     </div>
   )
 }
 ```
 
-### Update columns
+## Guides
 
-#### Updating your columns
+> [!WARNING] This section is under development.
 
-For each column that you want to be filterable, you need to do two things:
+### Column Configuration
 
-- Use our provided `filterFn()` for filtering the column data.
-- Add the `meta` property using the `defineMeta()` helper function.
+#### Column configuration
 
-For the filter function, we provide one for you - it is conveniently called `filterFn()` and takes a single argument `type` which is the column data type (i.e. `ColumnDataType`).
+We need to describe each column in our data table. This is done using our column configuration builder.
 
-For the column meta, we provide a helper function called `defineMeta()` which takes two arguments: **(1)** the property name from your data object, and **(2)** an object containing the column meta.
+It has a [fluent API](https://en.wikipedia.org/wiki/Fluent_interface) *(similar to Zod)* that allows us to define a column's properties in a concise, readable, and type-safe manner.
 
-When specifying the property name, you must use an accessor function, as demonstrated below.
+##### Using `createColumnConfigHelper()`
+
+First, you use the `createColumnConfigHelper()` function to create a column configuration builder:
 
 ```ts
-export const columns = [
-  columnHelper.accessor('status', {
-    filterFn: filterFn('option'),
-    meta: defineMeta(row => row.status, {
-      displayName: 'Status',
-      type: 'option',
-      icon: CircleDotDashedIcon,
-      options: ISSUE_STATUSES,
-    }),
-  }),
-]
+import { createColumnConfigHelper } from '@/components/data-table-filter/core/filters'
+import type { Issue } from './types'
+
+// dtf = data table filter... (sorry, couldn't resist)
+const dtf = createColumnConfigHelper<Issue>()
+```
+
+Notice how we pass in our data model (`Issue`) as a generic parameter. This is required for the column configuration builder to be type safe.
+
+##### Building a column configuration
+
+Next, we use our helper to create a column configuration.
+
+A column configuration begins with a call to the `text()`, `number()`, `date()`, `option()`, or `multiOption()` method of the column configuration builder.
+
+```ts
+dtf.option()
+```
+
+Now, we chain method calls to continue building our configuration, finishing off with the `build()` method:
+
+```ts
+dtf
+  .option()
+  .accessor((row) => row.status.id)
+  .id('status')
+  .displayName('Status')
+  .icon(CircleDotDashedIcon)
+  .build(),
+```
+
+Following this, we create an array of column configurations to use later on:
+
+```ts
+const dtf = createColumnConfigHelper<Issue>()
+
+export const columnsConfig = [
+  dtf
+    .text()
+    .id('title')
+    .accessor((row) => row.title)
+    .displayName('Title')
+    .icon(Heading1Icon)
+    .build(),
+  dtf
+    .option()
+    .accessor((row) => row.status.id)
+    .id('status')
+    .displayName('Status')
+    .icon(CircleDotDashedIcon)
+    .build(),
+  /* ... */
+] as const
 ```
 
 ## Integrations
 
+### TanStack Table
+
+> [!WARNING] This section is under development.
+
 ### `nuqs`
 
-> [!WARNING] This integration is in alpha.
-> We are working on making this easier to use.
+> [!WARNING] This section is under development.
 
 You can use [`nuqs`](https://nuqs.47ng.com/) to persist the filter state in the URL.
 
@@ -156,81 +273,9 @@ npm install nuqs zod
 
 ```ts
 import { z } from 'zod'
+import type { FiltersState } from '@/components/data-table-filter/core/types'
 
-const dataTableFilterQuerySchema = z
-  .object({
-    id: z.string(),
-    value: z.object({
-      operator: z.string(),
-      values: z.any(),
-    }),
-  })
-  .array()
-  .min(0)
-
-type DataTableFilterQuerySchema = z.infer<typeof dataTableFilterQuerySchema>
-```
-
-4. Create the following helper function:
-
-```ts
-function initializeFiltersFromQuery<TData, TValue>(
-  filters: DataTableFilterQuerySchema,
-  columns: ColumnDef<TData, TValue>[],
-) {
-  return filters && filters.length > 0
-    ? filters.map((f) => {
-        const columnMeta = columns.find((c) => c.id === f.id)!.meta!
-
-        const values =
-          columnMeta.type === 'date'
-            ? f.value.values.map((v: string) => new Date(v))
-            : f.value.values
-
-        return {
-          ...f,
-          value: {
-            operator: f.value.operator,
-            values,
-            columnMeta,
-          },
-        }
-      })
-    : []
-}
-```
-
-5. Update your date table component file:
-
-```tsx {1-2,4-8,10-11,18-25}
-import { parseAsJson, useQueryState } from 'nuqs'
-import { type ColumnDef } from '@tanstack/react-table'
-
-export default function YourDataTableComponent() {
-  const [queryFilters, setQueryFilters] = useQueryState(
-    'filter',
-    parseAsJson(dataTableFilterQuerySchema.parse).withDefault([]),
-  )
-  const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
-    // Replace `Issue` with your data type
-    () => initializeFiltersFromQuery(queryFilters, columns as ColumnDef<Issue>[]),
-  )
-
-  const table = useReactTable({
-    /* ... */
-  })
-
-  React.useEffect(() => {
-    setQueryFilters(
-      columnFilters.map((f) => ({
-        id: f.id,
-        value: { ...(f.value as any), columnMeta: undefined },
-      })),
-    )
-  }, [columnFilters, setQueryFilters])
-
-  /* ... */
-}
+const dataTableFilterQuerySchema = z.custom<FiltersState>()
 ```
 
 ## Overview
