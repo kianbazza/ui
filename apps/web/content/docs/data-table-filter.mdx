@@ -6,28 +6,29 @@ badge: alpha
 ---
 
 <div className='py-8 px-16 border border-border rounded-lg bg-white dark:bg-black'>
-<DataTableDemo />
+  <DataTableDemo />
 </div>
 
 ## Introduction
 
-This is an add-on to your existing shadcn/ui data table component. It adds client-side filtering with a clean, modern UI inspired by [Linear](https://linear.app/homepage).
+This library is an add-on to your existing data table for filtering your data, providing key building blocks for building a powerful filtering experience:
 
-This component relies on [TanStack Table](https://tanstack.com/table), a headless UI for building powerful tables & datagrids.
+- A React hook, `useDataTableFilters()`, which exposes your data table filters state.
+- A `<DataTableFilter />` component, built with [shadcn/ui](https://ui.shadcn.com) and inspired by [Linear](https://linear.app/homepage)'s design.
+- Integrations for key libraries, such as [TanStack Table](https://tanstack.com/table).
 
-## Prerequisites
+Some answers to the most common questions:
 
-Before you begin:
-
-- Create your `<DataTable />` component. You can follow the [shadcn/ui docs](https://ui.shadcn.com/docs/components/data-table) for guidance.
-- Ensure you're using client-side filtering.
+- **Can I use this with X library?** In theory, yes!
+- **Can I use this with *client*-side filtering?** Yes!
+- **Can I use this with *server*-side filtering?** Yes!
 
 ## Installation
 
 From the command line, install the component into your project:
 
 ```bash
-npx shadcn@latest add https://ui.bazza.dev/r/data-table-filter.json
+npx shadcn@latest add https://ui.bazza.dev/r/filters
 ```
 
 ## Concepts
@@ -81,91 +82,6 @@ For a `multiOption` column, the filter value is a `string[]` where each array me
 Optionally, you can provide an icon to represent the column option.
 
 An icon must be provided for every column option. Otherwise, icons will not be displayed for the column's options.
-
-### Column meta
-
-The star of the show is the `ColumnMeta` interface, which defines the metadata shape for a column.
-
-The metadata for each column is configured using the column's `meta` property, which accepts an object of type `ColumnMeta`.
-
-```ts
-export type ElementType<T> = T extends (infer U)[] ? U : T
-
-interface ColumnMeta<TData extends RowData, TValue> {
-  /* The display name of the column. */
-  displayName: string
-  /* The column icon. */
-  icon: LucideIcon
-  /* The data type of the column. */
-  type: ColumnDataType
-  /* An optional list of options for the column. */
-  /* This is used for columns with type 'option' or 'multiOption'. */
-  /* If the options are known ahead of time, they can be defined here. */
-  /* Otherwise, they will be dynamically generated based on the data. */
-  options?: ColumnOption[]
-  /* An optional function to transform columns with type 'option' or 'multiOption'. */
-  /* This is used to convert each raw option into a ColumnOption. */
-  transformOptionFn?: (
-    value: ElementType<NonNullable<TValue>>,
-  ) => ColumnOption
-  /* An optional "soft" max for the range slider. */
-  /* This is used for columns with type 'number'. */
-  max?: number
-}
-```
-
-Let's go through each property in detail:
-
-#### `displayName`
-
-This is the display name for the column. It is used when showing the property in various filter-related interfaces, such as the filter menu.
-
-#### `icon`
-
-This is the icon for the column. It is displayed alongside the `displayName`.
-
-#### `type`
-
-This is the data type of the column. It is used to determine many core functionalities of the data table filter component, such as:
-
-- Rendering the correct user interfaces for modifying the filter values.
-- Determining the correct filter operators for the property.
-
-#### `options`
-
-> [!TIP] Only for `option` and `multiOption` columns.
-
-If you have a static list of options for the column, you can pass them as an `ColumnOption[]` object.
-
-#### `transformOptionFn`
-
-> [!TIP] Only for `option` and `multiOption` columns.
-
-This is used when you're inferring the available options for a column using the column data itself.
-
-The `transformOptionFn` will be used to transform each unique column value into a `ColumnOption` object.
-
-Internally, this is used when determining the available options for a column when the `options` property is not defined.
-
-```ts
-/* Get all non-null column values */
-const columnVals = table
-  .getCoreRowModel()
-  .rows.flatMap((r) => r.getValue<TValue>(id))
-  .filter((v): v is NonNullable<TValue> => v !== undefined && v !== null)
-
-/* Keep unique values */
-/* Transform column values into `ColumnOption` objects */
-const options = uniq(columnVals).map(meta.transformOptionFn)
-```
-
-#### `max`
-
-> [!TIP] Only for `number` columns.
-
-Sets a "soft" maximum value for the range slider when filtering on a `number` column.
-
-If omitted, the range slider will compute the maximum value based on the available column data.
 
 ## Usage
 
