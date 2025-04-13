@@ -1,5 +1,6 @@
 import type { UnistNode, UnistTree } from '@/types/unist'
 import { visit } from 'unist-util-visit'
+import { env } from './env'
 
 export function rehypeNpmCommand() {
   return (tree: UnistTree) => {
@@ -93,6 +94,24 @@ export function rehypeNpmCommand() {
           'pnpm',
         )
         node.properties['__bunCommand__'] = npmCommand.replace('npm run', 'bun')
+      }
+
+      if (
+        node.properties?.['__rawString__']?.includes('https://ui.bazza.dev') &&
+        env.NEXT_PUBLIC_APP_URL !== 'https://ui.bazza.dev'
+      ) {
+        node.properties['__npmCommand__'] = node.properties[
+          '__npmCommand__'
+        ]?.replace('https://ui.bazza.dev', env.NEXT_PUBLIC_APP_URL)
+        node.properties['__yarnCommand__'] = node.properties[
+          '__yarnCommand__'
+        ]?.replace('https://ui.bazza.dev', env.NEXT_PUBLIC_APP_URL)
+        node.properties['__pnpmCommand__'] = node.properties[
+          '__pnpmCommand__'
+        ]?.replace('https://ui.bazza.dev', env.NEXT_PUBLIC_APP_URL)
+        node.properties['__bunCommand__'] = node.properties[
+          '__bunCommand__'
+        ]?.replace('https://ui.bazza.dev', env.NEXT_PUBLIC_APP_URL)
       }
     })
   }
