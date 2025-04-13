@@ -60,12 +60,24 @@ export const components: Readonly<MDXComponents> = {
     <strong className={cn('font-semibold', className)} {...props} />
   ),
   ul: ({ className, ...props }: React.HTMLAttributes<HTMLUListElement>) => (
-    <ul className={cn('my-6 ml-6 list-disc', className)} {...props} />
+    <ul
+      className={cn(
+        'my-6 ml-6 list-disc [&>li>ul]:my-2 [&>li>ul]:ml-4',
+        className,
+      )}
+      {...props}
+    />
   ),
   ol: ({ className, ...props }: React.HTMLAttributes<HTMLOListElement>) => (
-    <ol className={cn('my-6 ml-6 list-decimal', className)} {...props} />
+    <ol
+      className={cn(
+        'my-6 ml-6 list-decimal [&>li>ol]:my-2 [&>li>ol]:ml-4 [&>li>ol]:list-lower-alpha [&>li>ol>li>ol]:list-lower-roman',
+        className,
+      )}
+      {...props}
+    />
   ),
-  li: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
+  li: ({ className, ...props }: React.HTMLAttributes<HTMLLIElement>) => (
     <li className={cn('mt-2', className)} {...props} />
   ),
   blockquote: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
