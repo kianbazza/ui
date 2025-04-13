@@ -42,7 +42,16 @@ export const components: Readonly<MDXComponents> = {
       {...props}
     />
   ),
-  h5: (props) => <h5 {...props} />,
+  h5: (props) => (
+    <h5
+      className={cn(
+        'text-lg font-semibold tracking-[-0.01em] mt-8 mb-4',
+        '[&>code]:text-base',
+        props.className,
+      )}
+      {...props}
+    />
+  ),
   h6: (props) => <h6 {...props} />,
   p: (props) => <p className="mb-4 last:mb-0 leading-7" {...props} />,
   a: (props) => <a className="underline underline-offset-2" {...props} />,
