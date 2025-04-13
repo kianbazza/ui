@@ -82,7 +82,10 @@ export const components: Readonly<MDXComponents> = {
   ),
   blockquote: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
     <blockquote
-      className={cn('mt-6 border-l-2 pl-6 italic', className)}
+      className={cn(
+        'mt-6 mb-6 border-l-4 border-neutral-400 dark:border-neutral-600 rounded-md px-6 py-4 [&_code]:not-italic [&_code]:border-[0.5px] bg-accent/30 italic text-neutral-700 dark:text-neutral-300',
+        className,
+      )}
       {...props}
     />
   ),
