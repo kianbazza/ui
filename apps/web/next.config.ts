@@ -4,6 +4,11 @@ const nextConfig: NextConfig = {
   transpilePackages: ['next-mdx-remote'],
   redirects: async () => [
     {
+      source: '/chat',
+      destination: 'https://discord.gg/KJatePVVxu',
+      permanent: false,
+    },
+    {
       source: '/docs',
       destination: '/docs/intro',
       permanent: false,
