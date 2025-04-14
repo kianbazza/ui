@@ -50,7 +50,7 @@ function createUserOptions(users: User[] | undefined) {
     value: u.id,
     label: u.name,
     icon: (
-      <Avatar className="">
+      <Avatar key={u.id} className="size-4">
         <AvatarImage src={u.picture} />
         <AvatarFallback>
           {u.name
