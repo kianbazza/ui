@@ -15,7 +15,7 @@ export const components: Readonly<MDXComponents> = {
   h2: (props) => (
     <h2
       className={cn(
-        'text-3xl font-semibold tracking-[-0.02em] drop-shadow-xs first:mt-0 mt-12 mb-8',
+        'text-3xl font-semibold tracking-[-0.02em] drop-shadow-xs first:mt-0 mt-20 mb-8',
         '[&>code]:text-2xl',
         props.className,
       )}
@@ -25,7 +25,7 @@ export const components: Readonly<MDXComponents> = {
   h3: (props) => (
     <h3
       className={cn(
-        'text-2xl font-semibold tracking-[-0.02em] mt-10 mb-6',
+        'text-2xl font-semibold tracking-[-0.02em] mt-18 mb-6',
         '[&>code]:text-xl',
         props.className,
       )}
@@ -35,7 +35,7 @@ export const components: Readonly<MDXComponents> = {
   h4: (props) => (
     <h4
       className={cn(
-        'text-xl font-semibold tracking-[-0.02em] mt-8 mb-4',
+        'text-xl font-semibold tracking-[-0.02em] mt-16 mb-6',
         '[&>code]:text-lg',
         props.className,
       )}
@@ -45,7 +45,7 @@ export const components: Readonly<MDXComponents> = {
   h5: (props) => (
     <h5
       className={cn(
-        'text-lg font-semibold tracking-[-0.01em] mt-8 mb-4',
+        'text-lg font-semibold tracking-[-0.01em] mt-14 mb-4',
         '[&>code]:text-base',
         props.className,
       )}
