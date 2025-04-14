@@ -100,7 +100,7 @@ interface ColumnOption {
 }
 ```
 
-### Column configuration
+#### Column configuration
 
 We describe each column in our data table as a `ColumnConfig`.
 
@@ -130,7 +130,7 @@ export const columnsConfig = [
 ] as const
 ```
 
-#### Filters instance
+#### Instance
 
 We use the `useDataTableFilters()` hook to create our data table filters instance.
 
@@ -153,7 +153,7 @@ The instance has the following properties:
 - `actions`: A collection of mutators for the filters state.
 - `strategy`: The strategy used for filtering (`client` or `server` side filtering).
 
-#### Filters component
+#### Component
 
 The visual component for the data table filter is the `<DataTableFilter />` component.
 
@@ -179,31 +179,80 @@ export function IssuesTable() {
 
 ## Guides
 
+This section contains guides for using the data table filter component.
+
+These are much more detailed than the [Concepts](#concepts) section, and are recommended when you actually go to implement the component for your project.
+
+Before we dive in, let's take a look at a basic scenario that will be referenced throughout the guides.
+
+```ts title="types.ts"
+export type Issue = {
+  id: string
+  title: string
+  description?: string
+  status: IssueStatus
+  labels?: IssueLabel[]
+  assignee?: User
+  startDate?: Date
+  endDate?: Date
+  estimatedHours?: number
+}
+
+export type User = {
+  id: string
+  name: string
+  picture: string
+}
+
+export type IssueLabel = {
+  id: string
+  name: string
+  color: string
+}
+
+export type IssueStatus = {
+  id: 'backlog' | 'todo' | 'in-progress' | 'done'
+  name: string
+  order: number
+  icon: LucideIcon
+}
+```
+
+### Columns
+
 > [!WARNING] This section is under development.
 
-### Column Configuration
+#### Why do I need a column configuration?
 
-#### Column configuration
+For this component/library to work effectively, we need to describe each column in our data table. 
 
-We need to describe each column in our data table. This is done using our column configuration builder.
+If you're using a table library, you may be thinking:
+
+> "I've already done this for **X** library. Why do I need to do it again?"
+
+This component requires it's own set of column configurations, which are tailored to the task at hand - column filtering.
+
+We need to know how to access the data for each column, how to display it, what shape the data comes in, what shape it should end up in, and much more.
+
+#### Column builders
+
+We need to describe each column in our data table. Ideally, in a type-safe way. This is done using our column configuration builder.
 
 It has a [fluent API](https://en.wikipedia.org/wiki/Fluent_interface) *(similar to Zod)* that allows us to define a column's properties in a concise, readable, and type-safe manner.
 
-##### Using `createColumnConfigHelper()`
-
 First, you use the `createColumnConfigHelper()` function to create a column configuration builder:
 
-```ts
+```ts title="columns.ts"
 import { createColumnConfigHelper } from '@/components/data-table-filter/core/filters'
 import type { Issue } from './types'
 
-// dtf = data table filter... (sorry, couldn't resist)
+// dtf = down to... filter? (sorry, couldn't resist)
 const dtf = createColumnConfigHelper<Issue>()
 ```
 
 Notice how we pass in our data model (`Issue`) as a generic parameter. This is required for the column configuration builder to be type safe.
 
-##### Building a column configuration
+#### Building a column configuration
 
 Next, we use our helper to create a column configuration.
 
