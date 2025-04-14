@@ -485,8 +485,67 @@ export const ISSUE_LABELS: IssueLabel[] = [
   },
 ]
 
+export function generateIssueTitle() {
+  const verbs = [
+    'Fix',
+    'Add',
+    'Improve',
+    'Refactor',
+    'Update',
+    'Remove',
+    'Implement',
+    'Optimize',
+    'Redesign',
+    'Revert',
+  ]
+  const nouns = [
+    'task sidebar',
+    'project view',
+    'keyboard shortcuts',
+    'user permissions',
+    'search performance',
+    'issue modal',
+    'auth flow',
+    'API integration',
+    'activity feed',
+    'notifications',
+    'team management',
+    'board drag & drop',
+    'custom workflows',
+    'mobile responsiveness',
+    'comment threading',
+    'GitHub sync',
+    'dark mode',
+    'date picker',
+    'status badges',
+    'workspace settings',
+  ]
+  const suffixes = [
+    'in Safari',
+    'for enterprise customers',
+    'on slow connections',
+    'edge case in Firefox',
+    'when duplicating issues',
+    'for archived projects',
+    'in mobile view',
+    'on user onboarding',
+    'when using keyboard nav',
+    'for SSO users',
+  ]
+
+  const verb = verbs[Math.floor(Math.random() * verbs.length)]
+  const noun = nouns[Math.floor(Math.random() * nouns.length)]
+  const suffix =
+    Math.random() < 0.5
+      ? ''
+      : ` ${suffixes[Math.floor(Math.random() * suffixes.length)]}`
+
+  return `${verb} ${noun}${suffix}`
+}
+
 export function generateSampleIssue(): Issue {
-  const title = lorem(4, 8)
+  // const title = lorem(4, 8)
+  const title = generateIssueTitle()
   const description = lorem(4, 8)
 
   const labelsCount = randomInteger(0, 5)
