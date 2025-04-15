@@ -1,3 +1,4 @@
+import { IssuesTableWrapper } from '@/app/demos/client/tst-static/_/issues-table-wrapper'
 import { TypeTable } from '@/components/type-table'
 import { cn } from '@/lib/utils'
 import type { NpmCommands } from '@/types/unist'
@@ -5,7 +6,6 @@ import type { MDXComponents } from 'mdx/types'
 import Image from 'next/image'
 import { CodeBlockCommand } from './code-block-command'
 import CollapsibleCodeBlock from './collapsible-code-block'
-import DataTableDemo from './data-table-filter-demo/demo'
 import { ResponsiveImage } from './responsive-image'
 
 export const components: Readonly<MDXComponents> = {
@@ -185,7 +185,6 @@ export const components: Readonly<MDXComponents> = {
       </pre>
     )
   },
-  DataTableDemo,
   Image,
   ResponsiveImage: (props) => (
     <ResponsiveImage
@@ -195,4 +194,5 @@ export const components: Readonly<MDXComponents> = {
   ),
   CollapsibleCodeBlock,
   TypeTable,
+  IssuesTableWrapper,
 }

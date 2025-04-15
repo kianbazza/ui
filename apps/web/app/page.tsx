@@ -1,4 +1,4 @@
-import DataTableDemo from '@/components/data-table-filter-demo/demo'
+import { IssuesTableWrapper } from '@/app/demos/client/tst-static/_/issues-table-wrapper'
 import { GithubIcon, XIcon } from '@/components/icons'
 import { CodeBlock } from '@/components/landing/code-block'
 import { FadeBlurContainer } from '@/components/landing/fade-blur-container'
@@ -102,7 +102,7 @@ export default function Page() {
             Check out the demo.
           </h2>
           <Suspense>
-            <DataTableDemo />
+            <IssuesTableWrapper />
           </Suspense>
         </div>
       </div>
