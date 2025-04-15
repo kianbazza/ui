@@ -3,12 +3,12 @@
 import {
   DataTableFilter,
   useDataTableFilters,
-} from '@/registry/data-table-filter-v2'
-import type { FiltersState } from '@/registry/data-table-filter-v2/core/types'
+} from '@/registry/data-table-filter'
+import type { FiltersState } from '@/registry/data-table-filter/core/types'
 import {
   createTSTColumns,
   createTSTFilters,
-} from '@/registry/data-table-filter-v2/integrations/tanstack-table'
+} from '@/registry/data-table-filter/integrations/tanstack-table'
 import {
   getCoreRowModel,
   getFilteredRowModel,
