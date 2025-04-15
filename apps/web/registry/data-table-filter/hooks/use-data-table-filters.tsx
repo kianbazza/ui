@@ -17,6 +17,7 @@ import type {
 import { uniq } from '../lib/array'
 import { addUniq, removeUniq } from '../lib/array'
 import {
+  createDateFilterValue,
   createNumberFilterValue,
   isColumnOptionArray,
   isColumnOptionMap,
@@ -256,7 +257,11 @@ export function useDataTableFilters<
           const newValues =
             column.type === 'number'
               ? createNumberFilterValue(values as number[])
-              : uniq(values)
+              : column.type === 'date'
+                ? createDateFilterValue(
+                    values as [Date, Date] | [Date] | [] | undefined,
+                  )
+                : uniq(values)
           if (newValues.length === 0) return prev
           if (!isColumnFiltered) {
             return [
