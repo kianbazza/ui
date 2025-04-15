@@ -54,7 +54,9 @@ export const components: Readonly<MDXComponents> = {
   ),
   h6: (props) => <h6 {...props} />,
   p: (props) => <p className="mb-4 last:mb-0 leading-7" {...props} />,
-  a: (props) => <a className="underline underline-offset-2" {...props} />,
+  a: (props) => (
+    <a className="underline decoration-[0.5px] underline-offset-2" {...props} />
+  ),
   u: (props) => <u className="underline underline-offset-2" {...props} />,
   strong: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
     <strong className={cn('font-semibold', className)} {...props} />
