@@ -15,7 +15,7 @@ export const components: Readonly<MDXComponents> = {
   h2: (props) => (
     <h2
       className={cn(
-        'text-3xl font-semibold tracking-[-0.02em] drop-shadow-xs first:mt-0 mt-12 mb-8',
+        'text-3xl font-semibold tracking-[-0.02em] drop-shadow-xs first:mt-0 mt-20 mb-8',
         '[&>code]:text-2xl',
         props.className,
       )}
@@ -25,7 +25,7 @@ export const components: Readonly<MDXComponents> = {
   h3: (props) => (
     <h3
       className={cn(
-        'text-2xl font-semibold tracking-[-0.02em] mt-10 mb-6',
+        'text-2xl font-semibold tracking-[-0.02em] mt-18 mb-6',
         '[&>code]:text-xl',
         props.className,
       )}
@@ -35,33 +35,59 @@ export const components: Readonly<MDXComponents> = {
   h4: (props) => (
     <h4
       className={cn(
-        'text-xl font-semibold tracking-[-0.02em] mt-8 mb-4',
+        'text-xl font-semibold tracking-[-0.02em] mt-16 mb-6',
         '[&>code]:text-lg',
         props.className,
       )}
       {...props}
     />
   ),
-  h5: (props) => <h5 {...props} />,
+  h5: (props) => (
+    <h5
+      className={cn(
+        'text-lg font-semibold tracking-[-0.01em] mt-14 mb-4',
+        '[&>code]:text-base',
+        props.className,
+      )}
+      {...props}
+    />
+  ),
   h6: (props) => <h6 {...props} />,
   p: (props) => <p className="mb-4 last:mb-0 leading-7" {...props} />,
-  a: (props) => <a className="underline underline-offset-2" {...props} />,
+  a: (props) => (
+    <a className="underline decoration-[0.5px] underline-offset-2" {...props} />
+  ),
   u: (props) => <u className="underline underline-offset-2" {...props} />,
   strong: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
     <strong className={cn('font-semibold', className)} {...props} />
   ),
   ul: ({ className, ...props }: React.HTMLAttributes<HTMLUListElement>) => (
-    <ul className={cn('my-6 ml-6 list-disc', className)} {...props} />
+    <ul
+      className={cn(
+        'my-6 ml-6 list-disc [&>li>ul]:my-2 [&>li>ul]:ml-4',
+        className,
+      )}
+      {...props}
+    />
   ),
   ol: ({ className, ...props }: React.HTMLAttributes<HTMLOListElement>) => (
-    <ol className={cn('my-6 ml-6 list-decimal', className)} {...props} />
+    <ol
+      className={cn(
+        'my-6 ml-6 list-decimal [&>li>ol]:my-2 [&>li>ol]:ml-4 [&>li>ol]:list-lower-alpha [&>li>ol>li>ol]:list-lower-roman',
+        className,
+      )}
+      {...props}
+    />
   ),
-  li: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
+  li: ({ className, ...props }: React.HTMLAttributes<HTMLLIElement>) => (
     <li className={cn('mt-2', className)} {...props} />
   ),
   blockquote: ({ className, ...props }: React.HTMLAttributes<HTMLElement>) => (
     <blockquote
-      className={cn('mt-6 border-l-2 pl-6 italic', className)}
+      className={cn(
+        'mt-6 mb-6 border-l-4 border-neutral-400 dark:border-neutral-600 rounded-md px-6 py-4 [&_code]:not-italic [&_code]:border-[0.5px] bg-accent/30 italic text-neutral-700 dark:text-neutral-300',
+        className,
+      )}
       {...props}
     />
   ),

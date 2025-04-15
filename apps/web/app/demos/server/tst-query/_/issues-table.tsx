@@ -50,7 +50,7 @@ function createUserOptions(users: User[] | undefined) {
     value: u.id,
     label: u.name,
     icon: (
-      <Avatar className="">
+      <Avatar key={u.id} className="size-4">
         <AvatarImage src={u.picture} />
         <AvatarFallback>
           {u.name
@@ -72,7 +72,7 @@ export function IssuesTable({
     setFilters: React.Dispatch<React.SetStateAction<FiltersState>>
   }
 }) {
-  // Step 1: Fetch data from the server
+  /* Step 1: Fetch data from the server */
   const labels = useQuery(queries.labels.all())
   const statuses = useQuery(queries.statuses.all())
   const users = useQuery(queries.users.all())
@@ -83,7 +83,7 @@ export function IssuesTable({
 
   const issues = useQuery(queries.issues.all(state.filters))
 
-  // Step 2: Create ColumnOption[] for each option-based column
+  /* Step 2: Create ColumnOption[] for each option-based column */
   const labelOptions = createLabelOptions(labels.data)
   const statusOptions = createStatusOptions(statuses.data)
   const userOptions = createUserOptions(users.data)
@@ -96,11 +96,13 @@ export function IssuesTable({
     facetedStatuses.isPending ||
     facetedUsers.isPending
 
-  // Step 3: Create our data table filters instance
-  //
-  // This instance will handle the logic for filtering the data and updating the filters state.
-  // We expose an `options` prop to provide the options for each column dynamically, after fetching them above.
-  // It exposes our filters state, for you to pass on as you wish - e.g. to a TanStack Table instance.
+  /*
+   * Step 3: Create our data table filters instance
+   *
+   * This instance will handle the logic for filtering the data and updating the filters state.
+   * We expose an `options` prop to provide the options for each column dynamically, after fetching them above.
+   * It exposes our filters state, for you to pass on as you wish - e.g. to a TanStack Table instance.
+   */
   const { columns, filters, actions, strategy } = useDataTableFilters({
     strategy: 'server',
     data: issues.data ?? [],
@@ -113,8 +115,11 @@ export function IssuesTable({
     },
   })
 
-  // Step 4: Extend our TanStack Table columns with custom filter functions (and more!)
-  //         using our integration hook.
+  /*
+   * Step 4: Extend our TanStack Table columns with custom filter functions (and more!)
+   *
+   * You can use our integration hook for this.
+   */
   const tstColumns = useMemo(
     () =>
       createTSTColumns({
@@ -124,7 +129,7 @@ export function IssuesTable({
     [columns],
   )
 
-  // Step 5: Create our TanStack Table instance
+  /* Step 5: Create our TanStack Table instance */
   const [rowSelection, setRowSelection] = useState({})
   const table = useReactTable({
     data: issues.data ?? [],
@@ -138,7 +143,7 @@ export function IssuesTable({
     },
   })
 
-  // Step 6: Render the table!
+  /* Step 6: Render the table! */
   return (
     <div className="w-full col-span-2">
       <div className="flex items-center pb-4 gap-2">
