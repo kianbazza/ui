@@ -137,6 +137,23 @@
 }
 
 @layer base {
+  :root {
+    * {
+      cursor: default;
+    }
+    
+    /* Opt text-based inputs out of "forced" default cursor */
+    input[type="text"],
+    input[type="password"],
+    input[type="email"],
+    textarea,
+    select {
+      cursor: text;
+    }
+  }
+}
+
+@layer base {
   * {
     @apply border-border outline-ring/50;
   }

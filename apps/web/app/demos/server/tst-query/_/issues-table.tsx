@@ -15,7 +15,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import { useMemo, useState } from 'react'
-import { LABEL_STYLES_MAP, type TW_COLOR, tstColumnDefs } from './columns'
+import { LABEL_STYLES_BG, type TW_COLOR, tstColumnDefs } from './columns'
 import { DataTable } from './data-table'
 import { columnsConfig } from './filters'
 import { queries } from './queries'
@@ -30,7 +30,7 @@ function createLabelOptions(labels: IssueLabel[] | undefined) {
       <div
         className={cn(
           'size-2.5 rounded-full',
-          LABEL_STYLES_MAP[l.color as TW_COLOR],
+          LABEL_STYLES_BG[l.color as TW_COLOR],
         )}
       />
     ),
@@ -163,7 +163,7 @@ export function IssuesTable({
           <TableSkeleton numCols={tstColumns.length} numRows={10} />
         </div>
       ) : (
-        <DataTable table={table} />
+        <DataTable table={table} actions={actions} />
       )}
     </div>
   )
