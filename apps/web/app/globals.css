@@ -298,6 +298,10 @@
         @apply rounded-tl-none;
       }
     }
+    
+    figcaption[data-rehype-pretty-code-caption] {
+      @apply text-sm text-muted-foreground text-center mt-3;
+    }
 
     & > pre {
       @apply bg-white dark:bg-black;
