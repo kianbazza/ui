@@ -9,7 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { cn } from '@/lib/utils'
-import type { DataTableFilterActions } from '@/registry/data-table-filter-v2/core/types'
+import type { DataTableFilterActions } from '@/registry/data-table-filter/core/types'
 import { type Table as TanStackTable, flexRender } from '@tanstack/react-table'
 import { XIcon } from 'lucide-react'
 

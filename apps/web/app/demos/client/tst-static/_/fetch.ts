@@ -20,7 +20,7 @@ export async function fetchIssues(filters?: FiltersState) {
   if (!filters || filters.length === 0) return ISSUES
 
   // Apply filters using AND logic
-  // You can use a provided filterFn function (prefixed with __) from @/registry/data-table-filter-v2/lib/filter-fns
+  // You can use a provided filterFn function (prefixed with __) from @/registry/data-table-filter/lib/filter-fns
   const filteredIssues = ISSUES.filter((issue) => {
     return filters.every((filter) => {
       const columnId = filter.columnId as keyof Issue
