@@ -9,7 +9,7 @@ import {
   TagsIcon,
   UserCheckIcon,
 } from 'lucide-react'
-import { LABEL_STYLES_MAP, type TW_COLOR } from './columns'
+import { LABEL_STYLES_BG, type TW_COLOR } from './columns'
 import { ISSUE_STATUSES } from './data'
 import type { Issue } from './types'
 
@@ -69,7 +69,7 @@ export const columnsConfig = [
         <div
           className={cn(
             'size-2.5 rounded-full',
-            LABEL_STYLES_MAP[l.color as TW_COLOR],
+            LABEL_STYLES_BG[l.color as TW_COLOR],
           )}
         />
       ),
