@@ -189,6 +189,18 @@ export default function DataTable() {
   )
 }
 ```
+#### Optional: Setting the locale
+
+You can optionally specify a `locale` to localize the filter UI. Currently supported values are:
+
+- `"en"` – English (default)
+- `"fr"` – French
+
+```tsx
+<DataTableFilter table={table} locale="fr" />
+```
+
+If no `locale` is provided, the component defaults to English.
 
 ### Update columns
 
