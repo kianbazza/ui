@@ -11,6 +11,7 @@ export const inter = Inter({
 
 export const berkeleyMono = localFont({
   src: '../assets/fonts/berkeley-mono/BerkeleyMono-Variable.woff2',
+  style: 'normal',
   variable: '--font-berkeley-mono',
   display: 'swap',
 })

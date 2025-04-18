@@ -1,6 +1,6 @@
 'use client'
 
-import type { FiltersState } from '@/registry/data-table-filter-v2/core/types'
+import type { FiltersState } from '@/registry/data-table-filter/core/types'
 import { useState } from 'react'
 import { IssuesTable } from './issues-table'
 
