@@ -24,7 +24,8 @@ export function createTSTColumns<TData>({
     const config = configs.find((c) => c.id === col.id)
 
     // If the column is not filterable or doesn't have a filter config, skip it
-    if (!col.enableColumnFilter || !config) {
+    // An explicit check is done on `enableColumnFilter`
+    if (col.enableColumnFilter === false || !config) {
       _cols.push(col)
       continue
     }
