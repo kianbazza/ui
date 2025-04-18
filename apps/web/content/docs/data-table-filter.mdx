@@ -190,6 +190,24 @@ export function IssuesTable() {
   )
 }
 ```
+#### Optional: Setting the locale
+
+You can optionally specify a `locale` to localize the filter UI. Currently supported values are:
+
+- `"en"` – English (default)
+- `"fr"` – French
+
+```tsx
+<DataTableFilter 
+  filters={filters}
+  columns={columns}
+  actions={actions}
+  strategy={strategy}
+  locale="fr"
+/>
+```
+
+If no `locale` is provided, the component defaults to English.
 
 ## Guides
 
