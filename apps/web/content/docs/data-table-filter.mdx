@@ -628,36 +628,43 @@ const { columns, filters, actions, strategy } = useDataTableFilters({
 
 ### TanStack Table
 
-> [!WARNING] This section is under development.
+This is how to integrate data table filters with the TanStack Table (TST) library.
 
-#### Basic usage
+#### When should I use this?
+
+If you're using TanStack Table and client-side filtering, you should use this integration.
+
+If you're using server-side filtering, **you don't need this integration.** *Feed your data into your TST table instance and you're good to go.*
+
+#### How it works
+
+##### `createTSTColumns`
+
+TanStack Table allows you to define custom filter functions for each column. This is useful if you want to implement custom filtering logic.
+
+We have our own filter functions for each column type, which you can use to filter your data via TST.
+
+The `createTSTColumns` function handles this for you. It overrides the `filterFn` property for each filterable TST column with the appropriate filter function.
+
+##### `createTSTFilters`
+
+You also need to provide the filter state to TST. TST represents the filter state slightly differently than the filters state provided by this component.
+
+The `createTSTFilters` function takes in the filters state from `useDataTableFilters()` and returns a TST-compatible filter state (`ColumnFiltersState`).
+
+#### Usage
 
 ```tsx
 const { columns, filters, actions, strategy } = useDataTableFilters({ /* ... */ })
 
 const tstColumns = useMemo( // [!code ++]
   () => // [!code ++]
-    createTSTColumns({ // [!code ++]
+    createTSTColumns({  // [!code ++]
       columns: tstColumnDefs, // your TanStack Table column definitions // [!code ++]
       configs: columns, // Your column configurations // [!code ++]
     }), // [!code ++]
   [columns], // [!code ++]
 ) // [!code ++]
-
-const table = useReactTable({
-  data: ISSUES,
-  columns: tstColumns, // [!code ++]
-  getRowId: (row) => row.id,
-  getCoreRowModel: getCoreRowModel(),
-})
-```
-
-#### With client-side filtering
-
-```tsx
-const { columns, filters, actions, strategy } = useDataTableFilters({ /* ... */ })
-
-const tstColumns = /* ... */
 
 const tstFilters = useMemo(() => createTSTFilters(filters), [filters]) // [!code ++]
 
