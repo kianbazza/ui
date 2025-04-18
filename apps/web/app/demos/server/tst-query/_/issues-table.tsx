@@ -111,6 +111,7 @@ export function IssuesTable({
       assignee: [userOptions, facetedUsers.data],
       labels: [labelOptions, facetedLabels.data],
     },
+    locale: 'en',
   })
 
   // Step 4: Extend our TanStack Table columns with custom filter functions (and more!)
@@ -150,6 +151,7 @@ export function IssuesTable({
             columns={columns}
             actions={actions}
             strategy={strategy}
+            locale="en"
           />
         )}
       </div>

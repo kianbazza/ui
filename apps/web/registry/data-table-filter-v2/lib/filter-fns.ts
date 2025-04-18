@@ -6,9 +6,10 @@ import {
   isWithinInterval,
   startOfDay,
 } from 'date-fns'
-import { dateFilterDetails } from '../core/operators'
+import { getDateFilterDetails } from '../core/operators'
 import type { FilterModel } from '../core/types'
 import { intersection } from './array'
+import { Locale } from './i18n'
 
 export function optionFilterFn<TData>(
   inputData: string,
@@ -71,7 +72,7 @@ export function dateFilterFn<TData>(
   if (!filterValue || filterValue.values.length === 0) return true
 
   if (
-    dateFilterDetails[filterValue.operator].target === 'single' &&
+    getDateFilterDetails('en')[filterValue.operator].target === 'single' &&
     filterValue.values.length > 1
   )
     throw new Error('Singular operators require at most one filter value')
