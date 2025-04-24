@@ -7,17 +7,17 @@ import type {
   FilterStrategy,
   FiltersState,
 } from '../core/types'
+import type { Locale } from '../lib/i18n'
 import { ActiveFilters, ActiveFiltersMobileContainer } from './active-filters'
 import { FilterActions } from './filter-actions'
 import { FilterSelector } from './filter-selector'
-import { Locale } from '../lib/i18n'
 
 interface DataTableFilterProps<TData> {
   columns: Column<TData>[]
   filters: FiltersState
   actions: DataTableFilterActions
   strategy: FilterStrategy
-  locale: Locale
+  locale?: Locale
 }
 
 export function DataTableFilter<TData>({
@@ -39,7 +39,11 @@ export function DataTableFilter<TData>({
             strategy={strategy}
             locale={locale}
           />
-          <FilterActions hasFilters={filters.length > 0} actions={actions} locale={locale} />
+          <FilterActions
+            hasFilters={filters.length > 0}
+            actions={actions}
+            locale={locale}
+          />
         </div>
         <ActiveFiltersMobileContainer>
           <ActiveFilters
@@ -72,7 +76,11 @@ export function DataTableFilter<TData>({
           locale={locale}
         />
       </div>
-      <FilterActions hasFilters={filters.length > 0} actions={actions} locale={locale} />
+      <FilterActions
+        hasFilters={filters.length > 0}
+        actions={actions}
+        locale={locale}
+      />
     </div>
   )
 }

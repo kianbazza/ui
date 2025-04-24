@@ -21,7 +21,7 @@ interface ActiveFiltersProps<TData> {
   filters: FiltersState
   actions: DataTableFilterActions
   strategy: FilterStrategy
-  locale: Locale
+  locale?: Locale
 }
 
 export function ActiveFilters<TData>({
@@ -29,7 +29,7 @@ export function ActiveFilters<TData>({
   filters,
   actions,
   strategy,
-  locale,
+  locale = 'en',
 }: ActiveFiltersProps<TData>) {
   return (
     <>
@@ -61,7 +61,7 @@ interface ActiveFilterProps<TData, TType extends ColumnDataType> {
   column: Column<TData, TType>
   actions: DataTableFilterActions
   strategy: FilterStrategy
-  locale: Locale
+  locale?: Locale
 }
 
 // Generic render function for a filter with type-safe value
@@ -70,7 +70,7 @@ export function ActiveFilter<TData, TType extends ColumnDataType>({
   column,
   actions,
   strategy,
-  locale,
+  locale = 'en',
 }: ActiveFilterProps<TData, TType>) {
   return (
     <div className="flex h-7 items-center rounded-2xl border border-border bg-background shadow-xs text-xs">

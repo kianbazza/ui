@@ -113,7 +113,6 @@ export function IssuesTable({
       assignee: [userOptions, facetedUsers.data],
       labels: [labelOptions, facetedLabels.data],
     },
-    locale: 'en',
   })
 
   /*
@@ -156,7 +155,6 @@ export function IssuesTable({
             columns={columns}
             actions={actions}
             strategy={strategy}
-            locale="en"
           />
         )}
       </div>

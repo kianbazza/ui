@@ -8,11 +8,15 @@ import { type Locale, t } from '../lib/i18n'
 interface FilterActionsProps {
   hasFilters: boolean
   actions?: DataTableFilterActions
-  locale: Locale
+  locale?: Locale
 }
 
 export const FilterActions = memo(__FilterActions)
-function __FilterActions({ hasFilters, actions, locale }: FilterActionsProps) {
+function __FilterActions({
+  hasFilters,
+  actions,
+  locale = 'en',
+}: FilterActionsProps) {
   return (
     <Button
       className={cn('h-7 !px-2', !hasFilters && 'hidden')}

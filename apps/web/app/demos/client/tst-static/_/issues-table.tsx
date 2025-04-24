@@ -34,7 +34,6 @@ export function IssuesTable({
     data: ISSUES,
     columnsConfig,
     controlledState: [state.filters, state.setFilters],
-    locale: 'en',
   })
 
   // Step 4: Extend our TanStack Table columns with custom filter functions (and more!)
@@ -75,7 +74,6 @@ export function IssuesTable({
           columns={columns}
           actions={actions}
           strategy={strategy}
-          locale="en"
         />
       </div>
       <DataTable table={table} />

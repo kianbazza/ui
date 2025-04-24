@@ -49,7 +49,7 @@ interface FilterValueProps<TData, TType extends ColumnDataType> {
   column: Column<TData, TType>
   actions: DataTableFilterActions
   strategy: FilterStrategy
-  locale: Locale
+  locale?: Locale
 }
 
 export const FilterValue = memo(__FilterValue) as typeof __FilterValue
@@ -98,14 +98,14 @@ interface FilterValueDisplayProps<TData, TType extends ColumnDataType> {
   filter: FilterModel<TType>
   column: Column<TData, TType>
   actions: DataTableFilterActions
-  locale: Locale
+  locale?: Locale
 }
 
 export function FilterValueDisplay<TData, TType extends ColumnDataType>({
   filter,
   column,
   actions,
-  locale,
+  locale = 'en',
 }: FilterValueDisplayProps<TData, TType>) {
   switch (column.type) {
     case 'option':
@@ -162,7 +162,7 @@ export function FilterValueOptionDisplay<TData>({
   filter,
   column,
   actions,
-  locale,
+  locale = 'en',
 }: FilterValueDisplayProps<TData, 'option'>) {
   const options = useMemo(() => column.getOptions(), [column])
   const selected = options.filter((o) => filter?.values.includes(o.value))
@@ -217,7 +217,7 @@ export function FilterValueMultiOptionDisplay<TData>({
   filter,
   column,
   actions,
-  locale,
+  locale = 'en',
 }: FilterValueDisplayProps<TData, 'multiOption'>) {
   const options = useMemo(() => column.getOptions(), [column])
   const selected = options.filter((o) => filter.values.includes(o.value))
@@ -283,7 +283,7 @@ export function FilterValueDateDisplay<TData>({
   filter,
   column,
   actions,
-  locale,
+  locale = 'en',
 }: FilterValueDisplayProps<TData, 'date'>) {
   if (!filter) return null
   if (filter.values.length === 0) return <Ellipsis className="size-4" />
@@ -304,7 +304,7 @@ export function FilterValueTextDisplay<TData>({
   filter,
   column,
   actions,
-  locale,
+  locale = 'en',
 }: FilterValueDisplayProps<TData, 'text'>) {
   if (!filter) return null
   if (filter.values.length === 0 || filter.values[0].trim() === '')
@@ -319,7 +319,7 @@ export function FilterValueNumberDisplay<TData>({
   filter,
   column,
   actions,
-  locale,
+  locale = 'en',
 }: FilterValueDisplayProps<TData, 'number'>) {
   const maxFromMeta = column.max
   const cappedMax = maxFromMeta ?? 2147483647
@@ -359,7 +359,7 @@ interface FilterValueControllerProps<TData, TType extends ColumnDataType> {
   column: Column<TData, TType>
   actions: DataTableFilterActions
   strategy: FilterStrategy
-  locale: Locale
+  locale?: Locale
 }
 
 export const FilterValueController = memo(
@@ -371,7 +371,7 @@ function __FilterValueController<TData, TType extends ColumnDataType>({
   column,
   actions,
   strategy,
-  locale,
+  locale = 'en',
 }: FilterValueControllerProps<TData, TType>) {
   switch (column.type) {
     case 'option':
@@ -434,7 +434,7 @@ export function FilterValueOptionController<TData>({
   column,
   actions,
   strategy,
-  locale,
+  locale = 'en',
 }: FilterValueControllerProps<TData, 'option'>) {
   const options = useMemo(() => column.getOptions(), [column])
   const optionsCount = useMemo(() => column.getFacetedUniqueValues(), [column])
@@ -500,7 +500,7 @@ export function FilterValueMultiOptionController<TData>({
   column,
   actions,
   strategy,
-  locale,
+  locale = 'en',
 }: FilterValueControllerProps<TData, 'multiOption'>) {
   const options = useMemo(() => column.getOptions(), [column])
   const optionsCount = useMemo(() => column.getFacetedUniqueValues(), [column])
@@ -611,7 +611,7 @@ export function FilterValueTextController<TData>({
   filter,
   column,
   actions,
-  locale,
+  locale = 'en',
 }: FilterValueControllerProps<TData, 'text'>) {
   const changeText = (value: string | number) => {
     actions.setFilterValue(column, [String(value)])
@@ -639,7 +639,7 @@ export function FilterValueNumberController<TData>({
   filter,
   column,
   actions,
-  locale,
+  locale = 'en',
 }: FilterValueControllerProps<TData, 'number'>) {
   const [datasetMin, datasetMax] = useMemo(
     () => column.getFacetedMinMaxValues(),

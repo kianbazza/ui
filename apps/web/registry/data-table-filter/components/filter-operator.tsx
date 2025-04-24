@@ -36,7 +36,7 @@ interface FilterOperatorProps<TData, TType extends ColumnDataType> {
   column: Column<TData, TType>
   filter: FilterModel<TType>
   actions: DataTableFilterActions
-  locale: Locale
+  locale?: Locale
 }
 
 // Renders the filter operator display and menu for a given column filter
@@ -46,7 +46,7 @@ export function FilterOperator<TData, TType extends ColumnDataType>({
   column,
   filter,
   actions,
-  locale,
+  locale = 'en',
 }: FilterOperatorProps<TData, TType>) {
   const [open, setOpen] = useState<boolean>(false)
 
@@ -91,13 +91,13 @@ export function FilterOperator<TData, TType extends ColumnDataType>({
 interface FilterOperatorDisplayProps<TType extends ColumnDataType> {
   filter: FilterModel<TType>
   columnType: TType
-  locale: Locale
+  locale?: Locale
 }
 
 export function FilterOperatorDisplay<TType extends ColumnDataType>({
   filter,
   columnType,
-  locale,
+  locale = 'en',
 }: FilterOperatorDisplayProps<TType>) {
   const operator =
     getFilterTypeOperatorDetails(locale)[columnType][filter.operator]
@@ -110,7 +110,7 @@ interface FilterOperatorControllerProps<TData, TType extends ColumnDataType> {
   column: Column<TData, TType>
   actions: DataTableFilterActions
   closeController: () => void
-  locale: Locale
+  locale?: Locale
 }
 
 /*
@@ -123,7 +123,7 @@ export function FilterOperatorController<TData, TType extends ColumnDataType>({
   column,
   actions,
   closeController,
-  locale,
+  locale = 'en',
 }: FilterOperatorControllerProps<TData, TType>) {
   switch (column.type) {
     case 'option':
@@ -186,7 +186,7 @@ function FilterOperatorOptionController<TData>({
   column,
   actions,
   closeController,
-  locale,
+  locale = 'en',
 }: FilterOperatorControllerProps<TData, 'option'>) {
   const filterDetails = getOptionFilterDetails(locale)[filter.operator]
 
@@ -217,7 +217,7 @@ function FilterOperatorMultiOptionController<TData>({
   column,
   actions,
   closeController,
-  locale,
+  locale = 'en',
 }: FilterOperatorControllerProps<TData, 'multiOption'>) {
   const filterDetails = getMultiOptionFilterDetails(locale)[filter.operator]
 
@@ -251,7 +251,7 @@ function FilterOperatorDateController<TData>({
   column,
   actions,
   closeController,
-  locale,
+  locale = 'en',
 }: FilterOperatorControllerProps<TData, 'date'>) {
   const filterDetails = getDateFilterDetails(locale)[filter.operator]
 
@@ -282,7 +282,7 @@ export function FilterOperatorTextController<TData>({
   column,
   actions,
   closeController,
-  locale,
+  locale = 'en',
 }: FilterOperatorControllerProps<TData, 'text'>) {
   const filterDetails = getTextFilterDetails(locale)[filter.operator]
 
@@ -313,7 +313,7 @@ function FilterOperatorNumberController<TData>({
   column,
   actions,
   closeController,
-  locale,
+  locale = 'en',
 }: FilterOperatorControllerProps<TData, 'number'>) {
   // Show all related operators
   const filterDetails = getNumberFilterDetails(locale)[filter.operator]

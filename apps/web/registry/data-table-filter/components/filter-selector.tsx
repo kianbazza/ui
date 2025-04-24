@@ -31,7 +31,7 @@ interface FilterSelectorProps<TData> {
   columns: Column<TData>[]
   actions: DataTableFilterActions
   strategy: FilterStrategy
-  locale: Locale
+  locale?: Locale
 }
 
 export const FilterSelector = memo(__FilterSelector) as typeof __FilterSelector
@@ -41,7 +41,7 @@ function __FilterSelector<TData>({
   columns,
   actions,
   strategy,
-  locale,
+  locale = 'en',
 }: FilterSelectorProps<TData>) {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState('')
