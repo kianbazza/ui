@@ -352,9 +352,7 @@
         margin-left: calc(var(--spacing) * -8);
       }
 
-      [data-line]:has(+ [data-line].diff),
-      [data-line].diff,
-      [data-line].diff ~ [data-line] {
+      :has([data-line].diff) [data-line] {
         padding-left: calc(var(--spacing) * 8);
       }
 
