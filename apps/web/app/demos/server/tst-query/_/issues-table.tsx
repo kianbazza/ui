@@ -115,25 +115,11 @@ export function IssuesTable({
     },
   })
 
-  /*
-   * Step 4: Extend our TanStack Table columns with custom filter functions (and more!)
-   *
-   * You can use our integration hook for this.
-   */
-  const tstColumns = useMemo(
-    () =>
-      createTSTColumns({
-        columns: tstColumnDefs,
-        configs: columns,
-      }),
-    [columns],
-  )
-
-  /* Step 5: Create our TanStack Table instance */
+  /* Step 4: Create our TanStack Table instance */
   const [rowSelection, setRowSelection] = useState({})
   const table = useReactTable({
     data: issues.data ?? [],
-    columns: tstColumns,
+    columns: tstColumnDefs,
     getRowId: (row) => row.id,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -143,7 +129,7 @@ export function IssuesTable({
     },
   })
 
-  /* Step 6: Render the table! */
+  /* Step 5: Render the table! */
   return (
     <div className="w-full col-span-2">
       <div className="flex items-center pb-4 gap-2">
@@ -160,7 +146,7 @@ export function IssuesTable({
       </div>
       {issues.isLoading ? (
         <div className="w-full col-span-2">
-          <TableSkeleton numCols={tstColumns.length} numRows={10} />
+          <TableSkeleton numCols={tstColumnDefs.length} numRows={10} />
         </div>
       ) : (
         <DataTable table={table} actions={actions} />
