@@ -380,6 +380,10 @@
 
       [data-line].diff.remove {
         @apply bg-red-500/15;
+        
+        span {
+          @apply opacity-60;
+        }
 
         &::before {
           @apply border-l-3 border-red-500;
