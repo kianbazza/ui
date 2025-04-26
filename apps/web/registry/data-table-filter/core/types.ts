@@ -287,8 +287,6 @@ export type FilterOperatorDetailsBase<
   key: string
   /* The operator value. Usually the string representation of the operator. */
   value: OperatorValue
-  /* The label for the operator, to show in the UI. */
-  label: string
   /* How much data the operator applies to. */
   target: FilterOperatorTarget
   /* The plural form of the operator, if applicable. */

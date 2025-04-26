@@ -9,18 +9,17 @@ import {
 } from '@/components/ui/command'
 import {
   Popover,
-  PopoverAnchor,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { useState } from 'react'
 import {
-  getDateFilterDetails,
-  getFilterTypeOperatorDetails,
-  getMultiOptionFilterDetails,
-  getNumberFilterDetails,
-  getOptionFilterDetails,
-  getTextFilterDetails,
+  dateFilterOperators,
+  filterTypeOperatorDetails,
+  multiOptionFilterOperators,
+  numberFilterOperators,
+  optionFilterOperators,
+  textFilterOperators,
 } from '../core/operators'
 import type {
   Column,
@@ -28,7 +27,6 @@ import type {
   DataTableFilterActions,
   FilterModel,
   FilterOperators,
-  FilterStrategy,
 } from '../core/types'
 import { type Locale, t } from '../lib/i18n'
 
@@ -99,10 +97,10 @@ export function FilterOperatorDisplay<TType extends ColumnDataType>({
   columnType,
   locale = 'en',
 }: FilterOperatorDisplayProps<TType>) {
-  const operator =
-    getFilterTypeOperatorDetails(locale)[columnType][filter.operator]
+  const operator = filterTypeOperatorDetails[columnType][filter.operator]
+  const label = t(operator.key, locale)
 
-  return <span className="text-muted-foreground">{operator.label}</span>
+  return <span className="text-muted-foreground">{label}</span>
 }
 
 interface FilterOperatorControllerProps<TData, TType extends ColumnDataType> {
@@ -188,9 +186,9 @@ function FilterOperatorOptionController<TData>({
   closeController,
   locale = 'en',
 }: FilterOperatorControllerProps<TData, 'option'>) {
-  const filterDetails = getOptionFilterDetails(locale)[filter.operator]
+  const filterDetails = optionFilterOperators[filter.operator]
 
-  const relatedFilters = Object.values(getOptionFilterDetails(locale)).filter(
+  const relatedFilters = Object.values(optionFilterOperators).filter(
     (o) => o.target === filterDetails.target,
   )
 
@@ -204,7 +202,7 @@ function FilterOperatorOptionController<TData>({
       {relatedFilters.map((r) => {
         return (
           <CommandItem onSelect={changeOperator} value={r.value} key={r.value}>
-            {r.label}
+            {t(r.key, locale)}
           </CommandItem>
         )
       })}
@@ -219,11 +217,11 @@ function FilterOperatorMultiOptionController<TData>({
   closeController,
   locale = 'en',
 }: FilterOperatorControllerProps<TData, 'multiOption'>) {
-  const filterDetails = getMultiOptionFilterDetails(locale)[filter.operator]
+  const filterDetails = multiOptionFilterOperators[filter.operator]
 
-  const relatedFilters = Object.values(
-    getMultiOptionFilterDetails(locale),
-  ).filter((o) => o.target === filterDetails.target)
+  const relatedFilters = Object.values(multiOptionFilterOperators).filter(
+    (o) => o.target === filterDetails.target,
+  )
 
   const changeOperator = (value: string) => {
     actions?.setFilterOperator(
@@ -238,7 +236,7 @@ function FilterOperatorMultiOptionController<TData>({
       {relatedFilters.map((r) => {
         return (
           <CommandItem onSelect={changeOperator} value={r.value} key={r.value}>
-            {r.label}
+            {t(r.key, locale)}
           </CommandItem>
         )
       })}
@@ -253,9 +251,9 @@ function FilterOperatorDateController<TData>({
   closeController,
   locale = 'en',
 }: FilterOperatorControllerProps<TData, 'date'>) {
-  const filterDetails = getDateFilterDetails(locale)[filter.operator]
+  const filterDetails = dateFilterOperators[filter.operator]
 
-  const relatedFilters = Object.values(getDateFilterDetails(locale)).filter(
+  const relatedFilters = Object.values(dateFilterOperators).filter(
     (o) => o.target === filterDetails.target,
   )
 
@@ -269,7 +267,7 @@ function FilterOperatorDateController<TData>({
       {relatedFilters.map((r) => {
         return (
           <CommandItem onSelect={changeOperator} value={r.value} key={r.value}>
-            {r.label}
+            {t(r.key, locale)}
           </CommandItem>
         )
       })}
@@ -284,9 +282,9 @@ export function FilterOperatorTextController<TData>({
   closeController,
   locale = 'en',
 }: FilterOperatorControllerProps<TData, 'text'>) {
-  const filterDetails = getTextFilterDetails(locale)[filter.operator]
+  const filterDetails = textFilterOperators[filter.operator]
 
-  const relatedFilters = Object.values(getTextFilterDetails(locale)).filter(
+  const relatedFilters = Object.values(textFilterOperators).filter(
     (o) => o.target === filterDetails.target,
   )
 
@@ -300,7 +298,7 @@ export function FilterOperatorTextController<TData>({
       {relatedFilters.map((r) => {
         return (
           <CommandItem onSelect={changeOperator} value={r.value} key={r.value}>
-            {r.label}
+            {t(r.key, locale)}
           </CommandItem>
         )
       })}
@@ -315,10 +313,9 @@ function FilterOperatorNumberController<TData>({
   closeController,
   locale = 'en',
 }: FilterOperatorControllerProps<TData, 'number'>) {
-  // Show all related operators
-  const filterDetails = getNumberFilterDetails(locale)[filter.operator]
+  const filterDetails = numberFilterOperators[filter.operator]
 
-  const relatedFilters = Object.values(getNumberFilterDetails(locale)).filter(
+  const relatedFilters = Object.values(numberFilterOperators).filter(
     (o) => o.target === filterDetails.target,
   )
 
@@ -336,7 +333,7 @@ function FilterOperatorNumberController<TData>({
             value={r.value}
             key={r.value}
           >
-            {r.label} {/**/}
+            {t(r.key, locale)}
           </CommandItem>
         ))}
       </CommandGroup>

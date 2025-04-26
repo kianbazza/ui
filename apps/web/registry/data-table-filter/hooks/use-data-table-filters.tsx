@@ -42,7 +42,6 @@ export interface DataTableFiltersOptions<
       | [ColumnOption[] | undefined, Map<string, number> | undefined]
     >
   >
-  locale?: Locale
 }
 
 export function useDataTableFilters<
@@ -55,7 +54,6 @@ export function useDataTableFilters<
   columnsConfig,
   controlledState,
   options,
-  locale = 'en',
 }: DataTableFiltersOptions<TData, TColumns, TStrategy>) {
   const [internalFilters, setInternalFilters] = useState<FiltersState>([])
   const [filters, setFilters] = controlledState ?? [
@@ -125,7 +123,6 @@ export function useDataTableFilters<
               oldValues,
               newValues,
               filter.operator,
-              locale,
             )
             return prev.map((f) =>
               f.columnId === column.id
@@ -163,7 +160,6 @@ export function useDataTableFilters<
               oldValues,
               newValues,
               filter.operator,
-              locale,
             )
             if (newValues.length === 0) {
               return prev.filter((f) => f.columnId !== column.id)
@@ -202,7 +198,6 @@ export function useDataTableFilters<
               oldValues,
               newValues,
               filter.operator,
-              locale,
             )
             if (newValues.length === 0) {
               return prev.filter((f) => f.columnId !== column.id)
@@ -233,7 +228,6 @@ export function useDataTableFilters<
               oldValues,
               newValues,
               filter.operator,
-              locale,
             )
             if (newValues.length === 0) {
               return prev.filter((f) => f.columnId !== column.id)
@@ -289,7 +283,6 @@ export function useDataTableFilters<
             oldValues,
             newValues,
             filter.operator,
-            locale,
           )
           const newFilter = {
             columnId: column.id,

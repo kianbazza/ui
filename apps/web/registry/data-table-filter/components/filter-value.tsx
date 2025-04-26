@@ -32,7 +32,7 @@ import {
   useState,
 } from 'react'
 import type { DateRange } from 'react-day-picker'
-import { getNumberFilterDetails } from '../core/operators'
+import { numberFilterOperators } from '../core/operators'
 import type {
   Column,
   ColumnDataType,
@@ -665,8 +665,7 @@ export function FilterValueNumberController<TData>({
   }, [filter?.values, values])
 
   const isNumberRange =
-    filter &&
-    getNumberFilterDetails(locale)[filter.operator].target === 'multiple'
+    filter && numberFilterOperators[filter.operator].target === 'multiple'
 
   const changeNumber = (value: number[]) => {
     setValues(value)
