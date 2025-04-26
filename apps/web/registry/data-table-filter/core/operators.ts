@@ -38,6 +38,7 @@ export const DEFAULT_OPERATORS: Record<
 export function getOptionFilterDetails(locale: Locale) {
   return {
     is: {
+      key: 'filters.option.is',
       label: t('filters.option.is', locale),
       value: 'is',
       target: 'single',
@@ -47,6 +48,7 @@ export function getOptionFilterDetails(locale: Locale) {
       negation: 'is not',
     },
     'is not': {
+      key: 'filters.option.isNot',
       label: t('filters.option.isNot', locale),
       value: 'is not',
       target: 'single',
@@ -56,6 +58,7 @@ export function getOptionFilterDetails(locale: Locale) {
       negationOf: 'is',
     },
     'is any of': {
+      key: 'filters.option.isAnyOf',
       label: t('filters.option.isAnyOf', locale),
       value: 'is any of',
       target: 'multiple',
@@ -65,6 +68,7 @@ export function getOptionFilterDetails(locale: Locale) {
       negation: 'is none of',
     },
     'is none of': {
+      key: 'filters.option.isNoneOf',
       label: t('filters.option.isNoneOf', locale),
       value: 'is none of',
       target: 'multiple',
@@ -80,6 +84,7 @@ export function getOptionFilterDetails(locale: Locale) {
 export function getMultiOptionFilterDetails(locale: Locale) {
   return {
     include: {
+      key: 'filters.multiOption.include',
       label: t('filters.multiOption.include', locale),
       value: 'include',
       target: 'single',
@@ -89,6 +94,7 @@ export function getMultiOptionFilterDetails(locale: Locale) {
       negation: 'exclude',
     },
     exclude: {
+      key: 'filters.multiOption.exclude',
       label: t('filters.multiOption.exclude', locale),
       value: 'exclude',
       target: 'single',
@@ -98,6 +104,7 @@ export function getMultiOptionFilterDetails(locale: Locale) {
       negationOf: 'include',
     },
     'include any of': {
+      key: 'filters.multiOption.includeAnyOf',
       label: t('filters.multiOption.includeAnyOf', locale),
       value: 'include any of',
       target: 'multiple',
@@ -107,6 +114,7 @@ export function getMultiOptionFilterDetails(locale: Locale) {
       negation: 'exclude if all',
     },
     'exclude if all': {
+      key: 'filters.multiOption.excludeIfAll',
       label: t('filters.multiOption.excludeIfAll', locale),
       value: 'exclude if all',
       target: 'multiple',
@@ -116,6 +124,7 @@ export function getMultiOptionFilterDetails(locale: Locale) {
       negationOf: 'include any of',
     },
     'include all of': {
+      key: 'filters.multiOption.includeAllOf',
       label: t('filters.multiOption.includeAllOf', locale),
       value: 'include all of',
       target: 'multiple',
@@ -125,6 +134,7 @@ export function getMultiOptionFilterDetails(locale: Locale) {
       negation: 'exclude if any of',
     },
     'exclude if any of': {
+      key: 'filters.multiOption.excludeIfAnyOf',
       label: t('filters.multiOption.excludeIfAnyOf', locale),
       value: 'exclude if any of',
       target: 'multiple',
@@ -140,6 +150,7 @@ export function getMultiOptionFilterDetails(locale: Locale) {
 export function getDateFilterDetails(locale: Locale) {
   return {
     is: {
+      key: 'filters.date.is',
       label: t('filters.date.is', locale),
       value: 'is',
       target: 'single',
@@ -149,6 +160,7 @@ export function getDateFilterDetails(locale: Locale) {
       negation: 'is before',
     },
     'is not': {
+      key: 'filters.date.isNot',
       label: t('filters.date.isNot', locale),
       value: 'is not',
       target: 'single',
@@ -164,6 +176,7 @@ export function getDateFilterDetails(locale: Locale) {
       negationOf: 'is',
     },
     'is before': {
+      key: 'filters.date.isBefore',
       label: t('filters.date.isBefore', locale),
       value: 'is before',
       target: 'single',
@@ -179,6 +192,7 @@ export function getDateFilterDetails(locale: Locale) {
       negation: 'is on or after',
     },
     'is on or after': {
+      key: 'filters.date.isOnOrAfter',
       label: t('filters.date.isOnOrAfter', locale),
       value: 'is on or after',
       target: 'single',
@@ -188,6 +202,7 @@ export function getDateFilterDetails(locale: Locale) {
       negation: 'is before',
     },
     'is after': {
+      key: 'filters.date.isAfter',
       label: t('filters.date.isAfter', locale),
       value: 'is after',
       target: 'single',
@@ -203,6 +218,7 @@ export function getDateFilterDetails(locale: Locale) {
       negation: 'is on or before',
     },
     'is on or before': {
+      key: 'filters.date.isOnOrBefore',
       label: t('filters.date.isOnOrBefore', locale),
       value: 'is on or before',
       target: 'single',
@@ -212,6 +228,7 @@ export function getDateFilterDetails(locale: Locale) {
       negation: 'is after',
     },
     'is between': {
+      key: 'filters.date.isBetween',
       label: t('filters.date.isBetween', locale),
       value: 'is between',
       target: 'multiple',
@@ -221,6 +238,7 @@ export function getDateFilterDetails(locale: Locale) {
       negation: 'is not between',
     },
     'is not between': {
+      key: 'filters.date.isNotBetween',
       label: t('filters.date.isNotBetween', locale),
       value: 'is not between',
       target: 'multiple',
@@ -236,6 +254,7 @@ export function getDateFilterDetails(locale: Locale) {
 export function getTextFilterDetails(locale: Locale) {
   return {
     contains: {
+      key: 'filters.text.contains',
       label: t('filters.text.contains', locale),
       value: 'contains',
       target: 'single',
@@ -244,6 +263,7 @@ export function getTextFilterDetails(locale: Locale) {
       negation: 'does not contain',
     },
     'does not contain': {
+      key: 'filters.text.doesNotContain',
       label: t('filters.text.doesNotContain', locale),
       value: 'does not contain',
       target: 'single',
@@ -258,6 +278,7 @@ export function getTextFilterDetails(locale: Locale) {
 export function getNumberFilterDetails(locale: Locale) {
   return {
     is: {
+      key: 'filters.number.is',
       label: t('filters.number.is', locale),
       value: 'is',
       target: 'single',
@@ -273,6 +294,7 @@ export function getNumberFilterDetails(locale: Locale) {
       negation: 'is not',
     },
     'is not': {
+      key: 'filters.number.isNot',
       label: t('filters.number.isNot', locale),
       value: 'is not',
       target: 'single',
@@ -288,6 +310,7 @@ export function getNumberFilterDetails(locale: Locale) {
       negationOf: 'is',
     },
     'is greater than': {
+      key: 'filters.number.greaterThan',
       label: t('filters.number.greaterThan', locale),
       value: 'is greater than',
       target: 'single',
@@ -303,6 +326,7 @@ export function getNumberFilterDetails(locale: Locale) {
       negation: 'is less than or equal to',
     },
     'is greater than or equal to': {
+      key: 'filters.number.greaterThanOrEqual',
       label: t('filters.number.greaterThanOrEqual', locale),
       value: 'is greater than or equal to',
       target: 'single',
@@ -318,6 +342,7 @@ export function getNumberFilterDetails(locale: Locale) {
       negation: 'is less than or equal to',
     },
     'is less than': {
+      key: 'filters.number.lessThan',
       label: t('filters.number.lessThan', locale),
       value: 'is less than',
       target: 'single',
@@ -333,6 +358,7 @@ export function getNumberFilterDetails(locale: Locale) {
       negation: 'is greater than',
     },
     'is less than or equal to': {
+      key: 'filters.number.lessThanOrEqual',
       label: t('filters.number.lessThanOrEqual', locale),
       value: 'is less than or equal to',
       target: 'single',
@@ -348,6 +374,7 @@ export function getNumberFilterDetails(locale: Locale) {
       negation: 'is greater than or equal to',
     },
     'is between': {
+      key: 'filters.number.isBetween',
       label: t('filters.number.isBetween', locale),
       value: 'is between',
       target: 'multiple',
@@ -357,6 +384,7 @@ export function getNumberFilterDetails(locale: Locale) {
       negation: 'is not between',
     },
     'is not between': {
+      key: 'filters.number.isNotBetween',
       label: t('filters.number.isNotBetween', locale),
       value: 'is not between',
       target: 'multiple',

@@ -283,6 +283,8 @@ export type FilterOperatorDetailsBase<
   OperatorValue,
   T extends ColumnDataType,
 > = {
+  /* The i18n key for the operator. */
+  key: string
   /* The operator value. Usually the string representation of the operator. */
   value: OperatorValue
   /* The label for the operator, to show in the UI. */
