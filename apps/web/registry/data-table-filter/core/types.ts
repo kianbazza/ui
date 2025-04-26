@@ -1,5 +1,4 @@
 import type { LucideIcon } from 'lucide-react'
-import { Locale } from '../lib/i18n'
 
 /*
  * # GENERAL NOTES:
