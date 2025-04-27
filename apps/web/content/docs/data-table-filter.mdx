@@ -635,7 +635,7 @@ We provide an add-on to add support for additional locales:
 
 #### Installation
 
-> [!WARNING] When prompted (`y/N`), explicitly overwrite the `lib/i18n.ts` file.
+> [!IMPORTANT] When prompted (`y/N`), explicitly overwrite the `lib/i18n.ts` file.
 
 > [!NOTE] Feel free to remove any unused locales after the installation.
 
@@ -643,10 +643,10 @@ We provide an add-on to add support for additional locales:
 npx shadcn@latest add https://ui.bazza.dev/r/filters/i18n
 ```
 
-This add-on will:
+This add-on:
 
-- Overwrite the `lib/i18n.ts` file to add all supported locales.
-- Add all supported locales to your project, under `locales/[locale].json`.
+- Overwrites the `lib/i18n.ts` file to add all supported locales.
+- Adds all supported locales to your project, under `locales/[locale].json`.
 
 #### Usage
 
@@ -679,7 +679,7 @@ You can add a new locale by create a new file in the `locales/` directory. The f
 
 Use the existing `locales/en.json` file as a reference for the required keys. Add your translations as values for the keys.
 
-Then, extend the `Locales` type in `lib/i18n.ts` to include your new locale:
+Then, extend the `Locale` type in `lib/i18n.ts` to include your new locale:
 
 ```ts title="lib/i18n.ts"
 import en from '../locales/en.json'
