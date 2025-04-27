@@ -11,6 +11,7 @@ import type {
   FiltersState,
 } from '../core/types'
 import { getColumn } from '../lib/helpers'
+import type { Locale } from '../lib/i18n'
 import { FilterOperator } from './filter-operator'
 import { FilterSubject } from './filter-subject'
 import { FilterValue } from './filter-value'
@@ -20,6 +21,7 @@ interface ActiveFiltersProps<TData> {
   filters: FiltersState
   actions: DataTableFilterActions
   strategy: FilterStrategy
+  locale?: Locale
 }
 
 export function ActiveFilters<TData>({
@@ -27,6 +29,7 @@ export function ActiveFilters<TData>({
   filters,
   actions,
   strategy,
+  locale = 'en',
 }: ActiveFiltersProps<TData>) {
   return (
     <>
@@ -45,6 +48,7 @@ export function ActiveFilters<TData>({
             column={column}
             actions={actions}
             strategy={strategy}
+            locale={locale}
           />
         )
       })}
@@ -57,6 +61,7 @@ interface ActiveFilterProps<TData, TType extends ColumnDataType> {
   column: Column<TData, TType>
   actions: DataTableFilterActions
   strategy: FilterStrategy
+  locale?: Locale
 }
 
 // Generic render function for a filter with type-safe value
@@ -65,18 +70,25 @@ export function ActiveFilter<TData, TType extends ColumnDataType>({
   column,
   actions,
   strategy,
+  locale = 'en',
 }: ActiveFilterProps<TData, TType>) {
   return (
     <div className="flex h-7 items-center rounded-2xl border border-border bg-background shadow-xs text-xs">
       <FilterSubject column={column} />
       <Separator orientation="vertical" />
-      <FilterOperator filter={filter} column={column} actions={actions} />
+      <FilterOperator
+        filter={filter}
+        column={column}
+        actions={actions}
+        locale={locale}
+      />
       <Separator orientation="vertical" />
       <FilterValue
         filter={filter}
         column={column}
         actions={actions}
         strategy={strategy}
+        locale={locale}
       />
       <Separator orientation="vertical" />
       <Button

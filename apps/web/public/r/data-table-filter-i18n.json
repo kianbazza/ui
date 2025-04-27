@@ -1,0 +1,28 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "data-table-filter-i18n",
+  "type": "registry:block",
+  "title": "Data table filter - i18n (add-on)",
+  "author": "Kian Bazarjani <kian@bazza.dev>",
+  "description": "An add-on for the data table filter component to provide i18n support.",
+  "files": [
+    {
+      "path": "registry/data-table-filter/lib/i18n.ts",
+      "content": "import en from '../locales/en.json'\nimport fr from '../locales/fr.json'\n\nexport type Locale = 'en' | 'fr'\n\ntype Translations = Record<string, string>\n\nconst translations: Record<Locale, Translations> = {\n  en,\n  fr,\n}\n\nexport function t(key: string, locale: Locale): string {\n  return translations[locale][key] ?? key\n}\n",
+      "type": "registry:file",
+      "target": "components/data-table-filter/lib/i18n.ts"
+    },
+    {
+      "path": "registry/data-table-filter/locales/en.json",
+      "content": "{\n  \"clear\": \"Clear\",\n  \"search\": \"Search...\",\n  \"noresults\": \"No results.\",\n  \"operators\": \"Operators\",\n  \"filter\": \"Filter\",\n  \"and\": \"and\",\n  \"single\": \"Single\",\n  \"range\": \"Range\",\n  \"value\": \"Value\",\n  \"min\": \"Min\",\n  \"max\": \"Max\",\n  \"filters.option.is\": \"is\",\n  \"filters.option.isNot\": \"is not\",\n  \"filters.option.isAnyOf\": \"is any of\",\n  \"filters.option.isNoneOf\": \"is none of\",\n  \"filters.multiOption.include\": \"includes\",\n  \"filters.multiOption.exclude\": \"excludes\",\n  \"filters.multiOption.includeAnyOf\": \"includes any of\",\n  \"filters.multiOption.excludeAllOf\": \"excludes all of\",\n  \"filters.multiOption.includeAllOf\": \"includes all of\",\n  \"filters.multiOption.excludeIfAnyOf\": \"excludes if any of\",\n  \"filters.multiOption.excludeIfAll\": \"excludes if all of\",\n  \"filters.date.is\": \"is\",\n  \"filters.date.isNot\": \"is not\",\n  \"filters.date.isBefore\": \"is before\",\n  \"filters.date.isOnOrAfter\": \"is on or after\",\n  \"filters.date.isAfter\": \"is after\",\n  \"filters.date.isOnOrBefore\": \"is on or before\",\n  \"filters.date.isBetween\": \"is between\",\n  \"filters.date.isNotBetween\": \"is not between\",\n  \"filters.text.contains\": \"contains\",\n  \"filters.text.doesNotContain\": \"does not contain\",\n  \"filters.number.is\": \"is\",\n  \"filters.number.isNot\": \"is not\",\n  \"filters.number.greaterThan\": \"greater than\",\n  \"filters.number.greaterThanOrEqual\": \"greater than or equal\",\n  \"filters.number.lessThan\": \"less than\",\n  \"filters.number.lessThanOrEqual\": \"less than or equal\",\n  \"filters.number.isBetween\": \"is between\",\n  \"filters.number.isNotBetween\": \"is not between\"\n}\n",
+      "type": "registry:file",
+      "target": "components/data-table-filter/locales/en.json"
+    },
+    {
+      "path": "registry/data-table-filter/locales/fr.json",
+      "content": "{\n  \"clear\": \"Effacer\",\n  \"search\": \"Rechercher...\",\n  \"noresults\": \"Aucun résultat.\",\n  \"operators\": \"Opérateurs\",\n  \"filter\": \"Filtrer\",\n  \"and\": \"et\",\n  \"single\": \"Unique\",\n  \"range\": \"Intervalle\",\n  \"value\": \"Valeur\",\n  \"min\": \"Min\",\n  \"max\": \"Max\",\n  \"filters.option.is\": \"est\",\n  \"filters.option.isNot\": \"n'est pas\",\n  \"filters.option.isAnyOf\": \"est l'un de\",\n  \"filters.option.isNoneOf\": \"n'est aucun de\",\n  \"filters.multiOption.include\": \"comprend\",\n  \"filters.multiOption.exclude\": \"exclut\",\n  \"filters.multiOption.includeAnyOf\": \"comprend l'un de\",\n  \"filters.multiOption.excludeAllOf\": \"exclut tous\",\n  \"filters.multiOption.includeAllOf\": \"comprend tous\",\n  \"filters.multiOption.excludeIfAnyOf\": \"exclut si l'un de\",\n  \"filters.multiOption.excludeIfAll\": \"exclut si tous\",\n  \"filters.date.is\": \"est\",\n  \"filters.date.isNot\": \"n'est pas\",\n  \"filters.date.isBefore\": \"est avant\",\n  \"filters.date.isOnOrAfter\": \"est le ou après\",\n  \"filters.date.isAfter\": \"est après\",\n  \"filters.date.isOnOrBefore\": \"est le ou avant\",\n  \"filters.date.isBetween\": \"est entre\",\n  \"filters.date.isNotBetween\": \"n'est pas entre\",\n  \"filters.text.contains\": \"contient\",\n  \"filters.text.doesNotContain\": \"ne contient pas\",\n  \"filters.number.is\": \"est\",\n  \"filters.number.isNot\": \"n'est pas\",\n  \"filters.number.greaterThan\": \"supérieur à\",\n  \"filters.number.greaterThanOrEqual\": \"supérieur ou égal à\",\n  \"filters.number.lessThan\": \"inférieur à\",\n  \"filters.number.lessThanOrEqual\": \"inférieur ou égal à\",\n  \"filters.number.isBetween\": \"est entre\",\n  \"filters.number.isNotBetween\": \"n'est pas entre\"\n}\n",
+      "type": "registry:file",
+      "target": "components/data-table-filter/locales/fr.json"
+    }
+  ]
+}

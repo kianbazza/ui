@@ -1,3 +1,4 @@
+import { type Locale, t } from '../lib/i18n'
 import type {
   ColumnDataType,
   FilterDetails,
@@ -34,9 +35,9 @@ export const DEFAULT_OPERATORS: Record<
 }
 
 /* Details for all the filter operators for option data type */
-export const optionFilterDetails = {
+export const optionFilterOperators = {
   is: {
-    label: 'is',
+    key: 'filters.option.is',
     value: 'is',
     target: 'single',
     singularOf: 'is any of',
@@ -45,7 +46,7 @@ export const optionFilterDetails = {
     negation: 'is not',
   },
   'is not': {
-    label: 'is not',
+    key: 'filters.option.isNot',
     value: 'is not',
     target: 'single',
     singularOf: 'is none of',
@@ -54,7 +55,7 @@ export const optionFilterDetails = {
     negationOf: 'is',
   },
   'is any of': {
-    label: 'is any of',
+    key: 'filters.option.isAnyOf',
     value: 'is any of',
     target: 'multiple',
     pluralOf: 'is',
@@ -63,7 +64,7 @@ export const optionFilterDetails = {
     negation: 'is none of',
   },
   'is none of': {
-    label: 'is none of',
+    key: 'filters.option.isNoneOf',
     value: 'is none of',
     target: 'multiple',
     pluralOf: 'is not',
@@ -74,9 +75,9 @@ export const optionFilterDetails = {
 } as const satisfies FilterDetails<'option'>
 
 /* Details for all the filter operators for multi-option data type */
-export const multiOptionFilterDetails = {
+export const multiOptionFilterOperators = {
   include: {
-    label: 'include',
+    key: 'filters.multiOption.include',
     value: 'include',
     target: 'single',
     singularOf: 'include any of',
@@ -85,7 +86,7 @@ export const multiOptionFilterDetails = {
     negation: 'exclude',
   },
   exclude: {
-    label: 'exclude',
+    key: 'filters.multiOption.exclude',
     value: 'exclude',
     target: 'single',
     singularOf: 'exclude if any of',
@@ -94,7 +95,7 @@ export const multiOptionFilterDetails = {
     negationOf: 'include',
   },
   'include any of': {
-    label: 'include any of',
+    key: 'filters.multiOption.includeAnyOf',
     value: 'include any of',
     target: 'multiple',
     pluralOf: 'include',
@@ -103,7 +104,7 @@ export const multiOptionFilterDetails = {
     negation: 'exclude if all',
   },
   'exclude if all': {
-    label: 'exclude if all',
+    key: 'filters.multiOption.excludeIfAll',
     value: 'exclude if all',
     target: 'multiple',
     pluralOf: 'exclude',
@@ -112,7 +113,7 @@ export const multiOptionFilterDetails = {
     negationOf: 'include any of',
   },
   'include all of': {
-    label: 'include all of',
+    key: 'filters.multiOption.includeAllOf',
     value: 'include all of',
     target: 'multiple',
     pluralOf: 'include',
@@ -121,7 +122,7 @@ export const multiOptionFilterDetails = {
     negation: 'exclude if any of',
   },
   'exclude if any of': {
-    label: 'exclude if any of',
+    key: 'filters.multiOption.excludeIfAnyOf',
     value: 'exclude if any of',
     target: 'multiple',
     pluralOf: 'exclude',
@@ -132,9 +133,9 @@ export const multiOptionFilterDetails = {
 } as const satisfies FilterDetails<'multiOption'>
 
 /* Details for all the filter operators for date data type */
-export const dateFilterDetails = {
+export const dateFilterOperators = {
   is: {
-    label: 'is',
+    key: 'filters.date.is',
     value: 'is',
     target: 'single',
     singularOf: 'is between',
@@ -143,7 +144,7 @@ export const dateFilterDetails = {
     negation: 'is before',
   },
   'is not': {
-    label: 'is not',
+    key: 'filters.date.isNot',
     value: 'is not',
     target: 'single',
     singularOf: 'is not between',
@@ -158,7 +159,7 @@ export const dateFilterDetails = {
     negationOf: 'is',
   },
   'is before': {
-    label: 'is before',
+    key: 'filters.date.isBefore',
     value: 'is before',
     target: 'single',
     singularOf: 'is between',
@@ -173,7 +174,7 @@ export const dateFilterDetails = {
     negation: 'is on or after',
   },
   'is on or after': {
-    label: 'is on or after',
+    key: 'filters.date.isOnOrAfter',
     value: 'is on or after',
     target: 'single',
     singularOf: 'is between',
@@ -182,7 +183,7 @@ export const dateFilterDetails = {
     negation: 'is before',
   },
   'is after': {
-    label: 'is after',
+    key: 'filters.date.isAfter',
     value: 'is after',
     target: 'single',
     singularOf: 'is between',
@@ -197,7 +198,7 @@ export const dateFilterDetails = {
     negation: 'is on or before',
   },
   'is on or before': {
-    label: 'is on or before',
+    key: 'filters.date.isOnOrBefore',
     value: 'is on or before',
     target: 'single',
     singularOf: 'is between',
@@ -206,7 +207,7 @@ export const dateFilterDetails = {
     negation: 'is after',
   },
   'is between': {
-    label: 'is between',
+    key: 'filters.date.isBetween',
     value: 'is between',
     target: 'multiple',
     pluralOf: 'is',
@@ -215,7 +216,7 @@ export const dateFilterDetails = {
     negation: 'is not between',
   },
   'is not between': {
-    label: 'is not between',
+    key: 'filters.date.isNotBetween',
     value: 'is not between',
     target: 'multiple',
     pluralOf: 'is not',
@@ -226,9 +227,9 @@ export const dateFilterDetails = {
 } as const satisfies FilterDetails<'date'>
 
 /* Details for all the filter operators for text data type */
-export const textFilterDetails = {
+export const textFilterOperators = {
   contains: {
-    label: 'contains',
+    key: 'filters.text.contains',
     value: 'contains',
     target: 'single',
     relativeOf: 'does not contain',
@@ -236,7 +237,7 @@ export const textFilterDetails = {
     negation: 'does not contain',
   },
   'does not contain': {
-    label: 'does not contain',
+    key: 'filters.text.doesNotContain',
     value: 'does not contain',
     target: 'single',
     relativeOf: 'contains',
@@ -246,9 +247,9 @@ export const textFilterDetails = {
 } as const satisfies FilterDetails<'text'>
 
 /* Details for all the filter operators for number data type */
-export const numberFilterDetails = {
+export const numberFilterOperators = {
   is: {
-    label: 'is',
+    key: 'filters.number.is',
     value: 'is',
     target: 'single',
     singularOf: 'is between',
@@ -263,7 +264,7 @@ export const numberFilterDetails = {
     negation: 'is not',
   },
   'is not': {
-    label: 'is not',
+    key: 'filters.number.isNot',
     value: 'is not',
     target: 'single',
     singularOf: 'is not between',
@@ -278,7 +279,7 @@ export const numberFilterDetails = {
     negationOf: 'is',
   },
   'is greater than': {
-    label: '>',
+    key: 'filters.number.greaterThan',
     value: 'is greater than',
     target: 'single',
     singularOf: 'is between',
@@ -293,7 +294,7 @@ export const numberFilterDetails = {
     negation: 'is less than or equal to',
   },
   'is greater than or equal to': {
-    label: '>=',
+    key: 'filters.number.greaterThanOrEqual',
     value: 'is greater than or equal to',
     target: 'single',
     singularOf: 'is between',
@@ -308,7 +309,7 @@ export const numberFilterDetails = {
     negation: 'is less than or equal to',
   },
   'is less than': {
-    label: '<',
+    key: 'filters.number.lessThan',
     value: 'is less than',
     target: 'single',
     singularOf: 'is between',
@@ -323,7 +324,7 @@ export const numberFilterDetails = {
     negation: 'is greater than',
   },
   'is less than or equal to': {
-    label: '<=',
+    key: 'filters.number.lessThanOrEqual',
     value: 'is less than or equal to',
     target: 'single',
     singularOf: 'is between',
@@ -338,7 +339,7 @@ export const numberFilterDetails = {
     negation: 'is greater than or equal to',
   },
   'is between': {
-    label: 'is between',
+    key: 'filters.number.isBetween',
     value: 'is between',
     target: 'multiple',
     pluralOf: 'is',
@@ -347,7 +348,7 @@ export const numberFilterDetails = {
     negation: 'is not between',
   },
   'is not between': {
-    label: 'is not between',
+    key: 'filters.number.isNotBetween',
     value: 'is not between',
     target: 'multiple',
     pluralOf: 'is not',
@@ -358,11 +359,11 @@ export const numberFilterDetails = {
 } as const satisfies FilterDetails<'number'>
 
 export const filterTypeOperatorDetails: FilterTypeOperatorDetails = {
-  text: textFilterDetails,
-  number: numberFilterDetails,
-  date: dateFilterDetails,
-  option: optionFilterDetails,
-  multiOption: multiOptionFilterDetails,
+  text: textFilterOperators,
+  number: numberFilterOperators,
+  date: dateFilterOperators,
+  option: optionFilterOperators,
+  multiOption: multiOptionFilterOperators,
 }
 
 /*

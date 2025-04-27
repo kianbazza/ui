@@ -450,14 +450,14 @@ We can use the `min()` and `max()` methods to set the minimum and maximum values
 These aren't hard limits, but rather used to set the visual boundaries for the range slider.
 
 ```ts {7-8}
-  dtf
-    .number()
-    .accessor((row) => row.estimatedHours)
-    .id('estimatedHours')
-    .displayName('Estimated hours')
-    .icon(ClockIcon)
-    .min(0)
-    .max(100)
+dtf
+  .number()
+  .accessor((row) => row.estimatedHours)
+  .id('estimatedHours')
+  .displayName('Estimated hours')
+  .icon(ClockIcon)
+  .min(0)
+  .max(100)
 ```
 
 #### Build
@@ -622,6 +622,84 @@ const { columns, filters, actions, strategy } = useDataTableFilters({
     labels: [labelOptions, facetedLabels.data],
   },
 })
+```
+
+### Internationalization
+
+The standard installation for the component provides English (`en`) localization via the `lib/i18n.ts` and `locales/en.json` files.
+
+We provide an add-on to add support for additional locales:
+
+- `en` (English) - **default**
+- `fr` (French)
+
+#### Installation
+
+> [!IMPORTANT] When prompted (`y/N`), explicitly overwrite the `lib/i18n.ts` file.
+
+> [!NOTE] Feel free to remove any unused locales after the installation.
+
+```bash
+npx shadcn@latest add https://ui.bazza.dev/r/filters/i18n
+```
+
+This add-on:
+
+- Overwrites the `lib/i18n.ts` file to add all supported locales.
+- Adds all supported locales to your project, under `locales/[locale].json`.
+
+#### Usage
+
+You can specify the chosen `locale` for the `<DataTableFilter />` component and `useDataTableFilters()` hook:
+
+```tsx
+<DataTableFilter 
+  filters={filters}
+  columns={columns}
+  actions={actions}
+  strategy={strategy}
+  locale="fr"
+/>
+```
+
+```ts
+useDataTableFilters({
+  /* ... */
+  locale: 'fr',
+})
+```
+
+If no `locale` is provided, the component defaults to `en` (English).
+
+#### Adding a custom locale
+
+> [!NOTE] If you spend the time to add a locale, please consider contributing it back to the project!
+
+You can add a new locale by create a new file in the `locales/` directory. The filename should match the locale code (e.g. `fr.json`).
+
+Use the existing `locales/en.json` file as a reference for the required keys. Add your translations as values for the keys.
+
+Then, extend the `Locale` type in `lib/i18n.ts` to include your new locale:
+
+```ts title="lib/i18n.ts"
+import en from '../locales/en.json'
+import fr from '../locales/fr.json'
+import xx from '../locales/xx.json' // [!code ++]
+
+export type Locale = 'en' | 'fr' // [!code --]
+export type Locale = 'en' | 'fr' | 'xx' // [!code ++]
+
+type Translations = Record<string, string>
+
+const translations: Record<Locale, Translations> = {
+  en,
+  fr,
+  xx, // [!code ++]
+}
+
+export function t(key: string, locale: Locale): string {
+  return translations[locale][key] ?? key
+}
 ```
 
 ## Integrations

@@ -23,6 +23,7 @@ import type {
   FiltersState,
 } from '../core/types'
 import { getColumn } from '../lib/helpers'
+import { type Locale, t } from '../lib/i18n'
 import { FilterValueController } from './filter-value'
 
 interface FilterSelectorProps<TData> {
@@ -30,6 +31,7 @@ interface FilterSelectorProps<TData> {
   columns: Column<TData>[]
   actions: DataTableFilterActions
   strategy: FilterStrategy
+  locale?: Locale
 }
 
 export const FilterSelector = memo(__FilterSelector) as typeof __FilterSelector
@@ -39,6 +41,7 @@ function __FilterSelector<TData>({
   columns,
   actions,
   strategy,
+  locale = 'en',
 }: FilterSelectorProps<TData>) {
   const [open, setOpen] = useState(false)
   const [value, setValue] = useState('')
@@ -72,6 +75,7 @@ function __FilterSelector<TData>({
           column={column as Column<TData, ColumnDataType>}
           actions={actions}
           strategy={strategy}
+          locale={locale}
         />
       ) : (
         <Command loop>
@@ -79,9 +83,9 @@ function __FilterSelector<TData>({
             value={value}
             onValueChange={setValue}
             ref={inputRef}
-            placeholder="Search..."
+            placeholder={t('search', locale)}
           />
-          <CommandEmpty>No results.</CommandEmpty>
+          <CommandEmpty>{t('noresults', locale)}</CommandEmpty>
           <CommandList className="max-h-fit">
             <CommandGroup>
               {columns.map((column) => (
@@ -112,7 +116,7 @@ function __FilterSelector<TData>({
           className={cn('h-7', hasFilters && 'w-fit !px-2')}
         >
           <FilterIcon className="size-4" />
-          {!hasFilters && <span>Filter</span>}
+          {!hasFilters && <span>{t('filter', locale)}</span>}
         </Button>
       </PopoverTrigger>
       <PopoverContent

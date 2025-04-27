@@ -120,6 +120,40 @@
           "path": "registry/data-table-filter/ui/debounced-input.tsx",
           "type": "registry:file",
           "target": "components/data-table-filter/ui/debounced-input.tsx"
+        },
+        {
+          "path": "registry/data-table-filter/lib/i18n.default.ts",
+          "type": "registry:file",
+          "target": "components/data-table-filter/lib/i18n.ts"
+        },
+        {
+          "path": "registry/data-table-filter/locales/en.json",
+          "type": "registry:file",
+          "target": "components/data-table-filter/locales/en.json"
+        }
+      ]
+    },
+    {
+      "name": "data-table-filter-i18n",
+      "title": "Data table filter - i18n (add-on)",
+      "description": "An add-on for the data table filter component to provide i18n support.",
+      "author": "Kian Bazarjani <kian@bazza.dev>",
+      "type": "registry:block",
+      "files": [
+        {
+          "path": "registry/data-table-filter/lib/i18n.ts",
+          "type": "registry:file",
+          "target": "components/data-table-filter/lib/i18n.ts"
+        },
+        {
+          "path": "registry/data-table-filter/locales/en.json",
+          "type": "registry:file",
+          "target": "components/data-table-filter/locales/en.json"
+        },
+        {
+          "path": "registry/data-table-filter/locales/fr.json",
+          "type": "registry:file",
+          "target": "components/data-table-filter/locales/fr.json"
         }
       ]
     }
