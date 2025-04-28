@@ -132,6 +132,21 @@ export type OptionColumnIds<
   [K in keyof T]: OptionColumnId<T[K]>
 }[number]
 
+export type NumberColumnId<T> = T extends ColumnConfig<
+  infer TData,
+  'number',
+  infer TVal,
+  infer TId
+>
+  ? TId
+  : never
+
+export type NumberColumnIds<
+  T extends ReadonlyArray<ColumnConfig<any, any, any, any>>,
+> = {
+  [K in keyof T]: NumberColumnId<T[K]>
+}[number]
+
 /*
  * Describes a helper function for creating column configurations.
  */
@@ -155,7 +170,7 @@ export type ColumnProperties<TData, TVal> = {
   getOptions: () => ColumnOption[]
   getValues: () => ElementType<NonNullable<TVal>>[]
   getFacetedUniqueValues: () => Map<string, number> | undefined
-  getFacetedMinMaxValues: () => number[]
+  getFacetedMinMaxValues: () => number[] | undefined
   prefetchOptions: () => Promise<void> // Prefetch options
   prefetchValues: () => Promise<void> // Prefetch values
   prefetchFacetedUniqueValues: () => Promise<void> // Prefetch faceted unique values
