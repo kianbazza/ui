@@ -143,6 +143,7 @@ export function FilterableColumn<TData, TType extends ColumnDataType, TVal>({
     column.prefetchOptions()
     column.prefetchValues()
     column.prefetchFacetedUniqueValues()
+    column.prefetchFacetedMinMaxValues()
   }, [column])
 
   useEffect(() => {

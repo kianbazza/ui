@@ -329,7 +329,7 @@ export function getFacetedMinMaxValues<
   column: ColumnConfig<TData, TType, TVal>,
   data: TData[],
   strategy: FilterStrategy,
-): number[] | undefined {
+): [number, number] | undefined {
   if (column.type !== 'number') return undefined // Only applicable to number columns
 
   if (typeof column.min === 'number' && typeof column.max === 'number') {
@@ -380,7 +380,7 @@ export function createColumns<TData>(
       { key: `faceted-${columnConfig.id}` },
     )
 
-    const getMinMaxValues: () => number[] | undefined = memo(
+    const getMinMaxValues: () => [number, number] | undefined = memo(
       () => [data, strategy],
       () => getFacetedMinMaxValues(columnConfig, data, strategy),
       { key: `minmax-${columnConfig.id}` },
@@ -397,9 +397,11 @@ export function createColumns<TData>(
       prefetchOptions: async () => {}, // Placeholder, defined below
       prefetchValues: async () => {},
       prefetchFacetedUniqueValues: async () => {},
+      prefetchFacetedMinMaxValues: async () => {},
       _prefetchedOptionsCache: null, // Initialize private cache
       _prefetchedValuesCache: null,
-      _prefetchedFacetedCache: null,
+      _prefetchedFacetedUniqueValuesCache: null,
+      _prefetchedFacetedMinMaxValuesCache: null,
     }
 
     if (strategy === 'client') {
@@ -431,13 +433,28 @@ export function createColumns<TData>(
       }
 
       column.prefetchFacetedUniqueValues = async (): Promise<void> => {
-        if (!column._prefetchedFacetedCache) {
+        if (!column._prefetchedFacetedUniqueValuesCache) {
           await new Promise((resolve) =>
             setTimeout(() => {
               const facetedMap = getUniqueValues()
-              column._prefetchedFacetedCache = facetedMap ?? null
+              column._prefetchedFacetedUniqueValuesCache = facetedMap ?? null
               // console.log(
               //   `Prefetched faceted unique values for ${columnConfig.id}`,
+              // )
+              resolve(undefined)
+            }, 0),
+          )
+        }
+      }
+
+      column.prefetchFacetedMinMaxValues = async (): Promise<void> => {
+        if (!column._prefetchedFacetedMinMaxValuesCache) {
+          await new Promise((resolve) =>
+            setTimeout(() => {
+              const value = getMinMaxValues()
+              column._prefetchedFacetedMinMaxValuesCache = value ?? null
+              // console.log(
+              //   `Prefetched faceted min/max values for ${columnConfig.id}`,
               // )
               resolve(undefined)
             }, 0),

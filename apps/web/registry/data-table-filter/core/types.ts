@@ -170,16 +170,18 @@ export type ColumnProperties<TData, TVal> = {
   getOptions: () => ColumnOption[]
   getValues: () => ElementType<NonNullable<TVal>>[]
   getFacetedUniqueValues: () => Map<string, number> | undefined
-  getFacetedMinMaxValues: () => number[] | undefined
+  getFacetedMinMaxValues: () => [number, number] | undefined
   prefetchOptions: () => Promise<void> // Prefetch options
   prefetchValues: () => Promise<void> // Prefetch values
   prefetchFacetedUniqueValues: () => Promise<void> // Prefetch faceted unique values
+  prefetchFacetedMinMaxValues: () => Promise<void> // Prefetch faceted min/max values
 }
 
 export type ColumnPrivateProperties<TData, TVal> = {
   _prefetchedOptionsCache: ColumnOption[] | null
   _prefetchedValuesCache: ElementType<NonNullable<TVal>>[] | null
-  _prefetchedFacetedCache: Map<string, number> | null
+  _prefetchedFacetedUniqueValuesCache: Map<string, number> | null
+  _prefetchedFacetedMinMaxValuesCache: [number, number] | null
 }
 
 export type Column<
