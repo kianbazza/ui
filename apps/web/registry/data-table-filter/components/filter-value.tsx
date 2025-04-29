@@ -9,7 +9,6 @@ import {
   CommandItem,
   CommandList,
 } from '@/components/ui/command'
-import { Input } from '@/components/ui/input'
 import {
   Popover,
   PopoverAnchor,
@@ -23,6 +22,7 @@ import { isEqual } from 'date-fns'
 import { format } from 'date-fns'
 import { Ellipsis } from 'lucide-react'
 import {
+  act,
   cloneElement,
   isValidElement,
   memo,
@@ -40,6 +40,7 @@ import type {
   FilterModel,
   FilterStrategy,
 } from '../core/types'
+import { useDebounceCallback } from '../hooks/use-debounce-callback'
 import { take } from '../lib/array'
 import { createNumberRange } from '../lib/helpers'
 import { type Locale, t } from '../lib/i18n'
@@ -652,23 +653,33 @@ export function FilterValueNumberController<TData>({
   }, [filter?.values, values])
 
   const isNumberRange =
+    // filter && values.length === 2
     filter && numberFilterOperators[filter.operator].target === 'multiple'
+
+  const setFilterOperatorDebounced = useDebounceCallback(
+    actions.setFilterOperator,
+    500,
+  )
+  const setFilterValueDebounced = useDebounceCallback(
+    actions.setFilterValue,
+    500,
+  )
 
   const changeNumber = (value: number[]) => {
     setValues(value)
-    actions.setFilterValue(column, value)
+    setFilterValueDebounced(column as any, value)
   }
 
   const changeMinNumber = (value: number) => {
     const newValues = createNumberRange([value, values[1]])
     setValues(newValues)
-    actions.setFilterValue(column, newValues)
+    setFilterValueDebounced(column as any, newValues)
   }
 
   const changeMaxNumber = (value: number) => {
     const newValues = createNumberRange([values[0], value])
     setValues(newValues)
-    actions.setFilterValue(column, newValues)
+    setFilterValueDebounced(column as any, newValues)
   }
 
   const changeType = useCallback(
@@ -690,6 +701,10 @@ export function FilterValueNumberController<TData>({
 
       // Update local state
       setValues(newValues)
+
+      // Cancel in-flight debounced calls to prevent flicker/race conditions
+      setFilterOperatorDebounced.cancel()
+      setFilterValueDebounced.cancel()
 
       // Update global filter state atomically
       actions.setFilterOperator(column.id, newOperator)
