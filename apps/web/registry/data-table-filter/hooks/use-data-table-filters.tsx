@@ -126,6 +126,7 @@ export function useDataTableFilters<
                 ...prev,
                 {
                   columnId: column.id,
+                  type: column.type,
                   operator:
                     values.length > 1
                       ? DEFAULT_OPERATORS[column.type].multiple
@@ -146,6 +147,7 @@ export function useDataTableFilters<
               f.columnId === column.id
                 ? {
                     columnId: column.id,
+                    type: column.type,
                     operator: newOperator,
                     values: newValues,
                   }
@@ -163,6 +165,7 @@ export function useDataTableFilters<
                 ...prev,
                 {
                   columnId: column.id,
+                  type: column.type,
                   operator:
                     values.length > 1
                       ? DEFAULT_OPERATORS[column.type].multiple
@@ -186,6 +189,7 @@ export function useDataTableFilters<
               f.columnId === column.id
                 ? {
                     columnId: column.id,
+                    type: column.type,
                     operator: newOperator,
                     values: newValues,
                   }
@@ -224,6 +228,7 @@ export function useDataTableFilters<
               f.columnId === column.id
                 ? {
                     columnId: column.id,
+                    type: column.type,
                     operator: newOperator,
                     values: newValues,
                   }
@@ -254,6 +259,7 @@ export function useDataTableFilters<
               f.columnId === column.id
                 ? {
                     columnId: column.id,
+                    type: column.type,
                     operator: newOperator,
                     values: newValues,
                   }
@@ -287,6 +293,7 @@ export function useDataTableFilters<
               ...prev,
               {
                 columnId: column.id,
+                type: column.type,
                 operator:
                   values.length > 1
                     ? DEFAULT_OPERATORS[column.type].multiple
@@ -304,6 +311,7 @@ export function useDataTableFilters<
           )
           const newFilter = {
             columnId: column.id,
+            type: column.type,
             operator: newOperator,
             values: newValues as any,
           } satisfies FilterModel<TType>
