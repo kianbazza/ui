@@ -61,6 +61,14 @@ We still recommend reading through the [Concepts](#concepts) and [Guides](#guide
 
 Let's take a look at the most important concepts for using this component.
 
+#### Strategy
+
+The `FilterStrategy` decides where filtering happens: on the `client` or on the `server`.
+
+With the `client` strategy, the client receives all the table data and filters it locally in the browser.
+
+With the `server` strategy, the client sends filter requests to the server. The server applies the filters to the data and sends back only the filtered data. The client never sees the entire dataset.
+
 #### Filters
 
 The state of the applied filters on a table is represented as `FiltersState`, which is a `FilterModel[]`:
