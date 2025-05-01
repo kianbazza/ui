@@ -78,7 +78,15 @@ function __FilterSelector<TData>({
           locale={locale}
         />
       ) : (
-        <Command loop>
+        <Command
+          loop
+          filter={(value, search, keywords) => {
+            const extendValue = `${value} ${keywords?.join(' ')}`
+            return extendValue.toLowerCase().includes(search.toLowerCase())
+              ? 1
+              : 0
+          }}
+        >
           <CommandInput
             value={value}
             onValueChange={setValue}
