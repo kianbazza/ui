@@ -281,6 +281,7 @@ export type FilterOperators = {
  */
 export type FilterModel<TType extends ColumnDataType = any> = {
   columnId: string
+  type: TType
   operator: FilterOperators[TType]
   values: FilterValues<TType>
 }

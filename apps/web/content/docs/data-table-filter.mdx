@@ -69,20 +69,6 @@ With the `client` strategy, the client receives all the table data and filters i
 
 With the `server` strategy, the client sends filter requests to the server. The server applies the filters to the data and sends back only the filtered data. The client never sees the entire dataset.
 
-#### Filters
-
-The state of the applied filters on a table is represented as `FiltersState`, which is a `FilterModel[]`:
-
-```ts
-type FilterModel<TType extends ColumnDataType = any> = {
-  columnId: string
-  operator: FilterOperators[TType] // i.e. 'is', 'is not', 'is any of', etc.
-  values: FilterValues<TType>
-}
-```
-
-Each `FilterModel` represents a single filter for a specific column.
-
 #### Column data types
 
 When you want to make a column filterable, you first need to define what type of data it contains.
@@ -97,6 +83,21 @@ type ColumnDataType =
   | 'option'       /* Single-valued option (e.g. status) */
   | 'multiOption'  /* Multi-valued option (e.g. labels) */
 ```
+
+#### Filters
+
+The state of the applied filters on a table is represented as `FiltersState`, which is a `FilterModel[]`:
+
+```ts
+type FilterModel<TType extends ColumnDataType = any> = {
+  columnId: string
+  type: TType // option, multiOption, text, date, number
+  operator: FilterOperators[TType] // i.e. 'is', 'is not', 'is any of', etc.
+  values: FilterValues<TType>
+}
+```
+
+Each `FilterModel` represents a single filter for a specific column.
 
 #### Column options
 
