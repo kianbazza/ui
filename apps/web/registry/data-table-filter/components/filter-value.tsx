@@ -8,6 +8,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
+  CommandSeparator,
 } from '@/components/ui/command'
 import {
   Popover,
@@ -22,7 +23,6 @@ import { isEqual } from 'date-fns'
 import { format } from 'date-fns'
 import { Ellipsis } from 'lucide-react'
 import {
-  act,
   cloneElement,
   isValidElement,
   memo,
@@ -474,62 +474,72 @@ export function FilterValueOptionController<TData>({
   filter,
   column,
   actions,
-  strategy,
   locale = 'en',
 }: FilterValueControllerProps<TData, 'option'>) {
-  const options = useMemo(() => column.getOptions(), [column])
-  const optionsCount = useMemo(() => column.getFacetedUniqueValues(), [column])
+  // Compute initial options once per mount
+  const initialOptions = useMemo(() => {
+    const counts = column.getFacetedUniqueValues()
+    return column.getOptions().map((o) => ({
+      ...o,
+      selected: filter?.values.includes(o.value),
+      initialSelected: filter?.values.includes(o.value),
+      count: counts?.get(o.value) ?? 0,
+    }))
+  }, [])
 
-  function handleOptionSelect(value: string, check: boolean) {
-    if (check) actions.addFilterValue(column, [value])
-    else actions.removeFilterValue(column, [value])
-  }
+  const [options, setOptions] = useState(initialOptions)
+
+  // Update selected state when filter values change
+  useEffect(() => {
+    setOptions((prev) =>
+      prev.map((o) => ({ ...o, selected: filter?.values.includes(o.value) })),
+    )
+  }, [filter?.values])
+
+  const handleToggle = useCallback(
+    (value: string, checked: boolean) => {
+      if (checked) actions.addFilterValue(column, [value])
+      else actions.removeFilterValue(column, [value])
+    },
+    [actions, column],
+  )
+
+  // Derive groups based on `initialSelected` only
+  const { selectedOptions, unselectedOptions } = useMemo(() => {
+    const sel: typeof options = []
+    const unsel: typeof options = []
+    for (const o of options) {
+      if (o.initialSelected) sel.push(o)
+      else unsel.push(o)
+    }
+    return { selectedOptions: sel, unselectedOptions: unsel }
+  }, [options])
 
   return (
     <Command loop>
       <CommandInput autoFocus placeholder={t('search', locale)} />
       <CommandEmpty>{t('noresults', locale)}</CommandEmpty>
       <CommandList className="max-h-fit">
-        <CommandGroup>
-          {options.map((v) => {
-            const checked = Boolean(filter?.values.includes(v.value))
-            const count = optionsCount?.get(v.value) ?? 0
-
-            return (
-              <CommandItem
-                key={v.value}
-                onSelect={() => {
-                  handleOptionSelect(v.value, !checked)
-                }}
-                className="group flex items-center justify-between gap-1.5"
-              >
-                <div className="flex items-center gap-1.5">
-                  <Checkbox
-                    checked={checked}
-                    className="opacity-0 data-[state=checked]:opacity-100 group-data-[selected=true]:opacity-100 dark:border-ring"
-                  />
-                  {v.icon &&
-                    (isValidElement(v.icon) ? (
-                      v.icon
-                    ) : (
-                      <v.icon className="size-4 text-primary" />
-                    ))}
-                  <span>
-                    {v.label}
-                    <sup
-                      className={cn(
-                        !optionsCount && 'hidden',
-                        'ml-0.5 tabular-nums tracking-tight text-muted-foreground',
-                        count === 0 && 'slashed-zero',
-                      )}
-                    >
-                      {count < 100 ? count : '100+'}
-                    </sup>
-                  </span>
-                </div>
-              </CommandItem>
-            )
-          })}
+        <CommandGroup className={cn(selectedOptions.length === 0 && 'hidden')}>
+          {selectedOptions.map((option) => (
+            <OptionItem
+              key={option.value}
+              option={option}
+              onToggle={handleToggle}
+            />
+          ))}
+        </CommandGroup>
+        <CommandSeparator />
+        <CommandGroup
+          className={cn(unselectedOptions.length === 0 && 'hidden')}
+        >
+          {unselectedOptions.map((option) => (
+            <OptionItem
+              key={option.value}
+              option={option}
+              onToggle={handleToggle}
+            />
+          ))}
         </CommandGroup>
       </CommandList>
     </Command>
@@ -540,63 +550,75 @@ export function FilterValueMultiOptionController<TData>({
   filter,
   column,
   actions,
-  strategy,
   locale = 'en',
 }: FilterValueControllerProps<TData, 'multiOption'>) {
-  const options = useMemo(() => column.getOptions(), [column])
-  const optionsCount = useMemo(() => column.getFacetedUniqueValues(), [column])
+  // Compute initial options once per mount
+  const initialOptions = useMemo(() => {
+    const counts = column.getFacetedUniqueValues()
+    return column.getOptions().map((o) => {
+      const selected = filter?.values.includes(o.value)
+      return {
+        ...o,
+        selected,
+        initialSelected: selected,
+        count: counts?.get(o.value) ?? 0,
+      }
+    })
+  }, [])
 
-  // Handles the selection/deselection of an option
-  function handleOptionSelect(value: string, check: boolean) {
-    if (check) actions.addFilterValue(column, [value])
-    else actions.removeFilterValue(column, [value])
-  }
+  const [options, setOptions] = useState(initialOptions)
+
+  // Update selected state when filter values change
+  useEffect(() => {
+    setOptions((prev) =>
+      prev.map((o) => ({ ...o, selected: filter?.values.includes(o.value) })),
+    )
+  }, [filter?.values])
+
+  const handleToggle = useCallback(
+    (value: string, checked: boolean) => {
+      if (checked) actions.addFilterValue(column, [value])
+      else actions.removeFilterValue(column, [value])
+    },
+    [actions, column],
+  )
+
+  // Derive groups based on `initialSelected` only
+  const { selectedOptions, unselectedOptions } = useMemo(() => {
+    const sel: typeof options = []
+    const unsel: typeof options = []
+    for (const o of options) {
+      if (o.initialSelected) sel.push(o)
+      else unsel.push(o)
+    }
+    return { selectedOptions: sel, unselectedOptions: unsel }
+  }, [options])
 
   return (
     <Command loop>
       <CommandInput autoFocus placeholder={t('search', locale)} />
       <CommandEmpty>{t('noresults', locale)}</CommandEmpty>
       <CommandList>
-        <CommandGroup>
-          {options.map((v) => {
-            const checked = Boolean(filter?.values?.includes(v.value))
-            const count = optionsCount?.get(v.value) ?? 0
-
-            return (
-              <CommandItem
-                key={v.value}
-                onSelect={() => {
-                  handleOptionSelect(v.value, !checked)
-                }}
-                className="group flex items-center justify-between gap-1.5"
-              >
-                <div className="flex items-center gap-1.5">
-                  <Checkbox
-                    checked={checked}
-                    className="opacity-0 data-[state=checked]:opacity-100 group-data-[selected=true]:opacity-100 dark:border-ring"
-                  />
-                  {v.icon &&
-                    (isValidElement(v.icon) ? (
-                      v.icon
-                    ) : (
-                      <v.icon className="size-4 text-primary" />
-                    ))}
-                  <span>
-                    {v.label}
-                    <sup
-                      className={cn(
-                        !optionsCount && 'hidden',
-                        'ml-0.5 tabular-nums tracking-tight text-muted-foreground',
-                        count === 0 && 'slashed-zero',
-                      )}
-                    >
-                      {count < 100 ? count : '100+'}
-                    </sup>
-                  </span>
-                </div>
-              </CommandItem>
-            )
-          })}
+        <CommandGroup className={cn(selectedOptions.length === 0 && 'hidden')}>
+          {selectedOptions.map((option) => (
+            <OptionItem
+              key={option.value}
+              option={option}
+              onToggle={handleToggle}
+            />
+          ))}
+        </CommandGroup>
+        <CommandSeparator />
+        <CommandGroup
+          className={cn(unselectedOptions.length === 0 && 'hidden')}
+        >
+          {unselectedOptions.map((option) => (
+            <OptionItem
+              key={option.value}
+              option={option}
+              onToggle={handleToggle}
+            />
+          ))}
         </CommandGroup>
       </CommandList>
     </Command>
