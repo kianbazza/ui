@@ -36,6 +36,7 @@ import { numberFilterOperators } from '../core/operators'
 import type {
   Column,
   ColumnDataType,
+  ColumnOptionExtended,
   DataTableFilterActions,
   FilterModel,
   FilterStrategy,
@@ -419,6 +420,55 @@ function __FilterValueController<TData, TType extends ColumnDataType>({
       return null
   }
 }
+
+interface OptionItemProps {
+  option: ColumnOptionExtended & { initialSelected: boolean }
+  onToggle: (value: string, checked: boolean) => void
+}
+
+// Memoized option item to prevent re-renders unless its own props change
+const OptionItem = memo(function OptionItem({
+  option,
+  onToggle,
+}: OptionItemProps) {
+  const { value, label, icon: Icon, selected, count } = option
+  const handleSelect = useCallback(() => {
+    onToggle(value, !selected)
+  }, [onToggle, value, selected])
+
+  return (
+    <CommandItem
+      key={value}
+      onSelect={handleSelect}
+      className="group flex items-center justify-between gap-1.5"
+    >
+      <div className="flex items-center gap-1.5">
+        <Checkbox
+          checked={selected}
+          className="opacity-0 data-[state=checked]:opacity-100 group-data-[selected=true]:opacity-100 dark:border-ring"
+        />
+        {Icon &&
+          (isValidElement(Icon) ? (
+            Icon
+          ) : (
+            <Icon className="size-4 text-primary" />
+          ))}
+        <span>
+          {label}
+          <sup
+            className={cn(
+              count == null && 'hidden',
+              'ml-0.5 tabular-nums tracking-tight text-muted-foreground',
+              count === 0 && 'slashed-zero',
+            )}
+          >
+            {typeof count === 'number' ? (count < 100 ? count : '100+') : ''}
+          </sup>
+        </span>
+      </div>
+    </CommandItem>
+  )
+})
 
 export function FilterValueOptionController<TData>({
   filter,
