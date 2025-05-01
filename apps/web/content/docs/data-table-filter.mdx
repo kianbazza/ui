@@ -462,9 +462,12 @@ dtf
 
 With the `client` strategy, **you could skip this step** - the min/max values can be computed from the data.
 
-With the `server` strategy, you will need to specify the min/max values; *we can't compute them for you, since we don't have access to the full dataset*. For this case, we recommend setting the faceted `min` and `max` values when we create our instance (covered later on).
+> [!NOTE] You should specify the min/max values if you're using the `server` strategy.
+> With the `server` strategy, we can't compute these values for you, since we don't have access to the full dataset.
+>
+> For this case, we recommend setting the faceted `min` and `max` values when we create our instance [(covered later on)](#passing-faceted-values-to-the-instance).
 
-If we cannot determine the min/max values *(i.e. if you use `server` strategy without specifying the values)*, filtering will still work as expected, but the slider will not be visible.
+> [!IMPORTANT] If we cannot determine the min/max values *(i.e. if you use `server` strategy without specifying the values)*, filtering will still work as expected, but the slider will not be visible.
 
 #### Build
 
