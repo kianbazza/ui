@@ -1,4 +1,5 @@
 import { Button } from '@/components/ui/button'
+import { Checkbox } from '@/components/ui/checkbox'
 import {
   Command,
   CommandEmpty,
@@ -13,8 +14,17 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { cn } from '@/lib/utils'
-import { ArrowRightIcon, FilterIcon } from 'lucide-react'
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ArrowRightIcon, ChevronRightIcon, FilterIcon } from 'lucide-react'
+import {
+  isValidElement,
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import React from 'react'
 import type {
   Column,
   ColumnDataType,
@@ -22,6 +32,7 @@ import type {
   FilterStrategy,
   FiltersState,
 } from '../core/types'
+import { isAnyOf } from '../lib/array'
 import { getColumn } from '../lib/helpers'
 import { type Locale, t } from '../lib/i18n'
 import { FilterValueController } from './filter-value'
@@ -78,7 +89,15 @@ function __FilterSelector<TData>({
           locale={locale}
         />
       ) : (
-        <Command loop>
+        <Command
+          loop
+          filter={(value, search, keywords) => {
+            const extendValue = `${value} ${keywords?.join(' ')}`
+            return extendValue.toLowerCase().includes(search.toLowerCase())
+              ? 1
+              : 0
+          }}
+        >
           <CommandInput
             value={value}
             onValueChange={setValue}
@@ -95,6 +114,14 @@ function __FilterSelector<TData>({
                   setProperty={setProperty}
                 />
               ))}
+              <QuickSearchFilters
+                search={value}
+                filters={filters}
+                columns={columns}
+                actions={actions}
+                strategy={strategy}
+                locale={locale}
+              />
             </CommandGroup>
           </CommandList>
         </Command>
@@ -174,6 +201,8 @@ export function FilterableColumn<TData, TType extends ColumnDataType, TVal>({
   return (
     <CommandItem
       ref={itemRef}
+      value={column.id}
+      keywords={[column.displayName]}
       onSelect={() => setProperty(column.id)}
       className="group"
       onMouseEnter={prefetch}
@@ -186,5 +215,106 @@ export function FilterableColumn<TData, TType extends ColumnDataType, TVal>({
         <ArrowRightIcon className="size-4 opacity-0 group-aria-selected:opacity-100" />
       </div>
     </CommandItem>
+  )
+}
+
+interface QuickSearchFiltersProps<TData> {
+  search?: string
+  filters: FiltersState
+  columns: Column<TData>[]
+  actions: DataTableFilterActions
+  strategy: FilterStrategy
+  locale?: Locale
+}
+
+export const QuickSearchFilters = memo(
+  __QuickSearchFilters,
+) as typeof __QuickSearchFilters
+
+function __QuickSearchFilters<TData>({
+  search,
+  filters,
+  columns,
+  actions,
+  strategy,
+  locale = 'en',
+}: QuickSearchFiltersProps<TData>) {
+  if (!search || search.trim().length < 2) return null
+
+  const cols = useMemo(
+    () =>
+      columns.filter((c) =>
+        isAnyOf<ColumnDataType>(c.type, ['option', 'multiOption']),
+      ),
+    [columns],
+  )
+
+  return (
+    <>
+      {cols.map((column) => {
+        const filter = filters.find((f) => f.columnId === column.id)
+        const options = column.getOptions()
+        const optionsCount = column.getFacetedUniqueValues()
+
+        function handleOptionSelect(value: string, check: boolean) {
+          if (check) actions.addFilterValue(column, [value])
+          else actions.removeFilterValue(column, [value])
+        }
+
+        return (
+          <React.Fragment key={column.id}>
+            {options.map((v) => {
+              const checked = Boolean(filter?.values.includes(v.value))
+              const count = optionsCount?.get(v.value) ?? 0
+
+              return (
+                <CommandItem
+                  key={v.value}
+                  value={v.value}
+                  keywords={[v.label, v.value]}
+                  onSelect={() => {
+                    handleOptionSelect(v.value, !checked)
+                  }}
+                  className="group"
+                >
+                  <div className="flex items-center gap-1.5 group">
+                    <Checkbox
+                      checked={checked}
+                      className="opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100 group-data-[selected=true]:opacity-100 dark:border-ring mr-1"
+                    />
+                    <div className="flex items-center w-4 justify-center">
+                      {v.icon &&
+                        (isValidElement(v.icon) ? (
+                          v.icon
+                        ) : (
+                          <v.icon className="size-4 text-primary" />
+                        ))}
+                    </div>
+                    <div className="flex items-center gap-0.5">
+                      <span className="text-muted-foreground">
+                        {column.displayName}
+                      </span>
+                      <ChevronRightIcon className="size-3.5 text-muted-foreground/75" />
+                      <span>
+                        {v.label}
+                        <sup
+                          className={cn(
+                            !optionsCount && 'hidden',
+                            'ml-0.5 tabular-nums tracking-tight text-muted-foreground',
+                            count === 0 && 'slashed-zero',
+                          )}
+                        >
+                          {count < 100 ? count : '100+'}
+                        </sup>
+                      </span>
+                    </div>
+                  </div>
+                </CommandItem>
+              )
+            })}
+          </React.Fragment>
+        )
+      })}
+    </>
   )
 }
