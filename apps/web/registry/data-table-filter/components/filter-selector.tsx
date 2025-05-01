@@ -182,6 +182,8 @@ export function FilterableColumn<TData, TType extends ColumnDataType, TVal>({
   return (
     <CommandItem
       ref={itemRef}
+      value={column.id}
+      keywords={[column.displayName]}
       onSelect={() => setProperty(column.id)}
       className="group"
       onMouseEnter={prefetch}
