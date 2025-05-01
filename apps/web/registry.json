@@ -87,6 +87,16 @@
           "target": "components/data-table-filter/hooks/use-data-table-filters.tsx"
         },
         {
+          "path": "registry/data-table-filter/hooks/use-debounce-callback.tsx",
+          "type": "registry:file",
+          "target": "components/data-table-filter/hooks/use-debounce-callback.tsx"
+        },
+        {
+          "path": "registry/data-table-filter/hooks/use-unmount.tsx",
+          "type": "registry:file",
+          "target": "components/data-table-filter/hooks/use-unmount.tsx"
+        },
+        {
           "path": "registry/data-table-filter/integrations/tanstack-table/index.tsx",
           "type": "registry:file",
           "target": "components/data-table-filter/integrations/tanstack-table/index.tsx"
@@ -100,6 +110,11 @@
           "path": "registry/data-table-filter/lib/array.ts",
           "type": "registry:file",
           "target": "components/data-table-filter/lib/array.ts"
+        },
+        {
+          "path": "registry/data-table-filter/lib/debounce.ts",
+          "type": "registry:file",
+          "target": "components/data-table-filter/lib/debounce.ts"
         },
         {
           "path": "registry/data-table-filter/lib/filter-fns.ts",

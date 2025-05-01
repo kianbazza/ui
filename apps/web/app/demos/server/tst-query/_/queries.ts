@@ -1,6 +1,7 @@
 import type { FiltersState } from '@/registry/data-table-filter/core/types'
 import type { QueryOptions } from '@tanstack/react-query'
 import {
+  fetchFacetedHours,
   fetchFacetedLabels,
   fetchFacetedStatuses,
   fetchFacetedUsers,
@@ -51,5 +52,11 @@ export const queries = {
         queryKey: ['users', 'faceted'],
         queryFn: () => fetchFacetedUsers(),
       }) satisfies QueryOptions,
+  },
+  estimatedHours: {
+    faceted: () => ({
+      queryKey: ['estimatedHours', 'faceted'],
+      queryFn: () => fetchFacetedHours(),
+    }),
   },
 }

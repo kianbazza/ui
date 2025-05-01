@@ -28,6 +28,11 @@ export interface ColumnOption {
   icon?: React.ReactElement | React.ElementType
 }
 
+export interface ColumnOptionExtended extends ColumnOption {
+  selected?: boolean
+  count?: number
+}
+
 /*
  * Represents the data type (kind) of a column.
  */
@@ -132,6 +137,21 @@ export type OptionColumnIds<
   [K in keyof T]: OptionColumnId<T[K]>
 }[number]
 
+export type NumberColumnId<T> = T extends ColumnConfig<
+  infer TData,
+  'number',
+  infer TVal,
+  infer TId
+>
+  ? TId
+  : never
+
+export type NumberColumnIds<
+  T extends ReadonlyArray<ColumnConfig<any, any, any, any>>,
+> = {
+  [K in keyof T]: NumberColumnId<T[K]>
+}[number]
+
 /*
  * Describes a helper function for creating column configurations.
  */
@@ -155,16 +175,18 @@ export type ColumnProperties<TData, TVal> = {
   getOptions: () => ColumnOption[]
   getValues: () => ElementType<NonNullable<TVal>>[]
   getFacetedUniqueValues: () => Map<string, number> | undefined
-  getFacetedMinMaxValues: () => number[]
+  getFacetedMinMaxValues: () => [number, number] | undefined
   prefetchOptions: () => Promise<void> // Prefetch options
   prefetchValues: () => Promise<void> // Prefetch values
   prefetchFacetedUniqueValues: () => Promise<void> // Prefetch faceted unique values
+  prefetchFacetedMinMaxValues: () => Promise<void> // Prefetch faceted min/max values
 }
 
 export type ColumnPrivateProperties<TData, TVal> = {
   _prefetchedOptionsCache: ColumnOption[] | null
   _prefetchedValuesCache: ElementType<NonNullable<TVal>>[] | null
-  _prefetchedFacetedCache: Map<string, number> | null
+  _prefetchedFacetedUniqueValuesCache: Map<string, number> | null
+  _prefetchedFacetedMinMaxValuesCache: [number, number] | null
 }
 
 export type Column<
@@ -264,6 +286,7 @@ export type FilterOperators = {
  */
 export type FilterModel<TType extends ColumnDataType = any> = {
   columnId: string
+  type: TType
   operator: FilterOperators[TType]
   values: FilterValues<TType>
 }
