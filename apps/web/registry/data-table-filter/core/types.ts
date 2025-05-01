@@ -28,6 +28,11 @@ export interface ColumnOption {
   icon?: React.ReactElement | React.ElementType
 }
 
+export interface ColumnOptionExtended extends ColumnOption {
+  selected?: boolean
+  count?: number
+}
+
 /*
  * Represents the data type (kind) of a column.
  */
