@@ -456,7 +456,7 @@ export function FilterValueOptionController<TData>({
                 <div className="flex items-center gap-1.5">
                   <Checkbox
                     checked={checked}
-                    className="opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100 dark:border-ring"
+                    className="opacity-0 data-[state=checked]:opacity-100 group-data-[selected=true]:opacity-100 dark:border-ring"
                   />
                   {v.icon &&
                     (isValidElement(v.icon) ? (
@@ -523,7 +523,7 @@ export function FilterValueMultiOptionController<TData>({
                 <div className="flex items-center gap-1.5">
                   <Checkbox
                     checked={checked}
-                    className="opacity-0 group-hover:opacity-100 data-[state=checked]:opacity-100 dark:border-ring"
+                    className="opacity-0 data-[state=checked]:opacity-100 group-data-[selected=true]:opacity-100 dark:border-ring"
                   />
                   {v.icon &&
                     (isValidElement(v.icon) ? (
