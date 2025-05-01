@@ -10,6 +10,9 @@
 
 ### Changed
 
+- **feat(filters)**: track column data type in filter model ([#84](https://github.com/kianbazza/ui/pull/84))
+- **perf(filters)**: debounce updates to number filtering via slider ([#85](https://github.com/kianbazza/ui/pull/85))
+- **feat(filters)**: number filtering overhaul ([#82](https://github.com/kianbazza/ui/pull/82))
 - **feat(filters)**: use muted text color for operator display ([#55](https://github.com/kianbazza/ui/pull/55))
 - **refactor(filters)**: registry item files re-organization ([#54](https://github.com/kianbazza/ui/pull/54))
 
