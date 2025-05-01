@@ -325,25 +325,33 @@ export function getFacetedMinMaxValues<
   TData,
   TType extends ColumnDataType,
   TVal,
->(column: ColumnConfig<TData, TType, TVal>, data: TData[]): number[] {
-  if (column.type !== 'number') return [0, 0] // Only applicable to number columns
+>(
+  column: ColumnConfig<TData, TType, TVal>,
+  data: TData[],
+  strategy: FilterStrategy,
+): [number, number] | undefined {
+  if (column.type !== 'number') return undefined // Only applicable to number columns
+
+  if (typeof column.min === 'number' && typeof column.max === 'number') {
+    return [column.min, column.max]
+  }
+
+  if (strategy === 'server') {
+    return undefined
+  }
 
   const values = data
     .flatMap((row) => column.accessor(row) as Nullable<number>)
     .filter((v): v is number => typeof v === 'number' && !Number.isNaN(v))
 
   if (values.length === 0) {
-    return [column.min ?? 0, column.max ?? 100] // Fallback to config or reasonable defaults
+    return [0, 0] // Fallback to config or reasonable defaults
   }
 
   const min = Math.min(...values)
   const max = Math.max(...values)
 
-  // Apply config overrides if provided
-  return [
-    column.min !== undefined ? Math.max(min, column.min) : min,
-    column.max !== undefined ? Math.min(max, column.max) : max,
-  ]
+  return [min, max]
 }
 
 export function createColumns<TData>(
@@ -372,10 +380,9 @@ export function createColumns<TData>(
       { key: `faceted-${columnConfig.id}` },
     )
 
-    const getMinMaxValues: () => number[] = memo(
+    const getMinMaxValues: () => [number, number] | undefined = memo(
       () => [data, strategy],
-      () =>
-        strategy === 'client' ? getFacetedMinMaxValues(columnConfig, data) : [],
+      () => getFacetedMinMaxValues(columnConfig, data, strategy),
       { key: `minmax-${columnConfig.id}` },
     )
 
@@ -390,9 +397,11 @@ export function createColumns<TData>(
       prefetchOptions: async () => {}, // Placeholder, defined below
       prefetchValues: async () => {},
       prefetchFacetedUniqueValues: async () => {},
+      prefetchFacetedMinMaxValues: async () => {},
       _prefetchedOptionsCache: null, // Initialize private cache
       _prefetchedValuesCache: null,
-      _prefetchedFacetedCache: null,
+      _prefetchedFacetedUniqueValuesCache: null,
+      _prefetchedFacetedMinMaxValuesCache: null,
     }
 
     if (strategy === 'client') {
@@ -424,13 +433,28 @@ export function createColumns<TData>(
       }
 
       column.prefetchFacetedUniqueValues = async (): Promise<void> => {
-        if (!column._prefetchedFacetedCache) {
+        if (!column._prefetchedFacetedUniqueValuesCache) {
           await new Promise((resolve) =>
             setTimeout(() => {
               const facetedMap = getUniqueValues()
-              column._prefetchedFacetedCache = facetedMap ?? null
+              column._prefetchedFacetedUniqueValuesCache = facetedMap ?? null
               // console.log(
               //   `Prefetched faceted unique values for ${columnConfig.id}`,
+              // )
+              resolve(undefined)
+            }, 0),
+          )
+        }
+      }
+
+      column.prefetchFacetedMinMaxValues = async (): Promise<void> => {
+        if (!column._prefetchedFacetedMinMaxValuesCache) {
+          await new Promise((resolve) =>
+            setTimeout(() => {
+              const value = getMinMaxValues()
+              column._prefetchedFacetedMinMaxValuesCache = value ?? null
+              // console.log(
+              //   `Prefetched faceted min/max values for ${columnConfig.id}`,
               // )
               resolve(undefined)
             }, 0),

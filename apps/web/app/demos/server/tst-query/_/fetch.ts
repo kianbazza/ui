@@ -127,3 +127,14 @@ export async function fetchFacetedUsers() {
 
   return map
 }
+
+export async function fetchFacetedHours(): Promise<[number, number]> {
+  return ISSUES.reduce(
+    (acc, issue) => {
+      const hours = issue.estimatedHours
+      if (hours === undefined) return acc
+      return [Math.min(acc[0], hours), Math.max(acc[1], hours)]
+    },
+    [0, 0],
+  )
+}

@@ -80,6 +80,7 @@ export function IssuesTable({
   const facetedLabels = useQuery(queries.labels.faceted())
   const facetedStatuses = useQuery(queries.statuses.faceted())
   const facetedUsers = useQuery(queries.users.faceted())
+  const facetedEstimatedHours = useQuery(queries.estimatedHours.faceted())
 
   const issues = useQuery(queries.issues.all(state.filters))
 
@@ -94,13 +95,15 @@ export function IssuesTable({
     users.isPending ||
     facetedLabels.isPending ||
     facetedStatuses.isPending ||
-    facetedUsers.isPending
+    facetedUsers.isPending ||
+    facetedEstimatedHours.isPending
 
   /*
    * Step 3: Create our data table filters instance
    *
    * This instance will handle the logic for filtering the data and updating the filters state.
    * We expose an `options` prop to provide the options for each column dynamically, after fetching them above.
+   * The same goes for `faceted` unique values and min/max values.
    * It exposes our filters state, for you to pass on as you wish - e.g. to a TanStack Table instance.
    */
   const { columns, filters, actions, strategy } = useDataTableFilters({
@@ -109,9 +112,15 @@ export function IssuesTable({
     columnsConfig,
     controlledState: [state.filters, state.setFilters],
     options: {
-      status: [statusOptions, facetedStatuses.data],
-      assignee: [userOptions, facetedUsers.data],
-      labels: [labelOptions, facetedLabels.data],
+      status: statusOptions,
+      assignee: userOptions,
+      labels: labelOptions,
+    },
+    faceted: {
+      status: facetedStatuses.data,
+      assignee: facetedUsers.data,
+      labels: facetedLabels.data,
+      estimatedHours: facetedEstimatedHours.data,
     },
   })
 

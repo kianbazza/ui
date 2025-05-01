@@ -41,6 +41,7 @@ import type {
   FilterStrategy,
 } from '../core/types'
 import { take } from '../lib/array'
+import { createNumberRange } from '../lib/helpers'
 import { type Locale, t } from '../lib/i18n'
 import { DebouncedInput } from '../ui/debounced-input'
 
@@ -321,31 +322,20 @@ export function FilterValueNumberDisplay<TData>({
   actions,
   locale = 'en',
 }: FilterValueDisplayProps<TData, 'number'>) {
-  const maxFromMeta = column.max
-  const cappedMax = maxFromMeta ?? 2147483647
-
-  if (!filter) return null
+  if (!filter || !filter.values || filter.values.length === 0) return null
 
   if (
     filter.operator === 'is between' ||
     filter.operator === 'is not between'
   ) {
     const minValue = filter.values[0]
-    const maxValue =
-      filter.values[1] === Number.POSITIVE_INFINITY ||
-      filter.values[1] >= cappedMax
-        ? `${cappedMax}+`
-        : filter.values[1]
+    const maxValue = filter.values[1]
 
     return (
       <span className="tabular-nums tracking-tight">
         {minValue} {t('and', locale)} {maxValue}
       </span>
     )
-  }
-
-  if (!filter.values || filter.values.length === 0) {
-    return null
   }
 
   const value = filter.values[0]
@@ -641,13 +631,10 @@ export function FilterValueNumberController<TData>({
   actions,
   locale = 'en',
 }: FilterValueControllerProps<TData, 'number'>) {
-  const [datasetMin, datasetMax] = useMemo(
-    () => column.getFacetedMinMaxValues(),
-    [column],
-  )
+  const minMax = useMemo(() => column.getFacetedMinMaxValues(), [column])
   const [sliderMin, sliderMax] = [
-    column.min ?? datasetMin,
-    column.max ?? datasetMax,
+    minMax ? minMax[0] : 0,
+    minMax ? minMax[1] : 0,
   ]
 
   // Local state for values
@@ -673,23 +660,32 @@ export function FilterValueNumberController<TData>({
   }
 
   const changeMinNumber = (value: number) => {
-    const newValues = [value, values[1]]
+    const newValues = createNumberRange([value, values[1]])
     setValues(newValues)
     actions.setFilterValue(column, newValues)
   }
 
   const changeMaxNumber = (value: number) => {
-    const newValues = [values[0], value]
+    const newValues = createNumberRange([values[0], value])
     setValues(newValues)
     actions.setFilterValue(column, newValues)
   }
 
   const changeType = useCallback(
     (type: 'single' | 'range') => {
-      const newValues =
-        type === 'single'
-          ? [values[0]] // Keep the first value for single mode
-          : [values[0], values[1] ?? datasetMax] // Use two values for range mode
+      let newValues: number[] = []
+      if (type === 'single')
+        newValues = [values[0]] // Keep the first value for single mode
+      else if (!minMax)
+        newValues = createNumberRange([values[0], values[1] ?? 0])
+      else {
+        const value = values[0]
+        newValues =
+          value - minMax[0] < minMax[1] - value
+            ? createNumberRange([value, minMax[1]])
+            : createNumberRange([minMax[0], value])
+      }
+
       const newOperator = type === 'single' ? 'is' : 'is between'
 
       // Update local state
@@ -699,7 +695,7 @@ export function FilterValueNumberController<TData>({
       actions.setFilterOperator(column.id, newOperator)
       actions.setFilterValue(column, newValues)
     },
-    [values, datasetMax, column, actions],
+    [values, column, actions, minMax],
   )
 
   return (
@@ -716,37 +712,39 @@ export function FilterValueNumberController<TData>({
                 <TabsTrigger value="range">{t('range', locale)}</TabsTrigger>
               </TabsList>
               <TabsContent value="single" className="flex flex-col gap-4 mt-4">
-                <Slider
-                  value={[values[0]]}
-                  onValueChange={(value) => changeNumber(value)}
-                  min={sliderMin}
-                  max={sliderMax}
-                  step={1}
-                  aria-orientation="horizontal"
-                />
+                {minMax && (
+                  <Slider
+                    value={[values[0]]}
+                    onValueChange={(value) => changeNumber(value)}
+                    min={sliderMin}
+                    max={sliderMax}
+                    step={1}
+                    aria-orientation="horizontal"
+                  />
+                )}
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-medium">
                     {t('value', locale)}
                   </span>
-                  <Input
+                  <DebouncedInput
                     id="single"
                     type="number"
                     value={values[0].toString()} // Use values[0] directly
-                    onChange={(e) => changeNumber([Number(e.target.value)])}
-                    min={datasetMin}
-                    max={datasetMax}
+                    onChange={(v) => changeNumber([Number(v)])}
                   />
                 </div>
               </TabsContent>
               <TabsContent value="range" className="flex flex-col gap-4 mt-4">
-                <Slider
-                  value={values} // Use values directly
-                  onValueChange={changeNumber}
-                  min={sliderMin}
-                  max={sliderMax}
-                  step={1}
-                  aria-orientation="horizontal"
-                />
+                {minMax && (
+                  <Slider
+                    value={values} // Use values directly
+                    onValueChange={changeNumber}
+                    min={sliderMin}
+                    max={sliderMax}
+                    step={1}
+                    aria-orientation="horizontal"
+                  />
+                )}
                 <div className="grid grid-cols-2 gap-4">
                   <div className="flex items-center gap-2">
                     <span className="text-xs font-medium">
@@ -756,8 +754,6 @@ export function FilterValueNumberController<TData>({
                       type="number"
                       value={values[0]}
                       onChange={(v) => changeMinNumber(Number(v))}
-                      min={datasetMin}
-                      max={datasetMax}
                     />
                   </div>
                   <div className="flex items-center gap-2">
@@ -768,8 +764,6 @@ export function FilterValueNumberController<TData>({
                       type="number"
                       value={values[1]}
                       onChange={(v) => changeMaxNumber(Number(v))}
-                      min={datasetMin}
-                      max={datasetMax}
                     />
                   </div>
                 </div>
