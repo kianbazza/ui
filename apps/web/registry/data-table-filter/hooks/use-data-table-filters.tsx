@@ -24,7 +24,6 @@ import {
   isColumnOptionMap,
   isMinMaxTuple,
 } from '../lib/helpers'
-import type { Locale } from '../lib/i18n'
 
 export interface DataTableFiltersOptions<
   TData,
