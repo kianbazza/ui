@@ -570,9 +570,33 @@ The real magic is in the `filters` state, which is exposed to you. You can pass 
 
 We can take this a step further by using a controlled (external) state, covered in the next section.
 
+#### Using uncontrolled state
+
+By default, the `filters` state is uncontrolled; it is managed internally by the instance.
+
+You can specify a default (or *initial*) value using the `defaultFilters` property:
+
+```tsx {5-12}
+const { columns, filters, actions, strategy } = useDataTableFilters({
+  strategy: 'client',       
+  data: issues.data ?? [], 
+  columnsConfig,          
+  defaultFilters: [
+    {
+      columnId: 'status',
+      type: 'option',
+      operator: 'is',
+      values: ['backlog'],
+    },
+  ],
+})
+```
+
 #### Using controlled state
 
 If you want to use controlled, external state for your filters, you can pass it in as a prop to the instance.
+
+> [!NOTE] If you use controlled state and wish to specify a default value, use the mechanism provided by your state management solution. The `defaultFilters` property is useless in this case.
 
 ```tsx
 import { useState } from 'react'
