@@ -1,6 +1,6 @@
 'use client'
 
-import { GithubIcon } from '@/components/icons'
+import { DiscordIcon, GithubIcon } from '@/components/icons'
 import { Button } from '@/components/ui/button'
 import {
   Sidebar,
@@ -108,6 +108,11 @@ export function AppSidebar() {
             <ThemeToggle />
           </SidebarMenuItem>
           <SidebarMenuItem>
+            <Button variant="ghost" size="icon" asChild>
+              <Link href="https://ui.bazza.dev/chat">
+                <DiscordIcon className="size-5" />
+              </Link>
+            </Button>
             <Button variant="ghost" size="icon" asChild>
               <Link href="https://github.com/kianbazza/ui">
                 <GithubIcon className="size-5" />

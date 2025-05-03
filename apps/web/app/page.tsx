@@ -1,4 +1,10 @@
-import { BazzaUIIcon, GithubIcon, UserJotIcon, XIcon } from '@/components/icons'
+import {
+  BazzaUIIcon,
+  DiscordIcon,
+  GithubIcon,
+  UserJotIcon,
+  XIcon,
+} from '@/components/icons'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import logoSrc from '@/public/bazzaui-v3-color.png'
@@ -32,6 +38,11 @@ export default function Page() {
               <Button variant="ghost" size="icon" asChild>
                 <Link href="https://x.com/kianbazza">
                   <XIcon className="size-3.5" />
+                </Link>
+              </Button>
+              <Button variant="ghost" size="icon" asChild>
+                <Link href="https://ui.bazza.dev/chat">
+                  <DiscordIcon className="size-5" />
                 </Link>
               </Button>
               <Button variant="ghost" size="icon" asChild>
