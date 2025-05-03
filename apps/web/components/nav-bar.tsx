@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import logoSrc from '@/public/bazzaui-v3-color.png'
 import Image from 'next/image'
 import Link from 'next/link'
-import { GithubIcon, XIcon } from './icons'
+import { DiscordIcon, GithubIcon, XIcon } from './icons'
 import { ThemeToggle } from './theme-toggle'
 
 export function NavBar() {
@@ -25,6 +25,11 @@ export function NavBar() {
         <Button variant="ghost" size="icon" asChild>
           <Link href="https://x.com/kianbazza">
             <XIcon className="size-3.5" />
+          </Link>
+        </Button>
+        <Button variant="ghost" size="icon" asChild>
+          <Link href="https://ui.bazza.dev/chat">
+            <DiscordIcon className="size-5" />
           </Link>
         </Button>
         <Button variant="ghost" size="icon" asChild>
