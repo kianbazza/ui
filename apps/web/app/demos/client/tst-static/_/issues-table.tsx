@@ -33,7 +33,8 @@ export function IssuesTable({
     strategy: 'client',
     data: ISSUES,
     columnsConfig,
-    controlledState: [state.filters, state.setFilters],
+    filters: state.filters,
+    onFiltersChange: state.setFilters,
   })
 
   // Step 4: Extend our TanStack Table columns with custom filter functions (and more!)

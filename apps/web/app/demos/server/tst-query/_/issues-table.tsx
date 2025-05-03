@@ -110,7 +110,8 @@ export function IssuesTable({
     strategy: 'server',
     data: issues.data ?? [],
     columnsConfig,
-    controlledState: [state.filters, state.setFilters],
+    filters: state.filters,
+    onFiltersChange: state.setFilters,
     options: {
       status: statusOptions,
       assignee: userOptions,

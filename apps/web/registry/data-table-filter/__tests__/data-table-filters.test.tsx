@@ -1,8 +1,10 @@
 import { act, renderHook } from '@testing-library/react'
 import { CircleIcon } from 'lucide-react'
+import { useState } from 'react'
 import { describe, expect, it } from 'vitest'
 import { createColumnConfigHelper } from '../core/filters'
 import { DEFAULT_OPERATORS, determineNewOperator } from '../core/operators'
+import type { FiltersState } from '../core/types'
 import { useDataTableFilters } from '../hooks/use-data-table-filters'
 
 // Dummy icon component for column configuration
@@ -266,6 +268,109 @@ describe('useDataTableFilters', () => {
     expect(result.current.filters).toHaveLength(2)
     expect(result.current.filters[0]).toEqual(defaultFilters[0])
     expect(result.current.filters[1]).toEqual(defaultFilters[1])
+  })
+
+  describe('controlled state', () => {
+    const defaultFilters = [
+      {
+        columnId: 'status',
+        type: 'option',
+        operator: 'is',
+        values: ['active'],
+      },
+    ]
+
+    it('should throw an error if only one of filters or onFiltersChange is provided', () => {
+      const { result: externalResult } = renderHook(() =>
+        useState<FiltersState>(defaultFilters),
+      )
+
+      expect(() =>
+        renderHook(() =>
+          useDataTableFilters({
+            strategy: 'client',
+            data,
+            columnsConfig,
+            options,
+            filters: externalResult.current[0],
+          }),
+        ),
+      ).toThrowError()
+
+      expect(() =>
+        renderHook(() =>
+          useDataTableFilters({
+            strategy: 'client',
+            data,
+            columnsConfig,
+            options,
+            onFiltersChange: externalResult.current[1],
+          }),
+        ),
+      ).toThrowError()
+
+      expect(() =>
+        renderHook(() =>
+          useDataTableFilters({
+            strategy: 'client',
+            data,
+            columnsConfig,
+            options,
+            filters: externalResult.current[0],
+            onFiltersChange: externalResult.current[1],
+          }),
+        ),
+      ).not.toThrowError()
+    })
+
+    it('should use the default value provided by the external state', () => {
+      const { result } = renderHook(() => {
+        const [filters, setFilters] = useState<FiltersState>(defaultFilters)
+        return {
+          filtersState: filters,
+          ...useDataTableFilters({
+            strategy: 'client',
+            data,
+            columnsConfig,
+            options,
+            filters,
+            onFiltersChange: setFilters,
+          }),
+        }
+      })
+      expect(result.current.filters).toHaveLength(1)
+      expect(result.current.filters).toEqual(defaultFilters)
+    })
+
+    it('should update the external state when filters change', () => {
+      const { result } = renderHook(() => {
+        const [filters, setFilters] = useState<FiltersState>(defaultFilters)
+        return {
+          filtersState: filters,
+          ...useDataTableFilters({
+            strategy: 'client',
+            data,
+            columnsConfig,
+            options,
+            filters,
+            onFiltersChange: setFilters,
+          }),
+        }
+      })
+
+      act(() => {
+        result.current.actions.addFilterValue(optionColumn as any, ['inactive'])
+      })
+
+      expect(result.current.filters).toHaveLength(1)
+      expect(result.current.filters[0].values).toEqual(['active', 'inactive'])
+
+      expect(result.current.filtersState).toHaveLength(1)
+      expect(result.current.filtersState[0].values).toEqual([
+        'active',
+        'inactive',
+      ])
+    })
   })
 })
 

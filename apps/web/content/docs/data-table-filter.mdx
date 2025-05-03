@@ -594,9 +594,10 @@ const { columns, filters, actions, strategy } = useDataTableFilters({
 
 #### Using controlled state
 
-If you want to use controlled, external state for your filters, you can pass it in as a prop to the instance.
+If you want to use controlled *(external)* state for your filters, you can use the `filters` and `onFiltersChange` properties. You can hook in your state management solution of choice.
 
-> [!NOTE] If you use controlled state and wish to specify a default value, use the mechanism provided by your state management solution. The `defaultFilters` property is useless in this case.
+> [!NOTE] The **`defaultFilters`** property is not used when using controlled state.
+> If you use controlled state and wish to specify a default value, use the mechanism provided by your state management solution. 
 
 ```tsx
 import { useState } from 'react'
@@ -608,7 +609,8 @@ const { columns, filters, actions, strategy } = useDataTableFilters({
   strategy: 'client',       
   data: issues.data ?? [], 
   columnsConfig,          
-  controlledState: [filters, setFilters], // [!code ++]
+  filters: filters, // [!code ++]
+  onFiltersChange: setFilters, // [!code ++]
 })
 ```
 
@@ -873,10 +875,11 @@ const [filters, setFilters] = useQueryState<FiltersState>(
 
 5. Pass it to your table filters instance:
 
-```ts {3}
+```ts {3-4}
 const { columns, filters, actions, strategy } = useDataTableFilters({
   /* ... */
-  controlledState: [filters, setFilters],
+  filters,
+  onFiltersChange: setFilters,
 })
 ```
 
