@@ -33,15 +33,15 @@ npx shadcn@latest add https://ui.bazza.dev/r/filters
 
 ## Quick Start
 
-> [!WARNING] This section is under development.
+{/* > [!WARNING] This section is under development. */}
 
-### Blocks
+{/* ### Blocks
 
-> [!WARNING] This section is under development.
+> [!WARNING] This section is under development. */}
 
 ### Examples
 
-We have some examples that you can use as a reference to build your own applications.
+We have examples that you can use as a reference to build your own applications.
 
 We still recommend reading through the [Concepts](#concepts) and [Guides](#guides) sections to get a deep understanding of how to configure and use this component.
 
@@ -206,7 +206,7 @@ This section contains guides for using the data table filter component.
 
 These are much more detailed than the [Concepts](#concepts) section, and are recommended when you actually go to implement the component for your project.
 
-Before we dive in, let's take a look at a basic scenario that will be referenced throughout the guides.
+Before we dive in, let's take a look at a basic scenario — an issue tracker *(e.g. Linear)* — that will be referenced throughout the guides.
 
 ```ts title="types.ts"
 export type Issue = {
@@ -242,8 +242,6 @@ export type IssueStatus = {
 ```
 
 ### Columns
-
-> [!WARNING] This section is under development.
 
 #### Why do I need a column configuration?
 
@@ -856,15 +854,16 @@ const { columns, filters, actions, strategy } = useDataTableFilters({
 })
 ```
 
-## Overview
+{/* NOTE: This section is outdated and has been commented out for now. */}
+{/* ## Overview
 
 > [!WARNING] This section is outdated. We're working on updating it.
 
 Let's take a high-level look at how we've created the data table filter component.
 
-This will help you understand what each file contains and the general component composition.
+This will help you understand what each file contains and the general component composition. */}
 
-### File structure
+{/* ### File structure
 
 The data table filter component is composed of several files.
 
@@ -876,9 +875,9 @@ Types, interfaces, and utilities are placed in the `@/lib` directory:
 
 - `array.ts`: Utility functions for working with arrays.
 - `filters.ts`: All TypeScript types, interfaces, and constants related to the data table filter component. Also includes the filter functions `filterFn()` for each column type.
-- `table.ts`: Utility functions for working with the TanStack Table library.
+- `table.ts`: Utility functions for working with the TanStack Table library. */}
 
-### Component structure
+{/* ### Component structure
 
 A `PropertyFilterItem` component is composed of the following parts:
 
@@ -905,7 +904,7 @@ We can break down the `PropertyFilterValueController` as an example:
   caption='The composition of a property filter value controller.'
 />
 
-The `PropertyFilterOperatorController` has a similar composition and can be inferred from the above description and image.
+The `PropertyFilterOperatorController` has a similar composition and can be inferred from the above description and image. */}
 
 ## Changelog
 
