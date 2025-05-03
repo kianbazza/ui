@@ -158,7 +158,7 @@
     @apply border-border outline-ring/50;
   }
   
-  code:not(h1 code, h2 code, h3 code, h4 code) {
+  code:not(h1 code, h2 code, h3 code, h4 code, .callout code) {
     @apply not-dark:font-[450];
   }
 
@@ -192,7 +192,7 @@
 
   .callout {
     @apply rounded-sm !py-4;
-
+    
     .callout-title-icon svg {
       @apply size-4 translate-y-[2px];
     }
