@@ -169,6 +169,16 @@
           "path": "registry/data-table-filter/locales/fr.json",
           "type": "registry:file",
           "target": "components/data-table-filter/locales/fr.json"
+        },
+        {
+          "path": "registry/data-table-filter/locales/zh-CN.json",
+          "type": "registry:file",
+          "target": "components/data-table-filter/locales/zh-CN.json"
+        },
+        {
+          "path": "registry/data-table-filter/locales/zh-TW.json",
+          "type": "registry:file",
+          "target": "components/data-table-filter/locales/zh-TW.json"
         }
       ]
     }
