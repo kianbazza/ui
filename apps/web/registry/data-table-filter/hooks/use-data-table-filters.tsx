@@ -24,7 +24,6 @@ import {
   isColumnOptionMap,
   isMinMaxTuple,
 } from '../lib/helpers'
-import type { Locale } from '../lib/i18n'
 
 export interface DataTableFiltersOptions<
   TData,
@@ -34,6 +33,7 @@ export interface DataTableFiltersOptions<
   strategy: TStrategy
   data: TData[]
   columnsConfig: TColumns
+  defaultFilters?: FiltersState
   controlledState?:
     | [FiltersState, React.Dispatch<React.SetStateAction<FiltersState>>]
     | undefined
@@ -54,11 +54,14 @@ export function useDataTableFilters<
   strategy,
   data,
   columnsConfig,
+  defaultFilters,
   controlledState,
   options,
   faceted,
 }: DataTableFiltersOptions<TData, TColumns, TStrategy>) {
-  const [internalFilters, setInternalFilters] = useState<FiltersState>([])
+  const [internalFilters, setInternalFilters] = useState<FiltersState>(
+    defaultFilters ?? [],
+  )
   const [filters, setFilters] = controlledState ?? [
     internalFilters,
     setInternalFilters,
