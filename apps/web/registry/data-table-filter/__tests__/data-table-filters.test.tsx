@@ -47,7 +47,7 @@ const options = {
   ],
 }
 
-describe('useDataTableFilters hook (Data Table Filters Component Logic)', () => {
+describe('useDataTableFilters', () => {
   it('should add an option filter value via addFilterValue', () => {
     const { result } = renderHook(() =>
       useDataTableFilters({
@@ -235,6 +235,37 @@ describe('useDataTableFilters hook (Data Table Filters Component Logic)', () => 
       result.current.actions.removeAllFilters()
     })
     expect(result.current.filters).toHaveLength(0)
+  })
+
+  it('should use the default filters state if provided', () => {
+    const defaultFilters = [
+      {
+        columnId: 'status',
+        type: 'option',
+        operator: 'is',
+        values: ['active'],
+      },
+      {
+        columnId: 'name',
+        type: 'text',
+        operator: 'contains',
+        values: ['John'],
+      },
+    ]
+
+    const { result } = renderHook(() =>
+      useDataTableFilters({
+        strategy: 'client',
+        data,
+        columnsConfig,
+        options,
+        defaultFilters,
+      }),
+    )
+
+    expect(result.current.filters).toHaveLength(2)
+    expect(result.current.filters[0]).toEqual(defaultFilters[0])
+    expect(result.current.filters[1]).toEqual(defaultFilters[1])
   })
 })
 
