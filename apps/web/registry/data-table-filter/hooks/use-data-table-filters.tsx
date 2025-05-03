@@ -1,5 +1,6 @@
 'use client'
 
+import type React from 'react'
 import { useMemo, useState } from 'react'
 import { createColumns } from '../core/filters'
 import { DEFAULT_OPERATORS, determineNewOperator } from '../core/operators'
@@ -34,9 +35,8 @@ export interface DataTableFiltersOptions<
   data: TData[]
   columnsConfig: TColumns
   defaultFilters?: FiltersState
-  controlledState?:
-    | [FiltersState, React.Dispatch<React.SetStateAction<FiltersState>>]
-    | undefined
+  filters?: FiltersState
+  onFiltersChange?: React.Dispatch<React.SetStateAction<FiltersState>>
   options?: Partial<
     Record<OptionColumnIds<TColumns>, ColumnOption[] | undefined>
   >
@@ -55,17 +55,26 @@ export function useDataTableFilters<
   data,
   columnsConfig,
   defaultFilters,
-  controlledState,
+  filters: externalFilters,
+  onFiltersChange,
   options,
   faceted,
 }: DataTableFiltersOptions<TData, TColumns, TStrategy>) {
   const [internalFilters, setInternalFilters] = useState<FiltersState>(
     defaultFilters ?? [],
   )
-  const [filters, setFilters] = controlledState ?? [
-    internalFilters,
-    setInternalFilters,
-  ]
+
+  if (
+    (externalFilters && !onFiltersChange) ||
+    (!externalFilters && onFiltersChange)
+  ) {
+    throw new Error(
+      'If using controlled state, you must specify both filters and onFiltersChange.',
+    )
+  }
+
+  const filters = externalFilters ?? internalFilters
+  const setFilters = onFiltersChange ?? setInternalFilters
 
   // Convert ColumnConfig to Column, applying options and faceted options if provided
   const columns = useMemo(() => {
