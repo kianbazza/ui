@@ -5,6 +5,7 @@ import {
   UserJotIcon,
   XIcon,
 } from '@/components/icons'
+import { NavBar } from '@/components/nav-bar'
 import { ThemeToggle } from '@/components/theme-toggle'
 import { Button } from '@/components/ui/button'
 import logoSrc from '@/public/bazzaui-v3-color.png'
@@ -20,39 +21,7 @@ export default function Page() {
     <div className="flex flex-col min-h-svh select-none">
       <div className="border-b border-border border-dashed sticky top-0 bg-site-background backdrop-blur-md z-50 h-12">
         <div className="px-4 py-2 max-w-screen-xl w-full mx-auto border-border border-dashed xl:border-x">
-          <div className="flex items-center gap-4 justify-between h-8">
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1 font-medium font-mono tracking-tight text-sm"
-            >
-              <Image
-                className="size-6 mr-1 translate-y-[-0.75px]"
-                src={logoSrc}
-                alt="bazza/ui"
-              />
-              <span>bazza</span>
-              <span className="text-xl text-border">/</span>
-              <span>ui</span>
-            </Link>
-            <div className="flex items-center">
-              <Button variant="ghost" size="icon" asChild>
-                <Link href="https://x.com/kianbazza">
-                  <XIcon className="size-3.5" />
-                </Link>
-              </Button>
-              <Button variant="ghost" size="icon" asChild>
-                <Link href="https://ui.bazza.dev/chat">
-                  <DiscordIcon className="size-5" />
-                </Link>
-              </Button>
-              <Button variant="ghost" size="icon" asChild>
-                <Link href="https://github.com/kianbazza/ui">
-                  <GithubIcon className="size-5" />
-                </Link>
-              </Button>
-              <ThemeToggle />
-            </div>
-          </div>
+          <NavBar />
         </div>
       </div>
       <div className="border-y border-border border-dashed">
@@ -91,7 +60,7 @@ export default function Page() {
               </div>
             </div>
           </div>
-          <BazzaUIIcon className="drop-shadow-2xl h-auto w-[150px] sm:w-[300px] lg:w-[900px]" />
+          <BazzaUIIcon className="drop-shadow-2xl dark:drop-shadow-muted h-auto w-[150px] sm:w-[300px] lg:w-[900px]" />
         </div>
       </div>
       <div className="border-b border-border border-dashed">
