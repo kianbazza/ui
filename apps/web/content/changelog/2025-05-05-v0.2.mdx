@@ -32,6 +32,8 @@ Update now:
 npx shadcn@latest add https://ui.bazza.dev/r/filters
 ```
 
+If you're migrating from the previous release, please read the [migration guide](#migrating) at the end of this post.
+
 We also have a **Discord community** where you can ask questions, share your feedback, and connect with other users. Join now: [ui.bazza.dev/chat](https://ui.bazza.dev/chat).
 
 Let's jump into the details of this massive update. Fair warning, it's a lengthy changelog post, but I promise it's worth it.
@@ -280,3 +282,15 @@ On the client, you have access to the column configurations to lookup the data t
 The filter model now stores the data type of the column being filtered, to make it easier to perform filtering on the server.
 
 This can also be leveraged by future table integrations to avoid passing the column configurations to the table library.
+
+## Migrating
+
+> [!NOTE] If you need help, please [join our Discord server](/chat).
+> We'll be happy to help you out in the **#support** channel.
+
+For my TanStack Table users, the migration can be done following these steps:
+
+- Remove the `meta` property from your TanStack Table column definitions.
+- Move to our new column configuration using the column configuration builder - [follow the docs](/docs/data-table-filter#columns).
+- Create your filters instance - [follow the docs](/docs/data-table-filter#instance-1).
+- Setup the TST integration - [follow the docs](/docs/data-table-filter#tanstack-table).
