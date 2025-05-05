@@ -39,6 +39,11 @@ const nextConfig: NextConfig = {
       permanent: false,
     },
     {
+      source: '/r/filters/tst',
+      destination: '/r/data-table-filter-tst.json',
+      permanent: false,
+    },
+    {
       source: '/changelog',
       destination: '/changelog/latest',
       permanent: false,

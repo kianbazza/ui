@@ -5,6 +5,7 @@
   "title": "Data table filter - i18n (add-on)",
   "author": "Kian Bazarjani <kian@bazza.dev>",
   "description": "An add-on for the data table filter component to provide i18n support.",
+  "dependencies": ["@tanstack/react-table@8.21.2"],
   "files": [
     {
       "path": "registry/data-table-filter/lib/i18n.ts",

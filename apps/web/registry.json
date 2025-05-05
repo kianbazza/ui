@@ -9,7 +9,7 @@
       "description": "A powerful data table filter component inspired by Linear.",
       "author": "Kian Bazarjani <kian@bazza.dev>",
       "type": "registry:block",
-      "dependencies": ["@tanstack/react-table@8.21.2", "date-fns"],
+      "dependencies": ["date-fns"],
       "registryDependencies": [
         "button",
         "calendar",
@@ -97,16 +97,6 @@
           "target": "components/data-table-filter/hooks/use-unmount.tsx"
         },
         {
-          "path": "registry/data-table-filter/integrations/tanstack-table/index.tsx",
-          "type": "registry:file",
-          "target": "components/data-table-filter/integrations/tanstack-table/index.tsx"
-        },
-        {
-          "path": "registry/data-table-filter/integrations/tanstack-table/filter-fns.ts",
-          "type": "registry:file",
-          "target": "components/data-table-filter/integrations/tanstack-table/filter-fns.ts"
-        },
-        {
           "path": "registry/data-table-filter/lib/array.ts",
           "type": "registry:file",
           "target": "components/data-table-filter/lib/array.ts"
@@ -154,6 +144,7 @@
       "description": "An add-on for the data table filter component to provide i18n support.",
       "author": "Kian Bazarjani <kian@bazza.dev>",
       "type": "registry:block",
+      "dependencies": ["@tanstack/react-table@8.21.2"],
       "files": [
         {
           "path": "registry/data-table-filter/lib/i18n.ts",
@@ -179,6 +170,25 @@
           "path": "registry/data-table-filter/locales/zh-TW.json",
           "type": "registry:file",
           "target": "components/data-table-filter/locales/zh-TW.json"
+        }
+      ]
+    },
+    {
+      "name": "data-table-filter-tst",
+      "title": "Data table filter - TanStack Table (add-on)",
+      "description": "An add-on for the data table filter component to provide TanStack Table client-side filtering integration.",
+      "author": "Kian Bazarjani <kian@bazza.dev>",
+      "type": "registry:block",
+      "files": [
+        {
+          "path": "registry/data-table-filter/integrations/tanstack-table/index.tsx",
+          "type": "registry:file",
+          "target": "components/data-table-filter/integrations/tanstack-table/index.tsx"
+        },
+        {
+          "path": "registry/data-table-filter/integrations/tanstack-table/filter-fns.ts",
+          "type": "registry:file",
+          "target": "components/data-table-filter/integrations/tanstack-table/filter-fns.ts"
         }
       ]
     }

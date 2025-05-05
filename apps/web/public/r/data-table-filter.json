@@ -5,7 +5,7 @@
   "title": "Data table filter",
   "author": "Kian Bazarjani <kian@bazza.dev>",
   "description": "A powerful data table filter component inspired by Linear.",
-  "dependencies": ["@tanstack/react-table@8.21.2", "date-fns"],
+  "dependencies": ["date-fns"],
   "registryDependencies": [
     "button",
     "calendar",
@@ -105,18 +105,6 @@
       "content": "/*\n * Source: https://usehooks-ts.com/react-hook/use-unmount\n */\n\nimport { useEffect, useRef } from 'react'\n\nexport function useUnmount(func: () => void) {\n  const funcRef = useRef(func)\n\n  funcRef.current = func\n\n  useEffect(\n    () => () => {\n      funcRef.current()\n    },\n    [],\n  )\n}\n",
       "type": "registry:file",
       "target": "components/data-table-filter/hooks/use-unmount.tsx"
-    },
-    {
-      "path": "registry/data-table-filter/integrations/tanstack-table/index.tsx",
-      "content": "import type { ColumnDef, ColumnFiltersState } from '@tanstack/react-table'\nimport type { Column, FilterModel, FiltersState } from '../../core/types'\nimport { multiOptionFilterFn, optionFilterFn } from '../../lib/filter-fns'\nimport {\n  isColumnOption,\n  isColumnOptionArray,\n  isStringArray,\n} from '../../lib/helpers'\nimport { dateFilterFn, numberFilterFn, textFilterFn } from './filter-fns'\n\ninterface CreateTSTColumns<TData> {\n  columns: ColumnDef<TData, any>[]\n  configs: Column<TData>[]\n}\n\nexport function createTSTColumns<TData>({\n  columns,\n  configs,\n}: CreateTSTColumns<TData>) {\n  const _cols: ColumnDef<TData>[] = []\n\n  for (const col of columns) {\n    // Get the column filter config for this column\n    const config = configs.find((c) => c.id === col.id)\n\n    // If the column is not filterable or doesn't have a filter config, skip it\n    // An explicit check is done on `enableColumnFilter`\n    if (col.enableColumnFilter === false || !config) {\n      _cols.push(col)\n      continue\n    }\n\n    if (config.type === 'text') {\n      col.filterFn = textFilterFn\n      _cols.push(col)\n      continue\n    }\n\n    if (config.type === 'number') {\n      col.filterFn = numberFilterFn\n      _cols.push(col)\n      continue\n    }\n\n    if (config.type === 'date') {\n      col.filterFn = dateFilterFn\n      _cols.push(col)\n      continue\n    }\n\n    if (config.type === 'option') {\n      col.filterFn = (row, columnId, filterValue: FilterModel<'option'>) => {\n        const value = row.getValue<unknown>(columnId)\n\n        if (!value) return false\n\n        if (typeof value === 'string') {\n          return optionFilterFn(value, filterValue)\n        }\n\n        if (isColumnOption(value)) {\n          return optionFilterFn(value.value, filterValue)\n        }\n\n        const sanitizedValue = config.transformOptionFn!(value as never)\n        return optionFilterFn(sanitizedValue.value, filterValue)\n      }\n    }\n\n    if (config.type === 'multiOption') {\n      col.filterFn = (\n        row,\n        columnId,\n        filterValue: FilterModel<'multiOption'>,\n      ) => {\n        const value = row.getValue(columnId)\n\n        if (!value) return false\n\n        if (isStringArray(value)) {\n          return multiOptionFilterFn(value, filterValue)\n        }\n\n        if (isColumnOptionArray(value)) {\n          return multiOptionFilterFn(\n            value.map((v) => v.value),\n            filterValue,\n          )\n        }\n\n        const sanitizedValue = (value as never[]).map((v) =>\n          config.transformOptionFn!(v),\n        )\n\n        return multiOptionFilterFn(\n          sanitizedValue.map((v) => v.value),\n          filterValue,\n        )\n      }\n    }\n\n    _cols.push(col)\n  }\n\n  return _cols\n}\n\nexport function createTSTFilters(filters: FiltersState): ColumnFiltersState {\n  return filters.map((filter) => ({ id: filter.columnId, value: filter }))\n}\n",
-      "type": "registry:file",
-      "target": "components/data-table-filter/integrations/tanstack-table/index.tsx"
-    },
-    {
-      "path": "registry/data-table-filter/integrations/tanstack-table/filter-fns.ts",
-      "content": "import type { Row } from '@tanstack/react-table'\nimport type { FilterModel } from '../../core/types'\nimport * as f from '../../lib/filter-fns'\n\nexport function dateFilterFn<TData>(\n  row: Row<TData>,\n  columnId: string,\n  filterValue: FilterModel<'date'>,\n): boolean {\n  const value = row.getValue<Date>(columnId)\n\n  return f.dateFilterFn(value, filterValue)\n}\n\nexport function textFilterFn<TData>(\n  row: Row<TData>,\n  columnId: string,\n  filterValue: FilterModel<'text'>,\n): boolean {\n  const value = row.getValue<string>(columnId) ?? ''\n\n  return f.textFilterFn(value, filterValue)\n}\n\nexport function numberFilterFn<TData>(\n  row: Row<TData>,\n  columnId: string,\n  filterValue: FilterModel<'number'>,\n): boolean {\n  const value = row.getValue<number>(columnId)\n\n  return f.numberFilterFn(value, filterValue)\n}\n",
-      "type": "registry:file",
-      "target": "components/data-table-filter/integrations/tanstack-table/filter-fns.ts"
     },
     {
       "path": "registry/data-table-filter/lib/array.ts",
