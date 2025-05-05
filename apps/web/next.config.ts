@@ -38,6 +38,16 @@ const nextConfig: NextConfig = {
       destination: '/r/data-table-filter-i18n.json',
       permanent: false,
     },
+    {
+      source: '/changelog',
+      destination: '/changelog/latest',
+      permanent: false,
+    },
+    {
+      source: '/changelog/latest',
+      destination: '/changelog/2025-05-05-v0.2',
+      permanent: false,
+    },
   ],
 }
 
