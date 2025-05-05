@@ -77,8 +77,8 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <Script src="https://cdn.jsdelivr.net/npm/react-scan/dist/auto.global.js" />
-      {/* <OneDollarStatsScript /> */}
+      {/* <Script src="https://cdn.jsdelivr.net/npm/react-scan/dist/auto.global.js" /> */}
+      <OneDollarStatsScript />
       <body
         className={`${inter.variable} ${berkeleyMono.variable} font-sans antialiased bg-site-background min-h-svh`}
       >

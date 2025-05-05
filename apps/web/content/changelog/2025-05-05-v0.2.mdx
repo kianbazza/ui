@@ -1,0 +1,296 @@
+---
+title: "Server-side filtering, bring your own table library, and more"
+publishedAt: 2025-05-05
+ogImageUrl: "/changelog/2025-05-05/og.png"
+slug: "v0.2"
+---
+
+<ResponsiveImage darkSrc="/changelog/2025-05-05/filters-hero.png" lightSrc="/changelog/2025-05-05/filters-hero-light.png" wrapperClassName='mask-x-from-50% border-none bg-transparent dark:bg-transparent -mt-12' />
+
+This is the first major update to the bazza/ui library since the initial release about a month ago.
+
+> I marked data table filters as "alpha" because I had a strong feeling that we would need to make several breaking changes to the API. An alpha release is a great way to get feedback from the community and iterate on the design before it becomes stable.
+
+We heard your feedback. The two requests which came up over and over again were: 
+
+- *"We want to use this component, but it isn't compatible with **\<X\>** table library."*
+- *"We want to use this component, but it doesn't support server-side filtering."*
+
+And we've listened. To make these two requests possible, we have completely re-written filters from the ground up.
+
+The big changes include:
+
+- ***The Great Decoupling***: Decouple from TanStack Table. Decouple logic from UI.
+- **Server-side filtering**: Filter on the server or the client.
+- **Bring your own table library**: Just share the filter state and let your table library do the rest. 
+- **Registry re-organization**: Files split up into smaller files, into a folder structure.
+- and more!
+
+Update now:
+
+```bash
+npx shadcn@latest add https://ui.bazza.dev/r/filters
+```
+
+If you're migrating from the previous release, please read the [migration guide](#migrating) at the end of this post.
+
+We also have a **Discord community** where you can ask questions, share your feedback, and connect with other users. Join now: [ui.bazza.dev/chat](https://ui.bazza.dev/chat).
+
+Let's jump into the details of this massive update. Fair warning, it's a lengthy changelog post, but I promise it's worth it.
+
+## The Great Decoupling
+
+We've re-written the data table filters component from the ground up. This is a significant **(breaking!)** change, but we know it's for the better. 
+
+First, and foremost, we've removed the dependency on TanStack Table (TST). This means you can use the data table filters component...
+
+- with your favourite table library - TanStack Table, React Table, AG Grid, ...
+- with your custom table implementation;
+- or no table library at all!
+  
+### Column builder
+
+Previously, you would write your filter configurations for each column in the respective TST column definition, using the `meta` property.
+
+Now, you write your filter configurations using our new column configuration builder. It has a fluent, type-safe API *(similar to Zod)*.
+
+```ts caption="The new column configuration builder."
+/* Create the configuration builder instance. */
+const dtf = createColumnConfigHelper<Issue>()
+ 
+/* Create the column configurations. */
+export const columnsConfig = [
+  dtf
+    .text()
+    .id('title')
+    .accessor((row) => row.title)
+    .displayName('Title')
+    .icon(Heading1Icon)
+    .build(),
+  dtf
+    .option()
+    .accessor((row) => row.status.id)
+    .id('status')
+    .displayName('Status')
+    .icon(CircleDotDashedIcon)
+    .build(),
+  /* ... */
+] as const
+```
+
+### Instance
+
+The entrypoint for filters is the `useDataTableFilters` hook, which creates your filters instance. Each data table in your application should have its own filters instance.
+
+This instance is responsible for providing the filtering functionality for your data table, including the filter state and associated actions for mutating it.
+
+Pass in your data, column configuration, and the strategy you want to use *(more to follow in the next section!)*.
+
+Among other things, this hook returns your `filters` state - you can pass this state to your table library of choice.
+
+```tsx caption="The useDataTableFilters() hook creating your filters instance."
+const { columns, filters, actions, strategy } = useDataTableFilters({
+  strategy: 'client',
+  data: issues.data ?? [],
+  columnsConfig,
+})
+```
+
+### Decoupled UI and logic
+
+Another pain point we had with the previous implementation was the tight coupling between the UI and filtering logic. This made it difficult to customize these components independently.
+
+In this new update, we have addressed this issue by delegating all the filtering logic to your filters instance.
+
+- The `<DataTableFilters />` component is responsible for rendering the filter UI.
+- The hook creates your filters instance.
+- The filters instance stores your `filters` state and provides the `actions` to mutate it.
+- You pass the required properties of the filters instance to the `<DataTableFilters />` component.
+
+```tsx caption="Passing props to render the filters UI using the DataTableFilters component."
+const { columns, filters, actions, strategy } = useDataTableFilters({ /* ... */ })
+
+return (
+  <div>
+    <DataTableFilters
+      columns={columns}
+      filters={filters}
+      actions={actions}
+      strategy={strategy}
+    />
+    <DataTable />
+    <DataTablePagination />
+  </div>
+)
+```
+
+## Server-side filtering
+
+We've added support for server-side filtering - you can now filter your data on the server or the client.
+
+To enable this, set the `strategy` to `server` when creating your filters instance.
+
+Here's an example of server-side filtering with:
+
+- TanStack Table, TanStack Query, and `nuqs` (for keeping the filters state in the URL)
+- Remote column options
+- Remote faceted column values (both unique and min/max)
+
+[Try the demo](/demos/server/tst-query) or [browse the code](https://github.com/kianbazza/ui/tree/canary/apps/web/app/demos/server/tst-query).
+
+```tsx caption="Server-side filtering with TanStack Table, TanStack Query, and nuqs."
+/* Step 1: Create a query state for the filters */
+const [filters, setFilters] = useQueryState<FiltersState>(
+  'filters',
+  parseAsJson(filtersSchema.parse).withDefault([]),
+)
+
+/* Step 2: Fetch data from the server */
+const labels = useQuery(queries.labels.all())
+const statuses = useQuery(queries.statuses.all())
+const users = useQuery(queries.users.all())
+ 
+const facetedLabels = useQuery(queries.labels.faceted())
+const facetedStatuses = useQuery(queries.statuses.faceted())
+const facetedUsers = useQuery(queries.users.faceted())
+const facetedEstimatedHours = useQuery(queries.estimatedHours.faceted())
+
+// We specify the filters to use as part of the query key!
+const issues = useQuery(queries.issues.all(filters))
+ 
+/* Step 2.5: Create ColumnOption[] for each option-based column */
+const labelOptions = createLabelOptions(labels.data)
+const statusOptions = createStatusOptions(statuses.data)
+const userOptions = createUserOptions(users.data)
+ 
+/* Step 3: Create our filters instance */
+const { columns, filters, actions, strategy } = useDataTableFilters({
+  strategy: 'server',
+  data: issues.data ?? [],
+  columnsConfig,
+  options: {
+    status: statusOptions,
+    assignee: userOptions,
+    labels: labelOptions,
+  },
+  faceted: {
+    status: facetedStatuses.data,
+    assignee: facetedUsers.data,
+    labels: facetedLabels.data,
+    estimatedHours: facetedEstimatedHours.data,
+  },
+})
+```
+
+## Bring your own table library
+
+With the changes described above, you can now use filters with any table library, or even no table library at all.
+
+The filters instance gives you access to the `filters` state, which you can then pass to your table library.
+
+We have a first-party integration with TanStack Table, which sets up client-side filtering out-of-the-box. For more information, [read the docs](/docs/data-table-filter#tanstack-table).
+
+We're planning to add more integrations, so [let us know what you want to see next](/docs/feedback).
+
+```tsx caption="Client-side filtering with TanStack Table integration."
+const { columns, filters, actions, strategy } = useDataTableFilters({ /* ... */ })
+ 
+const tstColumns = useMemo( 
+  () =>
+    createTSTColumns({  
+      columns: tstColumnDefs, // your TanStack Table column definitions
+      configs: columns, // Your column configurations
+    }), 
+  [columns], 
+) 
+ 
+const tstFilters = useMemo(() => createTSTFilters(filters), [filters]) 
+ 
+const table = useReactTable({
+  data: issues.data ?? [],
+  columns: tstColumns, 
+  getCoreRowModel: getCoreRowModel(),
+  getFilteredRowModel: getFilteredRowModel(), 
+  state: {
+    filters: tstFilters 
+  }
+})
+```
+
+## Registry re-organization
+
+<ResponsiveImage lightSrc='/changelog/2025-05-05/registry-structure-light.png' darkSrc='/changelog/2025-05-05/registry-structure-dark.png' className='mask-y-from-60%' />
+
+We've split up our distribution into smaller files and moved them into a folder structure. 
+
+This makes it easier to find the files you're looking for and makes the codebase more maintainable for contributors.
+
+Both `<DataTableFilters />` and `useDataTableFilters()` are also provided by a root barrel export (`@/components/data-table-filter`) for easy access.
+
+## Number filtering improvements
+
+<ResponsiveImage lightSrc='/changelog/2025-05-05/number-filtering-light.png' darkSrc='/changelog/2025-05-05/number-filtering-dark.png' className='mask-l-from-60%' wrapperClassName='aspect-[calc(16/7)] py-0 border-none bg-transparent dark:bg-transparent' />
+
+- The slider input is now debounced for better performance. 
+- You can set both faceted minimum and maximum values for number filtering. Previously, minimum was not supported... yeah... not sure how we missed it, but it's there now.
+  - You can pass these through **(1)** the `min` and `max` properties when creating the column configuration, or **(2)** the `faceted` property when creating the filters instance.
+    
+## Grouped column options
+
+<ResponsiveImage lightSrc='/changelog/2025-05-05/grouped-options-light.png' darkSrc='/changelog/2025-05-05/grouped-options-dark.png' className='mask-l-from-60% mask-b-from-40%' wrapperClassName='aspect-[calc(16/12)] border-none bg-transparent dark:bg-transparent' />
+
+We have improved the user experience when selecting column options for option-based columns.
+
+We now group column options by their selected state, showing selected options first, followed by unselected options.
+
+This makes it very easy to see which options are selected and toggle their state without having to scroll through the full list of options.
+
+## i18n support
+    
+We now support localization for the filters component. By default, we ship with only `en` (English) translations.
+
+Community members have already contributed translations for French (`fr`) and Chinese (`zh-CN` and `zh-TW`).
+
+Read the [i18n docs](/docs/data-table-filter#internationalization) for more information.
+
+## Enhanced filter model
+
+```js
+[
+  {
+    "columnId": "title",
+    "type": "text", // [!code ++]
+    "operator": "contains",
+    "values": [
+      "API"
+    ]
+  },
+  {
+    "columnId": "status",
+    "type": "option", // [!code ++]
+    "operator": "is any of",
+    "values": [
+      "backlog",
+      "todo"
+    ]
+  }
+]
+```
+
+On the client, you have access to the column configurations to lookup the data type. On the server, this was not guaranteed and you had to conduct filtering on a column-by-column basis.
+
+The filter model now stores the data type of the column being filtered, to make it easier to perform filtering on the server.
+
+This can also be leveraged by future table integrations to avoid passing the column configurations to the table library.
+
+## Migrating
+
+> [!NOTE] If you need help, please [join our Discord server](/chat).
+> We'll be happy to help you out in the **#support** channel.
+
+For my TanStack Table users, the migration can be done following these steps:
+
+- Remove the `meta` property from your TanStack Table column definitions.
+- Move to our new column configuration using the column configuration builder - [follow the docs](/docs/data-table-filter#columns).
+- Create your filters instance - [follow the docs](/docs/data-table-filter#instance-1).
+- Setup the TST integration - [follow the docs](/docs/data-table-filter#tanstack-table).
