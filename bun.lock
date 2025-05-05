@@ -77,7 +77,7 @@
         "remark": "^15.0.1",
         "remark-gfm": "^4.0.1",
         "shiki": "^3.2.1",
-        "tailwindcss": "^4",
+        "tailwindcss": "^4.1.0",
         "typescript": "^5",
         "unist-builder": "^3.0.0",
         "unist-util-visit": "^5.0.0",
