@@ -11,30 +11,69 @@ import type { Options as RehypePrettyCodeOptions } from 'rehype-pretty-code'
 import rehypeSlug from 'rehype-slug'
 import remarkGfm from 'remark-gfm'
 import 'rehype-callouts/theme/github'
-import { DashboardTableOfContents } from '@/components/toc'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Badge } from '@/components/ui/badge'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
-import { SidebarTrigger } from '@/components/ui/sidebar'
 import { rehypeNpmCommand } from '@/lib/rehype-npm-command'
-import { getTableOfContents } from '@/lib/toc'
 import { transformerNotationDiff } from '@shikijs/transformers'
-import { format } from 'date-fns'
-import { ChevronLeftIcon, Undo2Icon } from 'lucide-react'
+import { format, parse } from 'date-fns'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { visit } from 'unist-util-visit'
+
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}): Promise<Metadata> {
+  const slug = (await params).slug
+  const rawContent = await fs.readFile(
+    path.join(process.cwd(), 'content/changelog', `${slug}.mdx`),
+    'utf-8',
+  )
+
+  const { frontmatter: metadata } = await compileMDX<MDXMetadata>({
+    source: rawContent,
+    options: {
+      parseFrontmatter: true,
+    },
+  })
+
+  if (!metadata) {
+    return {}
+  }
+
+  return {
+    title: metadata.title,
+    description: metadata.summary,
+    openGraph: {
+      title: `${metadata.title} — Changelog`,
+      description: metadata.summary,
+      type: 'article',
+      url: `https://ui.bazza.dev/changelog/${slug}`,
+      images: [
+        {
+          url: metadata.ogImageUrl || '/changelog/og.png',
+        },
+      ],
+    },
+    twitter: {
+      title: `${metadata.title} — Changelog`,
+      description: metadata.summary,
+      creator: '@kianbazza',
+      card: 'summary_large_image',
+      images: [
+        {
+          url: metadata.ogImageUrl || '/changelog/og.png',
+        },
+      ],
+    },
+  }
+}
 
 export type MDXMetadata = {
   title: string
   summary: string
   publishedAt: string
+  ogImageUrl?: string
 }
 
 export default async function Page({
@@ -104,10 +143,8 @@ export default async function Page({
     },
   })
 
-  const publishedAt = format(
-    new Date(metadata.publishedAt),
-    'iiii, MMMM do, yyyy',
-  )
+  const publishedAtDate = parse(metadata.publishedAt, 'yyyy-MM-dd', new Date())
+  const publishedAtFormatted = format(publishedAtDate, 'iiii, MMMM do, yyyy')
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-[1fr_4fr_1fr] gap-4 max-w-screen-xl w-full mx-auto border-x border-border border-dashed">
@@ -127,7 +164,7 @@ export default async function Page({
           <div className="px-4 py-12 max-w-screen-md w-full mx-auto border-border/0 border-dashed xl:border-x flex flex-col gap-12">
             <div className="flex flex-col gap-4">
               <span className="font-mono text-muted-foreground tracking-[-0.01em]">
-                {publishedAt}
+                {publishedAtFormatted}
               </span>
               <span className="text-5xl font-[550] tracking-[-0.025em]">
                 {metadata.title}
@@ -152,3 +189,14 @@ export default async function Page({
     </div>
   )
 }
+
+export async function generateStaticParams() {
+  const filenames = await fs.readdir(
+    path.join(process.cwd(), 'content/changelog'),
+  )
+  const slugs = filenames.map((filename) => filename.replace('.mdx', ''))
+
+  return slugs.map((slug) => ({ slug }))
+}
+
+export const dynamicParams = false
