@@ -26,6 +26,6 @@
     "node": ">=22"
   },
   "packageManager": "bun@1.2.4",
-  "workspaces": ["apps/*", "packages/*", "examples/*"],
+  "workspaces": ["apps/*", "packages/*"],
   "trustedDependencies": ["@biomejs/biome", "@repo/web", "@swc/core"]
 }
