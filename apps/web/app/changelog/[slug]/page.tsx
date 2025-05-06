@@ -166,7 +166,7 @@ export default async function Page({
               <span className="font-mono text-muted-foreground tracking-[-0.01em]">
                 {publishedAtFormatted}
               </span>
-              <span className="text-5xl font-[550] tracking-[-0.025em]">
+              <span className="text-4xl sm:text-5xl font-[550] tracking-[-0.02em] sm:tracking-[-0.025em]">
                 {metadata.title}
               </span>
               <Link
