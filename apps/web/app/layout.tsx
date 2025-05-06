@@ -1,6 +1,8 @@
 import type { Metadata } from 'next'
 import './globals.css'
 import OneDollarStatsScript from '@/app/stats'
+import ThemeColorUpdater from '@/components/theme-color-updater'
+import { META_THEME_COLORS } from '@/lib/config'
 import { env } from '@/lib/env'
 import { berkeleyMono, inter } from '@/lib/fonts'
 import { ThemeProvider } from '@/providers/theme-provider'
@@ -64,10 +66,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: [
-    { color: 'var(--site-background)', media: '(prefers-color-scheme: light)' },
-    { color: 'var(--site-background)', media: '(prefers-color-scheme: dark)' },
-  ],
+  themeColor: META_THEME_COLORS.light,
 }
 
 export default function RootLayout({
@@ -79,6 +78,20 @@ export default function RootLayout({
     <html lang="en" suppressHydrationWarning>
       {/* <Script src="https://cdn.jsdelivr.net/npm/react-scan/dist/auto.global.js" /> */}
       <OneDollarStatsScript />
+      <head>
+        <script
+          // biome-ignore lint/security/noDangerouslySetInnerHtml: <explanation>
+          dangerouslySetInnerHTML={{
+            __html: `
+              try {
+                if (localStorage.theme === 'dark' || ((!('theme' in localStorage) || localStorage.theme === 'system') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                  document.querySelector('meta[name="theme-color"]').setAttribute('content', '${META_THEME_COLORS.dark}')
+                }
+              } catch (_) {}
+            `,
+          }}
+        />
+      </head>
       <body
         className={`${inter.variable} ${berkeleyMono.variable} font-sans antialiased bg-site-background min-h-svh`}
       >
@@ -87,10 +100,12 @@ export default function RootLayout({
           defaultTheme="system"
           enableSystem
           disableTransitionOnChange
+          enableColorScheme
         >
           <NuqsAdapter>
             <div data-vaul-drawer-wrapper="true">
               <div className="relative flex min-h-svh flex-col bg-site-background">
+                <ThemeColorUpdater />
                 {children}
               </div>
             </div>
