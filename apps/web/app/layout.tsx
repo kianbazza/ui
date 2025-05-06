@@ -88,7 +88,13 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <NuqsAdapter>{children}</NuqsAdapter>
+          <NuqsAdapter>
+            <div data-vaul-drawer-wrapper="true">
+              <div className="relative flex min-h-svh flex-col bg-site-background">
+                {children}
+              </div>
+            </div>
+          </NuqsAdapter>
         </ThemeProvider>
       </body>
     </html>
