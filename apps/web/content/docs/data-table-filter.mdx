@@ -836,13 +836,13 @@ const tstColumns = useMemo( // [!code ++]
 const tstFilters = useMemo(() => createTSTFilters(filters), [filters]) // [!code ++]
 
 const table = useReactTable({
-  data: ISSUES,
+  data: issues.data ?? [],
   columns: tstColumns, // [!code ++]
   getRowId: (row) => row.id,
   getCoreRowModel: getCoreRowModel(),
   getFilteredRowModel: getFilteredRowModel(), // [!code ++]
   state: {
-    filters: tstFilters // [!code ++]
+    columnFilters: tstFilters // [!code ++]
   }
 })
 ```
