@@ -31,6 +31,14 @@ From the command line, install the component into your project:
 npx shadcn@latest add https://ui.bazza.dev/r/filters
 ```
 
+> [!WARNING] JavaScript projects should add JSON locales manually after installation.
+> There is a known issue with shadcn CLI that prevents the JSON locale files from being installed correctly in JavaScript projects.
+> The cause is unknown and being investigated.
+>
+> The temporary workaround is to run the installation command above *(it will throw an error)*, then:
+> 1. Create the `locales` directory in the component root directory.
+> 2. Copy the [`locales/en.json`](https://github.com/kianbazza/ui/blob/main/apps/web/registry/data-table-filter/locales/en.json) file into the directory.
+
 ## Quick Start
 
 {/* > [!WARNING] This section is under development. */}
@@ -721,6 +729,12 @@ We provide an add-on to add support for additional locales:
 > [!IMPORTANT] When prompted (`y/N`), explicitly overwrite the `lib/i18n.ts` file.
 
 > [!NOTE] Feel free to remove any unused locales after the installation.
+
+> [!WARNING] JavaScript projects should add JSON locales manually after installation.
+> There is a known issue with shadcn CLI that prevents the JSON locale files from being installed correctly in JavaScript projects.
+> The cause is unknown and being investigated.
+>
+> The temporary workaround is to run the installation command *(it will throw an error)*, then **copy the [missing locale files](https://github.com/kianbazza/ui/blob/main/apps/web/registry/data-table-filter/locales)** into the directory.
 
 ```bash
 npx shadcn@latest add https://ui.bazza.dev/r/filters/i18n
