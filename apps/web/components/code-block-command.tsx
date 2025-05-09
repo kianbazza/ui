@@ -57,16 +57,16 @@ export function CodeBlockCommand({
       return
     }
 
+    copyToClipboardWithMeta(command)
+    setHasCopied(true)
+
     if (isComponentInstallCommand) {
       // @ts-ignore
-      await window.stonks.event('Copied component installation command', {
+      window.stonks.event('Copied component installation command', {
         packageManager,
         component: 'data-table-filter',
       })
     }
-
-    copyToClipboardWithMeta(command)
-    setHasCopied(true)
   }, [packageManager, tabs, isComponentInstallCommand])
 
   return (
