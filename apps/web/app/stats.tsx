@@ -5,7 +5,11 @@ export default function OneDollarStatsScript() {
       defer
       src="https://assets.onedollarstats.com/stonks.js"
       id="stonks"
-      data-debug="ui.bazza.dev"
+      data-debug={
+        process.env.NEXT_PUBLIC_RELEASE_TYPE === 'canary'
+          ? 'canary.ui.bazza.dev'
+          : 'ui.bazza.dev'
+      }
     />
   )
 }
