@@ -69,11 +69,11 @@ describe('useDataTableFilters', () => {
     })
 
     expect(result.current.filters).toHaveLength(1)
-    const filter = result.current.filters[0]
+    const filter = result.current.filters[0]!
     expect(filter.columnId).toBe('status')
     expect(filter.values).toEqual(['active'])
     // For an option column with a single value, the default operator is expected to be "single".
-    expect(filter.operator).toBe(DEFAULT_OPERATORS.option.single)
+    expect(filter?.operator).toBe(DEFAULT_OPERATORS.option.single)
   })
 
   it('should update an existing option filter when adding new values', () => {
@@ -95,16 +95,16 @@ describe('useDataTableFilters', () => {
       result.current.actions.addFilterValue(optionColumn as any, ['active'])
     })
     expect(result.current.filters).toHaveLength(1)
-    expect(result.current.filters[0].values).toEqual(['active'])
+    expect(result.current.filters[0]!.values).toEqual(['active'])
 
     // Add a different value.
     act(() => {
       result.current.actions.addFilterValue(optionColumn as any, ['inactive'])
     })
     expect(result.current.filters).toHaveLength(1)
-    expect(result.current.filters[0].values).toEqual(['active', 'inactive'])
+    expect(result.current.filters[0]!.values).toEqual(['active', 'inactive'])
     // Multiple selected values should cause the operator to switch to "multiple".
-    expect(result.current.filters[0].operator).toBe(
+    expect(result.current.filters[0]!.operator).toBe(
       DEFAULT_OPERATORS.option.multiple,
     )
   })
@@ -126,13 +126,14 @@ describe('useDataTableFilters', () => {
         'inactive',
       ])
     })
-    expect(result.current.filters[0].values).toEqual(['active', 'inactive'])
+    expect(result.current.filters).toHaveLength(1)
+    expect(result.current.filters[0]!.values).toEqual(['active', 'inactive'])
 
     // Remove one value.
     act(() => {
       result.current.actions.removeFilterValue(optionColumn as any, ['active'])
     })
-    expect(result.current.filters[0].values).toEqual(['inactive'])
+    expect(result.current.filters[0]!.values).toEqual(['inactive'])
 
     // Remove the last value; the filter should then be removed.
     act(() => {
@@ -212,7 +213,7 @@ describe('useDataTableFilters', () => {
       result.current.actions.removeFilter('name')
     })
     expect(result.current.filters).toHaveLength(1)
-    expect(result.current.filters[0].columnId).toBe('status')
+    expect(result.current.filters[0]!.columnId).toBe('status')
   })
 
   it('should remove all filters using removeAllFilters', () => {
@@ -363,10 +364,10 @@ describe('useDataTableFilters', () => {
       })
 
       expect(result.current.filters).toHaveLength(1)
-      expect(result.current.filters[0].values).toEqual(['active', 'inactive'])
+      expect(result.current.filters[0]!.values).toEqual(['active', 'inactive'])
 
       expect(result.current.filtersState).toHaveLength(1)
-      expect(result.current.filtersState[0].values).toEqual([
+      expect(result.current.filtersState[0]!.values).toEqual([
         'active',
         'inactive',
       ])

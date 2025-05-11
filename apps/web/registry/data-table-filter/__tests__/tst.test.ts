@@ -82,20 +82,22 @@ describe('Integration: TanStack Table', () => {
       configs: result.current.columns,
     })
 
+    expect(tstColumns).toHaveLength(4)
+
     it('should consider columns when enableColumnnFilter is not explicitly set', () => {
-      expect(tstColumns[0].filterFn).toBeDefined()
+      expect(tstColumns[0]!.filterFn).toBeDefined()
     })
 
     it('should consider columns when enableColumnnFilter is explicitly set to true', () => {
-      expect(tstColumns[1].filterFn).toBeDefined()
+      expect(tstColumns[1]!.filterFn).toBeDefined()
     })
 
     it('should not consider columns when enableColumnnFilter is explicitly set to false', () => {
-      expect(tstColumns[2].filterFn).toBeUndefined()
+      expect(tstColumns[2]!.filterFn).toBeUndefined()
     })
 
     it('should not consider columns when a matching column config is not found', () => {
-      expect(tstColumns[3].filterFn).toBeUndefined()
+      expect(tstColumns[3]!.filterFn).toBeUndefined()
     })
   })
 })
