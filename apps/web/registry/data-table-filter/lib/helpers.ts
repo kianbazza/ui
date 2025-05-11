@@ -15,9 +15,13 @@ export function createNumberFilterValue(
   values: number[] | undefined,
 ): number[] {
   if (!values || values.length === 0) return []
-  if (values.length === 1) return [values[0]]
+  if (values.some((v) => typeof v === 'undefined'))
+    throw new Error('Cannot create number filter value from undefined values')
+  if (values.length === 1) return [values[0]!]
   if (values.length === 2) return createNumberRange(values)
-  return [values[0], values[1]]
+  if (values.length > 2) return [values[0]!, values[1]!]
+
+  throw new Error('Cannot create number filter value from undefined values')
 }
 
 export function createDateFilterValue(
@@ -40,12 +44,14 @@ export function createNumberRange(values: number[] | undefined) {
   let a = 0
   let b = 0
 
+  if (values?.some((v) => typeof v === 'undefined'))
+    throw new Error('Cannot create number range from undefined values')
   if (!values || values.length === 0) return [a, b]
   if (values.length === 1) {
-    a = values[0]
+    a = values[0]!
   } else {
-    a = values[0]
-    b = values[1]
+    a = values[0]!
+    b = values[1]!
   }
 
   const [min, max] = a < b ? [a, b] : [b, a]

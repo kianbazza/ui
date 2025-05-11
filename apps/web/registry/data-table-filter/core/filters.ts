@@ -220,7 +220,7 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
     const memoizedTransform = memo(
       () => [models],
       (deps) =>
-        deps[0].map((m) =>
+        deps[0]!.map((m) =>
           column.transformOptionFn!(m as ElementType<NonNullable<TVal>>),
         ),
       { key: `transform-${column.id}` },
@@ -243,7 +243,7 @@ export function getColumnValues<TData, TType extends ColumnDataType, TVal>(
   const memoizedAccessor = memo(
     () => [data],
     (deps) =>
-      deps[0]
+      deps[0]!
         .flatMap(column.accessor)
         .filter(
           (v): v is NonNullable<TVal> => v !== undefined && v !== null,
@@ -267,7 +267,7 @@ export function getColumnValues<TData, TType extends ColumnDataType, TVal>(
     const memoizedTransform = memo(
       () => [raw],
       (deps) =>
-        deps[0].map(
+        deps[0]!.map(
           (v) => column.transformOptionFn!(v) as ElementType<NonNullable<TVal>>,
         ),
       { key: `transform-values-${column.id}` },

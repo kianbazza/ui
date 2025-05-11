@@ -77,14 +77,15 @@ export function dateFilterFn<TData>(
     throw new Error('Singular operators require at most one filter value')
 
   if (
-    filterValue.operator in ['is between', 'is not between'] &&
-    filterValue.values.length !== 2
+    (filterValue.operator in ['is between', 'is not between'] &&
+      filterValue.values.length !== 2) ||
+    !filterValue.values[0] ||
+    !filterValue.values[1]
   )
     throw new Error('Plural operators require two filter values')
 
-  const filterVals = filterValue.values
-  const d1 = filterVals[0]
-  const d2 = filterVals[1]
+  const d1 = filterValue.values[0]
+  const d2 = filterValue.values[1]
 
   const value = inputData
 
@@ -108,8 +109,8 @@ export function dateFilterFn<TData>(
       })
     case 'is not between':
       return !isWithinInterval(value, {
-        start: startOfDay(filterValue.values[0]),
-        end: endOfDay(filterValue.values[1]),
+        start: startOfDay(d1),
+        end: endOfDay(d2),
       })
   }
 }
@@ -118,7 +119,8 @@ export function textFilterFn<TData>(
   inputData: string,
   filterValue: FilterModel<'text'>,
 ) {
-  if (!filterValue || filterValue.values.length === 0) return true
+  if (!filterValue || filterValue.values.length === 0 || !filterValue.values[0])
+    return true
 
   const value = inputData.toLowerCase().trim()
   const filterStr = filterValue.values[0].toLowerCase().trim()
@@ -143,8 +145,13 @@ export function numberFilterFn<TData>(
     return true
   }
 
+  if (filterValue.values.some((v) => typeof v === 'undefined'))
+    throw new Error('Cannot create number filter value from undefined values')
+
   const value = inputData
-  const filterVal = filterValue.values[0]
+  const filterVal = filterValue.values[0]!
+  const lowerBound = filterVal
+  const upperBound = filterValue.values[1]!
 
   switch (filterValue.operator) {
     case 'is':
@@ -160,13 +167,9 @@ export function numberFilterFn<TData>(
     case 'is less than or equal to':
       return value <= filterVal
     case 'is between': {
-      const lowerBound = filterValue.values[0]
-      const upperBound = filterValue.values[1]
       return value >= lowerBound && value <= upperBound
     }
     case 'is not between': {
-      const lowerBound = filterValue.values[0]
-      const upperBound = filterValue.values[1]
       return value < lowerBound || value > upperBound
     }
     default:

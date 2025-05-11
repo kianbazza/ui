@@ -76,7 +76,7 @@ function deepEqual(a: any, b: any): boolean {
     if (aKeys.length !== bKeys.length) return false
     for (let i = 0; i < aKeys.length; i++) {
       if (aKeys[i] !== bKeys[i]) return false
-      if (!deepEqual(a[aKeys[i]], b[bKeys[i]])) return false
+      if (!deepEqual(a[aKeys[i]!], b[bKeys[i]!])) return false
     }
     return true
   }

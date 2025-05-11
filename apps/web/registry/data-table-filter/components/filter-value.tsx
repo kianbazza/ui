@@ -177,7 +177,7 @@ export function FilterValueOptionDisplay<TData>({
   // If there are multiple options selected, we display:
   // 1) up to 3 icons of the selected options
   // 2) the number of selected options
-  if (selected.length === 1) {
+  if (selected.length === 1 && selected[0]) {
     const { label, icon: Icon } = selected[0]
     const hasIcon = !!Icon
     return (
@@ -225,7 +225,7 @@ export function FilterValueMultiOptionDisplay<TData>({
   const options = useMemo(() => column.getOptions(), [column])
   const selected = options.filter((o) => filter.values.includes(o.value))
 
-  if (selected.length === 1) {
+  if (selected.length === 1 && selected[0]) {
     const { label, icon: Icon } = selected[0]
     const hasIcon = !!Icon
     return (
@@ -290,17 +290,23 @@ export function FilterValueDateDisplay<TData>({
 }: FilterValueDisplayProps<TData, 'date'>) {
   if (!filter) return null
   if (filter.values.length === 0) return <Ellipsis className="size-4" />
-  if (filter.values.length === 1) {
+  if (filter.values.length === 1 && filter.values[0]) {
     const value = filter.values[0]
 
     const formattedDateStr = format(value, 'MMM d, yyyy')
 
     return <span>{formattedDateStr}</span>
   }
+  if (filter.values.length === 2 && filter.values[0] && filter.values[1]) {
+    const formattedRangeStr = formatDateRange(
+      filter.values[0],
+      filter.values[1],
+    )
 
-  const formattedRangeStr = formatDateRange(filter.values[0], filter.values[1])
+    return <span>{formattedRangeStr}</span>
+  }
 
-  return <span>{formattedRangeStr}</span>
+  return null
 }
 
 export function FilterValueTextDisplay<TData>({
@@ -310,7 +316,10 @@ export function FilterValueTextDisplay<TData>({
   locale = 'en',
 }: FilterValueDisplayProps<TData, 'text'>) {
   if (!filter) return null
-  if (filter.values.length === 0 || filter.values[0].trim() === '')
+  if (
+    filter.values.length === 0 ||
+    (filter.values[0] && filter.values[0].trim() === '')
+  )
     return <Ellipsis className="size-4" />
 
   const value = filter.values[0]
@@ -743,13 +752,13 @@ export function FilterValueNumberController<TData>({
   }
 
   const changeMinNumber = (value: number) => {
-    const newValues = createNumberRange([value, values[1]])
+    const newValues = createNumberRange([value, values[1]!])
     setValues(newValues)
     setFilterValueDebounced(column as any, newValues)
   }
 
   const changeMaxNumber = (value: number) => {
-    const newValues = createNumberRange([values[0], value])
+    const newValues = createNumberRange([values[0]!, value])
     setValues(newValues)
     setFilterValueDebounced(column as any, newValues)
   }
@@ -758,11 +767,11 @@ export function FilterValueNumberController<TData>({
     (type: 'single' | 'range') => {
       let newValues: number[] = []
       if (type === 'single')
-        newValues = [values[0]] // Keep the first value for single mode
+        newValues = [values[0]!] // Keep the first value for single mode
       else if (!minMax)
-        newValues = createNumberRange([values[0], values[1] ?? 0])
+        newValues = createNumberRange([values[0]!, values[1] ?? 0])
       else {
-        const value = values[0]
+        const value = values[0]!
         newValues =
           value - minMax[0] < minMax[1] - value
             ? createNumberRange([value, minMax[1]])
@@ -801,7 +810,7 @@ export function FilterValueNumberController<TData>({
               <TabsContent value="single" className="flex flex-col gap-4 mt-4">
                 {minMax && (
                   <Slider
-                    value={[values[0]]}
+                    value={[values[0]!]}
                     onValueChange={(value) => changeNumber(value)}
                     min={sliderMin}
                     max={sliderMax}
@@ -816,7 +825,7 @@ export function FilterValueNumberController<TData>({
                   <DebouncedInput
                     id="single"
                     type="number"
-                    value={values[0].toString()} // Use values[0] directly
+                    value={values[0]!.toString()} // Use values[0] directly
                     onChange={(v) => changeNumber([Number(v)])}
                   />
                 </div>
@@ -839,7 +848,7 @@ export function FilterValueNumberController<TData>({
                     </span>
                     <DebouncedInput
                       type="number"
-                      value={values[0]}
+                      value={values[0]!}
                       onChange={(v) => changeMinNumber(Number(v))}
                     />
                   </div>
@@ -849,7 +858,7 @@ export function FilterValueNumberController<TData>({
                     </span>
                     <DebouncedInput
                       type="number"
-                      value={values[1]}
+                      value={values[1]!}
                       onChange={(v) => changeMaxNumber(Number(v))}
                     />
                   </div>
