@@ -120,6 +120,7 @@ export type ColumnConfig<
     ? TTransformOptionFn<TVal>
     : never
   orderFn?: TType extends OptionBasedColumnDataType ? TOrderFn<TVal> : never
+  hidden?: boolean
 }
 
 export type OptionColumnId<T> = T extends ColumnConfig<
