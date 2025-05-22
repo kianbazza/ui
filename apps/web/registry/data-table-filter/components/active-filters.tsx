@@ -41,6 +41,8 @@ export function ActiveFilters<TData>({
         // Skip if no filter value
         if (!filter.values) return null
 
+        if (column.hidden) return null
+
         return (
           <ActiveFilter
             key={`active-filter-${filter.columnId}`}
@@ -104,7 +106,9 @@ export function ActiveFilter<TData, TType extends ColumnDataType>({
 
 export function ActiveFiltersMobileContainer({
   children,
-}: { children: React.ReactNode }) {
+}: {
+  children: React.ReactNode
+}) {
   const scrollContainerRef = useRef<HTMLDivElement>(null)
   const [showLeftBlur, setShowLeftBlur] = useState(false)
   const [showRightBlur, setShowRightBlur] = useState(true)
