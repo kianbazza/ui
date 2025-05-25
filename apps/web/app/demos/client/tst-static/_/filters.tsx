@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils'
 import { createColumnConfigHelper } from '@/registry/data-table-filter/core/filters'
 import {
   CalendarArrowUpIcon,
+  CircleAlertIcon,
   CircleDotDashedIcon,
   ClockIcon,
   Heading1Icon,
@@ -90,5 +91,13 @@ export const columnsConfig = [
     .id('startDate')
     .displayName('Start Date')
     .icon(CalendarArrowUpIcon)
+    .build(),
+  dtf
+    .boolean()
+    .id('isUrgent')
+    .accessor((row) => row.isUrgent)
+    .displayName('Urgent issues')
+    .toggledStateName('urgent')
+    .icon(CircleAlertIcon)
     .build(),
 ] as const
