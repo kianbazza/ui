@@ -10,6 +10,7 @@ export type Issue = {
   startDate?: Date
   endDate?: Date
   estimatedHours?: number
+  isUrgent: boolean
 }
 
 export type User = {

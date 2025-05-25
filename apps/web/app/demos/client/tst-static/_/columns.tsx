@@ -1,9 +1,14 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Checkbox } from '@/components/ui/checkbox'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
 import { createColumnHelper } from '@tanstack/react-table'
 import { format } from 'date-fns'
-import { CircleDashedIcon } from 'lucide-react'
+import { CircleAlertIcon, CircleDashedIcon } from 'lucide-react'
 import type { Issue } from './types'
 
 export const LABEL_STYLES_MAP = {
@@ -106,7 +111,38 @@ export const tstColumnDefs = [
     id: 'title',
     header: 'Title',
     enableColumnFilter: true,
-    cell: ({ row }) => <div>{row.getValue('title')}</div>,
+    cell: ({ row }) => (
+      <div className="flex items-center gap-2">
+        <span>{row.getValue('title')}</span>
+        {row.original.isUrgent && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <CircleAlertIcon className="size-5 fill-red-600 stroke-[2.5px] stroke-white dark:stroke-black" />
+            </TooltipTrigger>
+            <TooltipContent>Urgent issue</TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+    ),
+  }),
+  columnHelper.accessor((row) => row.isUrgent, {
+    id: 'isUrgent',
+    header: 'Urgent',
+    enableColumnFilter: true,
+    cell: ({ row }) => {
+      const isUrgent = row.getValue<boolean>('isUrgent')
+
+      if (!isUrgent) {
+        return null
+      }
+
+      return (
+        <div className="flex items-center gap-2 rounded-md">
+          <CircleAlertIcon className="" />
+          <span>Urgent</span>
+        </div>
+      )
+    },
   }),
   columnHelper.accessor((row) => row.assignee?.id, {
     id: 'assignee',
