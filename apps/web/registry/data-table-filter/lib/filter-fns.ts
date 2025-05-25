@@ -176,3 +176,25 @@ export function numberFilterFn<TData>(
       return true
   }
 }
+
+export function booleanFilterFn<TData>(
+  inputData: boolean,
+  filterValue: FilterModel<'boolean'>,
+) {
+  if (!filterValue || filterValue.values.length === 0) return true
+
+  if (filterValue.values.some((v) => typeof v === 'undefined'))
+    throw new Error('Cannot create boolean filter value from undefined values')
+
+  const value = inputData
+  const filterVal = filterValue.values[0] ?? false
+
+  switch (filterValue.operator) {
+    case 'is':
+      return value === filterVal
+    case 'is not':
+      return value !== filterVal
+    default:
+      return true
+  }
+}
