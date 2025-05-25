@@ -4,6 +4,7 @@ import { useIsMobile } from '@/hooks/use-mobile'
 import type {
   Column,
   DataTableFilterActions,
+  EntityName,
   FilterStrategy,
   FiltersState,
 } from '../core/types'
@@ -18,6 +19,7 @@ interface DataTableFilterProps<TData> {
   actions: DataTableFilterActions
   strategy: FilterStrategy
   locale?: Locale
+  entityName?: EntityName
 }
 
 export function DataTableFilter<TData>({
@@ -26,6 +28,7 @@ export function DataTableFilter<TData>({
   actions,
   strategy,
   locale = 'en',
+  entityName,
 }: DataTableFilterProps<TData>) {
   const isMobile = useIsMobile()
   if (isMobile) {
@@ -74,6 +77,7 @@ export function DataTableFilter<TData>({
           actions={actions}
           strategy={strategy}
           locale={locale}
+          entityName={entityName}
         />
       </div>
       <FilterActions

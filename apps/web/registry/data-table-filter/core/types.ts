@@ -15,6 +15,8 @@ export type ElementType<T> = T extends (infer U)[] ? U : T
 
 export type Nullable<T> = T | null | undefined
 
+export type EntityName = string
+
 /*
  * The model of a column option.
  * Used for representing underlying column values of type `option` or `multiOption`.
@@ -41,6 +43,7 @@ export type ColumnDataType =
   | 'text'
   | 'number'
   | 'date'
+  | 'boolean'
   /* The column value can be a single value from a list of options. */
   | 'option'
   /* The column value can be zero or more values from a list of options. */
@@ -61,6 +64,7 @@ export type ColumnDataNativeMap = {
   text: string
   number: number
   date: Date
+  boolean: boolean
   option: string
   multiOption: string[]
 }
@@ -120,7 +124,9 @@ export type ColumnConfig<
     ? TTransformOptionFn<TVal>
     : never
   orderFn?: TType extends OptionBasedColumnDataType ? TOrderFn<TVal> : never
-}
+} & (TType extends 'boolean'
+  ? { toggledStateName: string }
+  : { toggledStateName?: never })
 
 export type OptionColumnId<T> = T extends ColumnConfig<
   infer TData,
@@ -254,6 +260,8 @@ export type DateFilterOperator =
   | 'is between'
   | 'is not between'
 
+export type BooleanFilterOperator = 'is' | 'is not'
+
 /* Operators for option data */
 export type OptionFilterOperator = 'is' | 'is not' | 'is any of' | 'is none of'
 
@@ -271,6 +279,7 @@ export type FilterOperators = {
   text: TextFilterOperator
   number: NumberFilterOperator
   date: DateFilterOperator
+  boolean: BooleanFilterOperator
   option: OptionFilterOperator
   multiOption: MultiOptionFilterOperator
 }
