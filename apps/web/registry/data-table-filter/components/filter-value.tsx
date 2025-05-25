@@ -17,6 +17,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { Slider } from '@/components/ui/slider'
+import { Switch } from '@/components/ui/switch'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { cn } from '@/lib/utils'
 import { isEqual } from 'date-fns'
@@ -38,6 +39,7 @@ import type {
   ColumnDataType,
   ColumnOptionExtended,
   DataTableFilterActions,
+  EntityName,
   FilterModel,
   FilterStrategy,
 } from '../core/types'
@@ -53,6 +55,7 @@ interface FilterValueProps<TData, TType extends ColumnDataType> {
   actions: DataTableFilterActions
   strategy: FilterStrategy
   locale?: Locale
+  entityName?: EntityName
 }
 
 export const FilterValue = memo(__FilterValue) as typeof __FilterValue
@@ -63,7 +66,25 @@ function __FilterValue<TData, TType extends ColumnDataType>({
   actions,
   strategy,
   locale,
+  entityName,
 }: FilterValueProps<TData, TType>) {
+  if (column.type === 'boolean') {
+    return (
+      <Button
+        variant="ghost"
+        className="m-0 h-full w-fit whitespace-nowrap rounded-none p-0 px-2 text-xs pointer-events-none"
+      >
+        <FilterValueDisplay
+          filter={filter}
+          column={column}
+          actions={actions}
+          locale={locale}
+          entityName={entityName}
+        />
+      </Button>
+    )
+  }
+
   return (
     <Popover>
       <PopoverAnchor className="h-full" />
@@ -77,6 +98,7 @@ function __FilterValue<TData, TType extends ColumnDataType>({
             column={column}
             actions={actions}
             locale={locale}
+            entityName={entityName}
           />
         </Button>
       </PopoverTrigger>
@@ -91,6 +113,7 @@ function __FilterValue<TData, TType extends ColumnDataType>({
           actions={actions}
           strategy={strategy}
           locale={locale}
+          entityName={entityName}
         />
       </PopoverContent>
     </Popover>
@@ -102,6 +125,7 @@ interface FilterValueDisplayProps<TData, TType extends ColumnDataType> {
   column: Column<TData, TType>
   actions: DataTableFilterActions
   locale?: Locale
+  entityName?: EntityName
 }
 
 export function FilterValueDisplay<TData, TType extends ColumnDataType>({
@@ -109,6 +133,7 @@ export function FilterValueDisplay<TData, TType extends ColumnDataType>({
   column,
   actions,
   locale = 'en',
+  entityName,
 }: FilterValueDisplayProps<TData, TType>) {
   switch (column.type) {
     case 'option':
@@ -154,6 +179,16 @@ export function FilterValueDisplay<TData, TType extends ColumnDataType>({
           column={column as Column<TData, 'number'>}
           actions={actions}
           locale={locale}
+        />
+      )
+    case 'boolean':
+      return (
+        <FilterValueBooleanDisplay
+          filter={filter as FilterModel<'boolean'>}
+          column={column as Column<TData, 'boolean'>}
+          actions={actions}
+          locale={locale}
+          entityName={entityName}
         />
       )
     default:
@@ -353,6 +388,17 @@ export function FilterValueNumberDisplay<TData>({
   return <span className="tabular-nums tracking-tight">{value}</span>
 }
 
+export function FilterValueBooleanDisplay<TData>({
+  filter,
+  column,
+  actions,
+  locale = 'en',
+  entityName,
+}: FilterValueDisplayProps<TData, 'boolean'>) {
+  if (!filter || filter.values.length === 0) return null
+  return <span>{column.toggledStateName}</span>
+}
+
 /****** Property Filter Value Controller ******/
 
 interface FilterValueControllerProps<TData, TType extends ColumnDataType> {
@@ -361,6 +407,7 @@ interface FilterValueControllerProps<TData, TType extends ColumnDataType> {
   actions: DataTableFilterActions
   strategy: FilterStrategy
   locale?: Locale
+  entityName?: EntityName
 }
 
 export const FilterValueController = memo(
@@ -373,6 +420,7 @@ function __FilterValueController<TData, TType extends ColumnDataType>({
   actions,
   strategy,
   locale = 'en',
+  entityName,
 }: FilterValueControllerProps<TData, TType>) {
   switch (column.type) {
     case 'option':
@@ -423,6 +471,17 @@ function __FilterValueController<TData, TType extends ColumnDataType>({
           actions={actions}
           strategy={strategy}
           locale={locale}
+        />
+      )
+    case 'boolean':
+      return (
+        <FilterValueBooleanController
+          filter={filter as FilterModel<'boolean'>}
+          column={column as Column<TData, 'boolean'>}
+          actions={actions}
+          strategy={strategy}
+          locale={locale}
+          entityName={entityName}
         />
       )
     default:
@@ -866,6 +925,33 @@ export function FilterValueNumberController<TData>({
               </TabsContent>
             </Tabs>
           </div>
+        </CommandGroup>
+      </CommandList>
+    </Command>
+  )
+}
+
+export function FilterValueBooleanController<TData>({
+  filter,
+  column,
+  actions,
+  locale = 'en',
+  entityName,
+}: FilterValueControllerProps<TData, 'boolean'>) {
+  const handleChange = (value: boolean) => {
+    actions.setFilterValue(column, [value])
+  }
+
+  return (
+    <Command>
+      <CommandList className="max-h-fit">
+        <CommandGroup>
+          <CommandItem>
+            <Switch
+              checked={filter?.values[0] ?? false}
+              onCheckedChange={handleChange}
+            />
+          </CommandItem>
         </CommandGroup>
       </CommandList>
     </Command>
