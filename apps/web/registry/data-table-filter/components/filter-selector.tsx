@@ -80,7 +80,7 @@ function __FilterSelector<TData>({
   // biome-ignore lint/correctness/useExhaustiveDependencies: need filters to be updated
   const content = useMemo(
     () =>
-      property && column ? (
+      property && column && column.type !== 'boolean' ? (
         <FilterValueController
           filter={filter!}
           column={column as Column<TData, ColumnDataType>}
@@ -112,6 +112,7 @@ function __FilterSelector<TData>({
                   key={column.id}
                   column={column}
                   setProperty={setProperty}
+                  actions={actions}
                 />
               ))}
               <QuickSearchFilters
@@ -160,9 +161,11 @@ function __FilterSelector<TData>({
 export function FilterableColumn<TData, TType extends ColumnDataType, TVal>({
   column,
   setProperty,
+  actions,
 }: {
   column: Column<TData, TType, TVal>
   setProperty: (value: string) => void
+  actions: DataTableFilterActions
 }) {
   const itemRef = useRef<HTMLDivElement>(null)
 
@@ -198,12 +201,21 @@ export function FilterableColumn<TData, TType extends ColumnDataType, TVal>({
     return () => observer.disconnect()
   }, [prefetch])
 
+  function handleSelect() {
+    if (column.type === 'boolean') {
+      actions.setFilterValue(column as any, [true])
+      return
+    }
+
+    setProperty(column.id)
+  }
+
   return (
     <CommandItem
       ref={itemRef}
       value={column.id}
       keywords={[column.displayName]}
-      onSelect={() => setProperty(column.id)}
+      onSelect={handleSelect}
       className="group"
       onMouseEnter={prefetch}
     >
@@ -212,7 +224,9 @@ export function FilterableColumn<TData, TType extends ColumnDataType, TVal>({
           {<column.icon strokeWidth={2.25} className="size-4" />}
           <span>{column.displayName}</span>
         </div>
-        <ArrowRightIcon className="size-4 opacity-0 group-aria-selected:opacity-100" />
+        {column.type !== 'boolean' && (
+          <ArrowRightIcon className="size-4 opacity-0 group-aria-selected:opacity-100" />
+        )}
       </div>
     </CommandItem>
   )

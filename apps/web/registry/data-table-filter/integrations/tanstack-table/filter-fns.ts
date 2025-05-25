@@ -31,3 +31,13 @@ export function numberFilterFn<TData>(
 
   return f.numberFilterFn(value, filterValue)
 }
+
+export function booleanFilterFn<TData>(
+  row: Row<TData>,
+  columnId: string,
+  filterValue: FilterModel<'boolean'>,
+): boolean {
+  const value = row.getValue<boolean>(columnId) ?? false
+
+  return f.booleanFilterFn(value, filterValue)
+}

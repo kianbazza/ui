@@ -38,5 +38,7 @@
   "filters.number.lessThan": "inférieur à",
   "filters.number.lessThanOrEqual": "inférieur ou égal à",
   "filters.number.isBetween": "est entre",
-  "filters.number.isNotBetween": "n'est pas entre"
+  "filters.number.isNotBetween": "n'est pas entre",
+  "filters.boolean.is": "est",
+  "filters.boolean.isNot": "n'est pas"
 }

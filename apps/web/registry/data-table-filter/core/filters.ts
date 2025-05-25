@@ -52,6 +52,7 @@ class ColumnConfigBuilder<
 
   displayName(value: string): ColumnConfigBuilder<TData, TType, TVal, TId> {
     const newInstance = this.clone()
+    // @ts-expect-error
     newInstance.config.displayName = value
     return newInstance
   }
@@ -148,6 +149,24 @@ class ColumnConfigBuilder<
     return newInstance
   }
 
+  toggledStateName(
+    value: string,
+  ): ColumnConfigBuilder<
+    TData,
+    TType extends 'boolean' ? TType : never,
+    TVal,
+    TId
+  > {
+    if (this.config.type !== 'boolean')
+      throw new Error(
+        'toggledStateName() is only applicable to boolean columns',
+      )
+
+    const newInstance = this.clone() as any
+    newInstance.config.toggledStateName = value
+    return newInstance
+  }
+
   build(): ColumnConfig<TData, TType, TVal, TId> {
     if (!this.config.id) throw new Error('id is required')
     if (!this.config.accessor) throw new Error('accessor is required')
@@ -162,6 +181,7 @@ interface FluentColumnConfigHelper<TData> {
   text: () => ColumnConfigBuilder<TData, 'text', string>
   number: () => ColumnConfigBuilder<TData, 'number', number>
   date: () => ColumnConfigBuilder<TData, 'date', Date>
+  boolean: () => ColumnConfigBuilder<TData, 'boolean', boolean>
   option: () => ColumnConfigBuilder<TData, 'option', string>
   multiOption: () => ColumnConfigBuilder<TData, 'multiOption', string[]>
 }
@@ -174,6 +194,8 @@ export function createColumnConfigHelper<
     text: () => new ColumnConfigBuilder<TData, 'text', string>('text'),
     number: () => new ColumnConfigBuilder<TData, 'number', number>('number'),
     date: () => new ColumnConfigBuilder<TData, 'date', Date>('date'),
+    boolean: () =>
+      new ColumnConfigBuilder<TData, 'boolean', boolean>('boolean'),
     option: () => new ColumnConfigBuilder<TData, 'option', string>('option'),
     multiOption: () =>
       new ColumnConfigBuilder<TData, 'multiOption', string[]>('multiOption'),
