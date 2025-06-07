@@ -431,7 +431,7 @@ function __FilterValueController<TData, TType extends ColumnDataType>({
 }
 
 interface OptionItemProps {
-  option: ColumnOptionExtended & { initialSelected: boolean }
+  option: ColumnOptionExtended
   onToggle: (value: string, checked: boolean) => void
 }
 
@@ -485,25 +485,29 @@ export function FilterValueOptionController<TData>({
   actions,
   locale = 'en',
 }: FilterValueControllerProps<TData, 'option'>) {
-  // Compute initial options once per mount
-  const initialOptions = useMemo(() => {
+  // Derive the initial selected values on mount
+  const initialSelectedValues = useMemo(() => new Set(filter?.values || []), [])
+
+  // Separate the selected and unselected options
+  const { selectedOptions, unselectedOptions } = useMemo(() => {
     const counts = column.getFacetedUniqueValues()
-    return column.getOptions().map((o) => ({
-      ...o,
-      selected: filter?.values.includes(o.value),
-      initialSelected: filter?.values.includes(o.value),
-      count: counts?.get(o.value) ?? 0,
-    }))
-  }, [])
+    const allOptions = column.getOptions().map((o) => {
+      const currentlySelected = filter?.values.includes(o.value) ?? false
+      return {
+        ...o,
+        selected: currentlySelected,
+        count: counts?.get(o.value) ?? 0,
+      }
+    })
 
-  const [options, setOptions] = useState(initialOptions)
-
-  // Update selected state when filter values change
-  useEffect(() => {
-    setOptions((prev) =>
-      prev.map((o) => ({ ...o, selected: filter?.values.includes(o.value) })),
+    const selected = allOptions.filter((o) =>
+      initialSelectedValues.has(o.value),
     )
-  }, [filter?.values])
+    const unselected = allOptions.filter(
+      (o) => !initialSelectedValues.has(o.value),
+    )
+    return { selectedOptions: selected, unselectedOptions: unselected }
+  }, [column, filter?.values, initialSelectedValues])
 
   const handleToggle = useCallback(
     (value: string, checked: boolean) => {
@@ -512,17 +516,6 @@ export function FilterValueOptionController<TData>({
     },
     [actions, column],
   )
-
-  // Derive groups based on `initialSelected` only
-  const { selectedOptions, unselectedOptions } = useMemo(() => {
-    const sel: typeof options = []
-    const unsel: typeof options = []
-    for (const o of options) {
-      if (o.initialSelected) sel.push(o)
-      else unsel.push(o)
-    }
-    return { selectedOptions: sel, unselectedOptions: unsel }
-  }, [options])
 
   return (
     <Command loop>
@@ -561,28 +554,29 @@ export function FilterValueMultiOptionController<TData>({
   actions,
   locale = 'en',
 }: FilterValueControllerProps<TData, 'multiOption'>) {
-  // Compute initial options once per mount
-  const initialOptions = useMemo(() => {
+  // Derive the initial selected values on mount
+  const initialSelectedValues = useMemo(() => new Set(filter?.values || []), [])
+
+  // Separate the selected and unselected options
+  const { selectedOptions, unselectedOptions } = useMemo(() => {
     const counts = column.getFacetedUniqueValues()
-    return column.getOptions().map((o) => {
-      const selected = filter?.values.includes(o.value)
+    const allOptions = column.getOptions().map((o) => {
+      const currentlySelected = filter?.values.includes(o.value) ?? false
       return {
         ...o,
-        selected,
-        initialSelected: selected,
+        selected: currentlySelected,
         count: counts?.get(o.value) ?? 0,
       }
     })
-  }, [])
 
-  const [options, setOptions] = useState(initialOptions)
-
-  // Update selected state when filter values change
-  useEffect(() => {
-    setOptions((prev) =>
-      prev.map((o) => ({ ...o, selected: filter?.values.includes(o.value) })),
+    const selected = allOptions.filter((o) =>
+      initialSelectedValues.has(o.value),
     )
-  }, [filter?.values])
+    const unselected = allOptions.filter(
+      (o) => !initialSelectedValues.has(o.value),
+    )
+    return { selectedOptions: selected, unselectedOptions: unselected }
+  }, [column, filter?.values, initialSelectedValues])
 
   const handleToggle = useCallback(
     (value: string, checked: boolean) => {
@@ -591,17 +585,6 @@ export function FilterValueMultiOptionController<TData>({
     },
     [actions, column],
   )
-
-  // Derive groups based on `initialSelected` only
-  const { selectedOptions, unselectedOptions } = useMemo(() => {
-    const sel: typeof options = []
-    const unsel: typeof options = []
-    for (const o of options) {
-      if (o.initialSelected) sel.push(o)
-      else unsel.push(o)
-    }
-    return { selectedOptions: sel, unselectedOptions: unsel }
-  }, [options])
 
   return (
     <Command loop>
