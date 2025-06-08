@@ -9,6 +9,7 @@ import type {
   ColumnDataType,
   ColumnOption,
   DataTableFilterActions,
+  EntityName,
   FilterModel,
   FilterStrategy,
   FiltersState,
@@ -44,6 +45,7 @@ export interface DataTableFiltersOptions<
     | Record<OptionColumnIds<TColumns>, Map<string, number> | undefined>
     | Record<NumberColumnIds<TColumns>, [number, number] | undefined>
   >
+  entityName?: EntityName
 }
 
 export function useDataTableFilters<
@@ -59,6 +61,7 @@ export function useDataTableFilters<
   onFiltersChange,
   options,
   faceted,
+  entityName,
 }: DataTableFiltersOptions<TData, TColumns, TStrategy>) {
   const [internalFilters, setInternalFilters] = useState<FiltersState>(
     defaultFilters ?? [],
@@ -348,5 +351,5 @@ export function useDataTableFilters<
     [setFilters],
   )
 
-  return { columns, filters, actions, strategy } // columns is Column<TData>[]
+  return { columns, filters, actions, strategy, entityName } // columns is Column<TData>[]
 }

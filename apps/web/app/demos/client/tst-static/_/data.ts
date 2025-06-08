@@ -570,6 +570,8 @@ export function generateSampleIssue(): Issue {
 
   const estimatedHours = randomInteger(1, 16)
 
+  const isUrgent = Math.random() > 0.9
+
   return {
     id: nanoid(),
     title,
@@ -580,6 +582,7 @@ export function generateSampleIssue(): Issue {
     startDate,
     endDate,
     estimatedHours,
+    isUrgent,
   }
 }
 

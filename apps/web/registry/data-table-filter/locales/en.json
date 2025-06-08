@@ -38,5 +38,7 @@
   "filters.number.lessThan": "less than",
   "filters.number.lessThanOrEqual": "less than or equal",
   "filters.number.isBetween": "is between",
-  "filters.number.isNotBetween": "is not between"
+  "filters.number.isNotBetween": "is not between",
+  "filters.boolean.is": "is",
+  "filters.boolean.isNot": "is not"
 }

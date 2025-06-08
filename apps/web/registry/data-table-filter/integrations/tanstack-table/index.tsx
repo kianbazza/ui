@@ -6,7 +6,12 @@ import {
   isColumnOptionArray,
   isStringArray,
 } from '../../lib/helpers'
-import { dateFilterFn, numberFilterFn, textFilterFn } from './filter-fns'
+import {
+  booleanFilterFn,
+  dateFilterFn,
+  numberFilterFn,
+  textFilterFn,
+} from './filter-fns'
 
 interface CreateTSTColumns<TData> {
   columns: ColumnDef<TData, any>[]
@@ -44,6 +49,12 @@ export function createTSTColumns<TData>({
 
     if (config.type === 'date') {
       col.filterFn = dateFilterFn
+      _cols.push(col)
+      continue
+    }
+
+    if (config.type === 'boolean') {
+      col.filterFn = booleanFilterFn
       _cols.push(col)
       continue
     }
