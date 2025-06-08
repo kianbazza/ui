@@ -119,7 +119,9 @@ export type ColumnConfig<
   transformOptionFn?: TType extends OptionBasedColumnDataType
     ? TTransformOptionFn<TVal>
     : never
-  orderFn?: TType extends OptionBasedColumnDataType ? TOrderFn<TVal> : never
+  orderFn?: TType extends OptionBasedColumnDataType
+    ? TOrderFn<TVal> | 'count-asc' | 'count-desc'
+    : never
 }
 
 export type OptionColumnId<T> = T extends ColumnConfig<

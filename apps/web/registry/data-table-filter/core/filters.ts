@@ -131,7 +131,7 @@ class ColumnConfigBuilder<
   }
 
   orderFn(
-    fn: TOrderFn<TVal>,
+    fn: TOrderFn<TVal> | 'count-asc' | 'count-desc',
   ): ColumnConfigBuilder<
     TData,
     TType extends 'option' | 'multiOption' ? TType : never,
@@ -184,6 +184,7 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
   column: ColumnConfig<TData, TType, TVal>,
   data: TData[],
   strategy: FilterStrategy,
+  counts?: Map<string, number>,
 ): ColumnOption[] {
   if (!isAnyOf(column.type, ['option', 'multiOption'])) {
     console.warn(
@@ -197,6 +198,20 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
   }
 
   if (column.options) {
+    if (
+      column.orderFn &&
+      typeof column.orderFn !== 'function' &&
+      // @ts-expect-error
+      isAnyOf(column.orderFn, ['count-asc', 'count-desc']) &&
+      counts
+    ) {
+      return column.options.sort((a, b) => {
+        const countA = counts.get(a.value) ?? 0
+        const countB = counts.get(b.value) ?? 0
+        if (column.orderFn === 'count-asc') return countA - countB
+        return countB - countA
+      })
+    }
     return column.options
   }
 
@@ -206,8 +221,9 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
 
   let models = uniq(filtered)
 
-  if (column.orderFn) {
+  if (column.orderFn && typeof column.orderFn === 'function') {
     models = models.sort((m1, m2) =>
+      // @ts-expect-error
       column.orderFn!(
         m1 as ElementType<NonNullable<TVal>>,
         m2 as ElementType<NonNullable<TVal>>,
@@ -228,11 +244,27 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
     return memoizedTransform()
   }
 
-  if (isColumnOptionArray(models)) return models
+  if (!isColumnOptionArray(models))
+    throw new Error(
+      `[data-table-filter] [${column.id}] Either provide static options, a transformOptionFn, or ensure the column data conforms to ColumnOption type`,
+    )
 
-  throw new Error(
-    `[data-table-filter] [${column.id}] Either provide static options, a transformOptionFn, or ensure the column data conforms to ColumnOption type`,
-  )
+  if (
+    column.orderFn &&
+    typeof column.orderFn !== 'function' &&
+    // @ts-expect-error
+    isAnyOf(column.orderFn, ['count-asc', 'count-desc']) &&
+    counts
+  ) {
+    return (models as ColumnOption[]).sort((a, b) => {
+      const countA = counts.get(a.value) ?? 0
+      const countB = counts.get(b.value) ?? 0
+      if (column.orderFn === 'count-asc') return countA - countB
+      return countB - countA
+    })
+  }
+
+  return models
 }
 
 export function getColumnValues<TData, TType extends ColumnDataType, TVal>(
@@ -360,13 +392,6 @@ export function createColumns<TData>(
   strategy: FilterStrategy,
 ): Column<TData>[] {
   return columnConfigs.map((columnConfig) => {
-    const getOptions: () => ColumnOption[] = memo(
-      () => [data, strategy, columnConfig.options],
-      ([data, strategy]) =>
-        getColumnOptions(columnConfig, data as any, strategy as any),
-      { key: `options-${columnConfig.id}` },
-    )
-
     const getValues: () => ElementType<NonNullable<any>>[] = memo(
       () => [data, strategy],
       () => (strategy === 'client' ? getColumnValues(columnConfig, data) : []),
@@ -378,6 +403,18 @@ export function createColumns<TData>(
       ([values, strategy]) =>
         getFacetedUniqueValues(columnConfig, values as any, strategy as any),
       { key: `faceted-${columnConfig.id}` },
+    )
+
+    const getOptions: () => ColumnOption[] = memo(
+      () => [data, strategy, columnConfig.options, getUniqueValues()],
+      ([data, strategy, options, counts]) =>
+        getColumnOptions(
+          columnConfig,
+          data as any,
+          strategy as any,
+          counts as any,
+        ),
+      { key: `options-${columnConfig.id}` },
     )
 
     const getMinMaxValues: () => [number, number] | undefined = memo(
