@@ -345,6 +345,19 @@ dtf
   .displayName('Title')
 ```
 
+#### Hidden
+
+We can use the `hidden()` method to hide a column from the filters. This is useful for when you want to have a search input that is separate from the filters, but maintain the same filter state.
+
+```ts {6}
+dtf
+  .text()
+  .id("title")
+  .accessor((row) => row.title)
+  .displayName("Title")
+  .hidden()
+```
+
 #### Icon
 
 We can use the `icon()` method to set the icon for the column.

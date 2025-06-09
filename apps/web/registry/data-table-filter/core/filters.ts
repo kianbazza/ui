@@ -42,6 +42,12 @@ class ColumnConfigBuilder<
     return newInstance as ColumnConfigBuilder<TData, TType, TVal, TNewId>
   }
 
+  hidden(): ColumnConfigBuilder<TData, TType, TVal, TId> {
+    const newInstance = this.clone() as any // We'll refine this
+    newInstance.config.hidden = true
+    return newInstance as ColumnConfigBuilder<TData, TType, TVal, TId>
+  }
+
   accessor<TNewVal>(
     accessor: TAccessorFn<TData, TNewVal>,
   ): ColumnConfigBuilder<TData, TType, TNewVal, TId> {

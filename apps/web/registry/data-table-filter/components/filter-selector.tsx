@@ -64,7 +64,12 @@ function __FilterSelector<TData>({
     ? filters.find((f) => f.columnId === property)
     : undefined
 
-  const hasFilters = filters.length > 0
+  const hasFilters =
+    filters.filter((filter) => {
+      const column = getColumn(columns, filter.columnId)
+
+      return !(column.hidden || false)
+    }).length > 0
 
   useEffect(() => {
     if (property && inputRef) {
@@ -107,13 +112,15 @@ function __FilterSelector<TData>({
           <CommandEmpty>{t('noresults', locale)}</CommandEmpty>
           <CommandList className="max-h-fit">
             <CommandGroup>
-              {columns.map((column) => (
-                <FilterableColumn
-                  key={column.id}
-                  column={column}
-                  setProperty={setProperty}
-                />
-              ))}
+              {columns
+                .filter((column) => !(column.hidden || false))
+                .map((column) => (
+                  <FilterableColumn
+                    key={column.id}
+                    column={column}
+                    setProperty={setProperty}
+                  />
+                ))}
               <QuickSearchFilters
                 search={value}
                 filters={filters}
