@@ -74,6 +74,7 @@ export const columnsConfig = [
         />
       ),
     }))
+    .orderFn(['count', 'desc'])
     .build(),
   dtf
     .number()
