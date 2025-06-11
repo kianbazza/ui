@@ -95,15 +95,7 @@ export type TTransformOptionFn<TVal = unknown> = (
  */
 export type BuiltInOrderFn = keyof typeof orderFns
 
-/*
- * Used by `option` and `multiOption` columns.
- * Configuration for a built-in ordering function.
- * The orderFn name and direction (asc/desc) are required.
- */
-export type BuiltInOrderFnConfig = [
-  orderFn: BuiltInOrderFn,
-  direction: 'asc' | 'desc',
-]
+export type OrderDirection = 'asc' | 'desc'
 
 /*
  * Used by `option` and `multiOption` columns.
@@ -138,10 +130,13 @@ export type ColumnConfig<
     ? TTransformOptionFn<TVal>
     : never
   orderFn?: TType extends OptionBasedColumnDataType
-    ? TOrderFn<TVal> | BuiltInOrderFnConfig
+    ? TOrderFn<TVal> | BuiltInOrderFn
     : never
   orderFnType?: TType extends OptionBasedColumnDataType
     ? 'custom' | 'built-in'
+    : never
+  orderFnDirection?: TType extends OptionBasedColumnDataType
+    ? OrderDirection
     : never
 }
 

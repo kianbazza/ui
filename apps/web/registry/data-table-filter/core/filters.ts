@@ -2,7 +2,7 @@ import { isAnyOf, uniq } from '../lib/array'
 import { isColumnOptionArray } from '../lib/helpers'
 import { memo } from '../lib/memo'
 import type {
-  BuiltInOrderFnConfig,
+  BuiltInOrderFn,
   Column,
   ColumnConfig,
   ColumnDataType,
@@ -11,6 +11,7 @@ import type {
   ElementType,
   FilterStrategy,
   Nullable,
+  OrderDirection,
   TAccessorFn,
   TOrderFn,
   TTransformOptionFn,
@@ -19,7 +20,7 @@ import type {
 function count(
   a: ColumnOptionExtended,
   b: ColumnOptionExtended,
-  direction: 'asc' | 'desc',
+  direction: OrderDirection,
 ) {
   const x = a.count ?? 0
   const y = b.count ?? 0
@@ -147,8 +148,9 @@ class ColumnConfigBuilder<
     return newInstance
   }
 
-  orderFn(
-    fn: TOrderFn<TVal> | BuiltInOrderFnConfig,
+  orderFn<OrderFn extends TOrderFn<TVal> | BuiltInOrderFn>(
+    fn: OrderFn,
+    direction?: OrderFn extends BuiltInOrderFn ? OrderDirection : never,
   ): ColumnConfigBuilder<
     TData,
     TType extends 'option' | 'multiOption' ? TType : never,
@@ -161,9 +163,16 @@ class ColumnConfigBuilder<
       )
     }
     const newInstance = this.clone() as any
-    newInstance.config.orderFn = fn
-    newInstance.config.orderFnType =
-      typeof fn === 'function' ? 'custom' : 'built-in'
+
+    if (typeof fn === 'function') {
+      newInstance.config.orderFn = fn
+      newInstance.config.orderFnType = 'custom'
+    } else {
+      newInstance.config.orderFn = fn
+      newInstance.config.orderFnDirection = direction ?? 'desc'
+      newInstance.config.orderFnType = 'built-in'
+    }
+
     return newInstance
   }
 
@@ -217,9 +226,14 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
   }
 
   if (column.options) {
-    if (column.orderFn && column.orderFnType === 'built-in' && counts) {
-      const [orderFnName, direction] = column.orderFn as BuiltInOrderFnConfig
-      const orderFn = orderFns[orderFnName]
+    if (
+      column.orderFn &&
+      column.orderFnType === 'built-in' &&
+      column.orderFnDirection &&
+      counts
+    ) {
+      const orderFn = orderFns[column.orderFn as BuiltInOrderFn]
+      const direction = column.orderFnDirection
 
       return column.options
         .map((o) => ({ ...o, count: counts.get(o.value) ?? 0 }))
@@ -263,9 +277,14 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
 
   const columnOptions = memoizedTransform()
 
-  if (column.orderFn && column.orderFnType === 'built-in' && counts) {
-    const [orderFnName, direction] = column.orderFn as BuiltInOrderFnConfig
-    const orderFn = orderFns[orderFnName]
+  if (
+    column.orderFn &&
+    column.orderFnType === 'built-in' &&
+    column.orderFnDirection &&
+    counts
+  ) {
+    const orderFn = orderFns[column.orderFn as BuiltInOrderFn]
+    const direction = column.orderFnDirection
 
     return columnOptions
       .map((o) => ({ ...o, count: counts.get(o.value) ?? 0 }))
