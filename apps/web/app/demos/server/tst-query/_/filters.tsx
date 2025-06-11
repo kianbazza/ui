@@ -39,7 +39,7 @@ export const columnsConfig = [
     .id('labels')
     .displayName('Labels')
     .icon(TagsIcon)
-    .orderFn('count-desc')
+    .orderFn(['count', 'desc'])
     .build(),
   dtf
     .number()
