@@ -2,10 +2,12 @@ import { isAnyOf, uniq } from '../lib/array'
 import { isColumnOptionArray } from '../lib/helpers'
 import { memo } from '../lib/memo'
 import type {
+  BuiltInOrderFnConfig,
   Column,
   ColumnConfig,
   ColumnDataType,
   ColumnOption,
+  ColumnOptionExtended,
   ElementType,
   FilterStrategy,
   Nullable,
@@ -13,6 +15,21 @@ import type {
   TOrderFn,
   TTransformOptionFn,
 } from './types'
+
+function count(
+  a: ColumnOptionExtended,
+  b: ColumnOptionExtended,
+  direction: 'asc' | 'desc',
+) {
+  const x = a.count ?? 0
+  const y = b.count ?? 0
+
+  return direction === 'asc' ? x - y : y - x
+}
+
+export const orderFns = {
+  count,
+}
 
 class ColumnConfigBuilder<
   TData,
@@ -131,7 +148,7 @@ class ColumnConfigBuilder<
   }
 
   orderFn(
-    fn: TOrderFn<TVal> | 'count-asc' | 'count-desc',
+    fn: TOrderFn<TVal> | BuiltInOrderFnConfig,
   ): ColumnConfigBuilder<
     TData,
     TType extends 'option' | 'multiOption' ? TType : never,
@@ -145,6 +162,8 @@ class ColumnConfigBuilder<
     }
     const newInstance = this.clone() as any
     newInstance.config.orderFn = fn
+    newInstance.config.orderFnType =
+      typeof fn === 'function' ? 'custom' : 'built-in'
     return newInstance
   }
 
@@ -198,19 +217,13 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
   }
 
   if (column.options) {
-    if (
-      column.orderFn &&
-      typeof column.orderFn !== 'function' &&
-      // @ts-expect-error
-      isAnyOf(column.orderFn, ['count-asc', 'count-desc']) &&
-      counts
-    ) {
-      return column.options.sort((a, b) => {
-        const countA = counts.get(a.value) ?? 0
-        const countB = counts.get(b.value) ?? 0
-        if (column.orderFn === 'count-asc') return countA - countB
-        return countB - countA
-      })
+    if (column.orderFn && column.orderFnType === 'built-in' && counts) {
+      const [orderFnName, direction] = column.orderFn as BuiltInOrderFnConfig
+      const orderFn = orderFns[orderFnName]
+
+      return column.options
+        .map((o) => ({ ...o, count: counts.get(o.value) ?? 0 }))
+        .sort((a, b) => orderFn(a, b, direction))
     }
     return column.options
   }
@@ -221,7 +234,7 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
 
   let models = uniq(filtered)
 
-  if (column.orderFn && typeof column.orderFn === 'function') {
+  if (column.orderFn && column.orderFnType === 'custom') {
     models = models.sort((m1, m2) =>
       // @ts-expect-error
       column.orderFn!(
@@ -231,40 +244,35 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
     )
   }
 
-  if (column.transformOptionFn) {
-    // Memoize transformOptionFn calls
-    const memoizedTransform = memo(
-      () => [models],
-      (deps) =>
-        deps[0]!.map((m) =>
-          column.transformOptionFn!(m as ElementType<NonNullable<TVal>>),
-        ),
-      { key: `transform-${column.id}` },
-    )
-    return memoizedTransform()
-  }
+  if (isColumnOptionArray(models)) return models
 
-  if (!isColumnOptionArray(models))
+  if (!column.transformOptionFn)
     throw new Error(
       `[data-table-filter] [${column.id}] Either provide static options, a transformOptionFn, or ensure the column data conforms to ColumnOption type`,
     )
 
-  if (
-    column.orderFn &&
-    typeof column.orderFn !== 'function' &&
-    // @ts-expect-error
-    isAnyOf(column.orderFn, ['count-asc', 'count-desc']) &&
-    counts
-  ) {
-    return (models as ColumnOption[]).sort((a, b) => {
-      const countA = counts.get(a.value) ?? 0
-      const countB = counts.get(b.value) ?? 0
-      if (column.orderFn === 'count-asc') return countA - countB
-      return countB - countA
-    })
+  // Memoize transformOptionFn calls
+  const memoizedTransform = memo(
+    () => [models],
+    (deps) =>
+      deps[0]!.map((m) =>
+        column.transformOptionFn!(m as ElementType<NonNullable<TVal>>),
+      ),
+    { key: `transform-${column.id}` },
+  )
+
+  const columnOptions = memoizedTransform()
+
+  if (column.orderFn && column.orderFnType === 'built-in' && counts) {
+    const [orderFnName, direction] = column.orderFn as BuiltInOrderFnConfig
+    const orderFn = orderFns[orderFnName]
+
+    return columnOptions
+      .map((o) => ({ ...o, count: counts.get(o.value) ?? 0 }))
+      .sort((a, b) => orderFn(a, b, direction))
   }
 
-  return models
+  return columnOptions
 }
 
 export function getColumnValues<TData, TType extends ColumnDataType, TVal>(
