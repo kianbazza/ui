@@ -228,12 +228,12 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
   if (column.options) {
     if (
       column.orderFn &&
-      column.orderFnType === 'built-in' &&
-      column.orderFnDirection &&
+      column.orderType === 'built-in' &&
+      column.orderDirection &&
       counts
     ) {
       const orderFn = orderFns[column.orderFn as BuiltInOrderFn]
-      const direction = column.orderFnDirection
+      const direction = column.orderDirection
 
       return column.options
         .map((o) => ({ ...o, count: counts.get(o.value) ?? 0 }))
@@ -248,7 +248,7 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
 
   let models = uniq(filtered)
 
-  if (column.orderFn && column.orderFnType === 'custom') {
+  if (column.orderFn && column.orderType === 'custom') {
     models = models.sort((m1, m2) =>
       // @ts-expect-error
       column.orderFn!(
@@ -279,12 +279,12 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
 
   if (
     column.orderFn &&
-    column.orderFnType === 'built-in' &&
-    column.orderFnDirection &&
+    column.orderType === 'built-in' &&
+    column.orderDirection &&
     counts
   ) {
     const orderFn = orderFns[column.orderFn as BuiltInOrderFn]
-    const direction = column.orderFnDirection
+    const direction = column.orderDirection
 
     return columnOptions
       .map((o) => ({ ...o, count: counts.get(o.value) ?? 0 }))

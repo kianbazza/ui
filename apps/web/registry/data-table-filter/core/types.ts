@@ -132,10 +132,10 @@ export type ColumnConfig<
   orderFn?: TType extends OptionBasedColumnDataType
     ? TOrderFn<TVal> | BuiltInOrderFn
     : never
-  orderFnType?: TType extends OptionBasedColumnDataType
+  orderType?: TType extends OptionBasedColumnDataType
     ? 'custom' | 'built-in'
     : never
-  orderFnDirection?: TType extends OptionBasedColumnDataType
+  orderDirection?: TType extends OptionBasedColumnDataType
     ? OrderDirection
     : never
 }
