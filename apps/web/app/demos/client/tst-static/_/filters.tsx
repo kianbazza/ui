@@ -39,6 +39,7 @@ export const columnsConfig = [
     .id('assignee')
     .displayName('Assignee')
     .icon(UserCheckIcon)
+    .orderFn('count')
     .transformOptionFn((u) => ({
       value: u.id,
       label: u.name,
@@ -74,6 +75,7 @@ export const columnsConfig = [
         />
       ),
     }))
+    .orderFn('count')
     .build(),
   dtf
     .number()

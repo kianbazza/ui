@@ -1,4 +1,6 @@
 import type { LucideIcon } from 'lucide-react'
+import { B } from 'vitest/dist/chunks/benchmark.d.BwvBVTda.js'
+import type { orderFns } from './filters'
 
 /*
  * # GENERAL NOTES:
@@ -89,6 +91,14 @@ export type TTransformOptionFn<TVal = unknown> = (
 
 /*
  * Used by `option` and `multiOption` columns.
+ * Possible built-in ordering functions to choose from - used with `orderFn`.
+ */
+export type BuiltInOrderFn = keyof typeof orderFns
+
+export type OrderDirection = 'asc' | 'desc'
+
+/*
+ * Used by `option` and `multiOption` columns.
  * A custom ordering function when sorting a column's options.
  */
 export type TOrderFn<TVal = unknown> = (
@@ -119,7 +129,15 @@ export type ColumnConfig<
   transformOptionFn?: TType extends OptionBasedColumnDataType
     ? TTransformOptionFn<TVal>
     : never
-  orderFn?: TType extends OptionBasedColumnDataType ? TOrderFn<TVal> : never
+  orderFn?: TType extends OptionBasedColumnDataType
+    ? TOrderFn<TVal> | BuiltInOrderFn
+    : never
+  orderType?: TType extends OptionBasedColumnDataType
+    ? 'custom' | 'built-in'
+    : never
+  orderDirection?: TType extends OptionBasedColumnDataType
+    ? OrderDirection
+    : never
 }
 
 export type OptionColumnId<T> = T extends ColumnConfig<

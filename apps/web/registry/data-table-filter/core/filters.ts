@@ -2,17 +2,35 @@ import { isAnyOf, uniq } from '../lib/array'
 import { isColumnOptionArray } from '../lib/helpers'
 import { memo } from '../lib/memo'
 import type {
+  BuiltInOrderFn,
   Column,
   ColumnConfig,
   ColumnDataType,
   ColumnOption,
+  ColumnOptionExtended,
   ElementType,
   FilterStrategy,
   Nullable,
+  OrderDirection,
   TAccessorFn,
   TOrderFn,
   TTransformOptionFn,
 } from './types'
+
+function count(
+  a: ColumnOptionExtended,
+  b: ColumnOptionExtended,
+  direction: OrderDirection,
+) {
+  const x = a.count ?? 0
+  const y = b.count ?? 0
+
+  return direction === 'asc' ? x - y : y - x
+}
+
+export const orderFns = {
+  count,
+}
 
 class ColumnConfigBuilder<
   TData,
@@ -37,7 +55,7 @@ class ColumnConfigBuilder<
   id<TNewId extends string>(
     value: TNewId,
   ): ColumnConfigBuilder<TData, TType, TVal, TNewId> {
-    const newInstance = this.clone() as any // We'll refine this
+    const newInstance = this.clone() as ColumnConfigBuilder<any, any, any, any>
     newInstance.config.id = value
     return newInstance as ColumnConfigBuilder<TData, TType, TVal, TNewId>
   }
@@ -45,7 +63,7 @@ class ColumnConfigBuilder<
   accessor<TNewVal>(
     accessor: TAccessorFn<TData, TNewVal>,
   ): ColumnConfigBuilder<TData, TType, TNewVal, TId> {
-    const newInstance = this.clone() as any
+    const newInstance = this.clone() as ColumnConfigBuilder<any, any, any, any>
     newInstance.config.accessor = accessor
     return newInstance as ColumnConfigBuilder<TData, TType, TNewVal, TId>
   }
@@ -73,7 +91,7 @@ class ColumnConfigBuilder<
     if (this.config.type !== 'number') {
       throw new Error('min() is only applicable to number columns')
     }
-    const newInstance = this.clone() as any
+    const newInstance = this.clone() as ColumnConfigBuilder<any, any, any, any>
     newInstance.config.min = value
     return newInstance
   }
@@ -89,7 +107,7 @@ class ColumnConfigBuilder<
     if (this.config.type !== 'number') {
       throw new Error('max() is only applicable to number columns')
     }
-    const newInstance = this.clone() as any
+    const newInstance = this.clone() as ColumnConfigBuilder<any, any, any, any>
     newInstance.config.max = value
     return newInstance
   }
@@ -107,7 +125,7 @@ class ColumnConfigBuilder<
         'options() is only applicable to option or multiOption columns',
       )
     }
-    const newInstance = this.clone() as any
+    const newInstance = this.clone() as ColumnConfigBuilder<any, any, any, any>
     newInstance.config.options = value
     return newInstance
   }
@@ -125,13 +143,14 @@ class ColumnConfigBuilder<
         'transformOptionFn() is only applicable to option or multiOption columns',
       )
     }
-    const newInstance = this.clone() as any
+    const newInstance = this.clone() as ColumnConfigBuilder<any, any, any, any>
     newInstance.config.transformOptionFn = fn
     return newInstance
   }
 
-  orderFn(
-    fn: TOrderFn<TVal>,
+  orderFn<OrderFn extends TOrderFn<TVal> | BuiltInOrderFn>(
+    fn: OrderFn,
+    direction?: OrderFn extends BuiltInOrderFn ? OrderDirection : never,
   ): ColumnConfigBuilder<
     TData,
     TType extends 'option' | 'multiOption' ? TType : never,
@@ -143,8 +162,17 @@ class ColumnConfigBuilder<
         'orderFn() is only applicable to option or multiOption columns',
       )
     }
-    const newInstance = this.clone() as any
-    newInstance.config.orderFn = fn
+    const newInstance = this.clone() as ColumnConfigBuilder<any, any, any, any>
+
+    if (typeof fn === 'function') {
+      newInstance.config.orderFn = fn
+      newInstance.config.orderType = 'custom'
+    } else {
+      newInstance.config.orderFn = fn
+      newInstance.config.orderDirection = direction ?? 'desc'
+      newInstance.config.orderType = 'built-in'
+    }
+
     return newInstance
   }
 
@@ -184,6 +212,7 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
   column: ColumnConfig<TData, TType, TVal>,
   data: TData[],
   strategy: FilterStrategy,
+  counts?: Map<string, number>,
 ): ColumnOption[] {
   if (!isAnyOf(column.type, ['option', 'multiOption'])) {
     console.warn(
@@ -197,6 +226,19 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
   }
 
   if (column.options) {
+    if (
+      column.orderFn &&
+      column.orderType === 'built-in' &&
+      column.orderDirection &&
+      counts
+    ) {
+      const orderFn = orderFns[column.orderFn as BuiltInOrderFn]
+      const direction = column.orderDirection
+
+      return column.options
+        .map((o) => ({ ...o, count: counts.get(o.value) ?? 0 }))
+        .sort((a, b) => orderFn(a, b, direction))
+    }
     return column.options
   }
 
@@ -206,8 +248,9 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
 
   let models = uniq(filtered)
 
-  if (column.orderFn) {
+  if (column.orderFn && column.orderType === 'custom') {
     models = models.sort((m1, m2) =>
+      // @ts-expect-error
       column.orderFn!(
         m1 as ElementType<NonNullable<TVal>>,
         m2 as ElementType<NonNullable<TVal>>,
@@ -215,24 +258,40 @@ export function getColumnOptions<TData, TType extends ColumnDataType, TVal>(
     )
   }
 
-  if (column.transformOptionFn) {
-    // Memoize transformOptionFn calls
-    const memoizedTransform = memo(
-      () => [models],
-      (deps) =>
-        deps[0]!.map((m) =>
-          column.transformOptionFn!(m as ElementType<NonNullable<TVal>>),
-        ),
-      { key: `transform-${column.id}` },
-    )
-    return memoizedTransform()
-  }
-
   if (isColumnOptionArray(models)) return models
 
-  throw new Error(
-    `[data-table-filter] [${column.id}] Either provide static options, a transformOptionFn, or ensure the column data conforms to ColumnOption type`,
+  if (!column.transformOptionFn)
+    throw new Error(
+      `[data-table-filter] [${column.id}] Either provide static options, a transformOptionFn, or ensure the column data conforms to ColumnOption type`,
+    )
+
+  // Memoize transformOptionFn calls
+  const memoizedTransform = memo(
+    () => [models],
+    (deps) =>
+      deps[0]!.map((m) =>
+        column.transformOptionFn!(m as ElementType<NonNullable<TVal>>),
+      ),
+    { key: `transform-${column.id}` },
   )
+
+  const columnOptions = memoizedTransform()
+
+  if (
+    column.orderFn &&
+    column.orderType === 'built-in' &&
+    column.orderDirection &&
+    counts
+  ) {
+    const orderFn = orderFns[column.orderFn as BuiltInOrderFn]
+    const direction = column.orderDirection
+
+    return columnOptions
+      .map((o) => ({ ...o, count: counts.get(o.value) ?? 0 }))
+      .sort((a, b) => orderFn(a, b, direction))
+  }
+
+  return columnOptions
 }
 
 export function getColumnValues<TData, TType extends ColumnDataType, TVal>(
@@ -360,13 +419,6 @@ export function createColumns<TData>(
   strategy: FilterStrategy,
 ): Column<TData>[] {
   return columnConfigs.map((columnConfig) => {
-    const getOptions: () => ColumnOption[] = memo(
-      () => [data, strategy, columnConfig.options],
-      ([data, strategy]) =>
-        getColumnOptions(columnConfig, data as any, strategy as any),
-      { key: `options-${columnConfig.id}` },
-    )
-
     const getValues: () => ElementType<NonNullable<any>>[] = memo(
       () => [data, strategy],
       () => (strategy === 'client' ? getColumnValues(columnConfig, data) : []),
@@ -378,6 +430,18 @@ export function createColumns<TData>(
       ([values, strategy]) =>
         getFacetedUniqueValues(columnConfig, values as any, strategy as any),
       { key: `faceted-${columnConfig.id}` },
+    )
+
+    const getOptions: () => ColumnOption[] = memo(
+      () => [data, strategy, columnConfig.options, getUniqueValues()],
+      ([data, strategy, options, counts]) =>
+        getColumnOptions(
+          columnConfig,
+          data as any,
+          strategy as any,
+          counts as any,
+        ),
+      { key: `options-${columnConfig.id}` },
     )
 
     const getMinMaxValues: () => [number, number] | undefined = memo(
