@@ -55,7 +55,7 @@ class ColumnConfigBuilder<
   id<TNewId extends string>(
     value: TNewId,
   ): ColumnConfigBuilder<TData, TType, TVal, TNewId> {
-    const newInstance = this.clone() as any // We'll refine this
+    const newInstance = this.clone() as ColumnConfigBuilder<any, any, any, any>
     newInstance.config.id = value
     return newInstance as ColumnConfigBuilder<TData, TType, TVal, TNewId>
   }
@@ -63,7 +63,7 @@ class ColumnConfigBuilder<
   accessor<TNewVal>(
     accessor: TAccessorFn<TData, TNewVal>,
   ): ColumnConfigBuilder<TData, TType, TNewVal, TId> {
-    const newInstance = this.clone() as any
+    const newInstance = this.clone() as ColumnConfigBuilder<any, any, any, any>
     newInstance.config.accessor = accessor
     return newInstance as ColumnConfigBuilder<TData, TType, TNewVal, TId>
   }
@@ -91,7 +91,7 @@ class ColumnConfigBuilder<
     if (this.config.type !== 'number') {
       throw new Error('min() is only applicable to number columns')
     }
-    const newInstance = this.clone() as any
+    const newInstance = this.clone() as ColumnConfigBuilder<any, any, any, any>
     newInstance.config.min = value
     return newInstance
   }
@@ -107,7 +107,7 @@ class ColumnConfigBuilder<
     if (this.config.type !== 'number') {
       throw new Error('max() is only applicable to number columns')
     }
-    const newInstance = this.clone() as any
+    const newInstance = this.clone() as ColumnConfigBuilder<any, any, any, any>
     newInstance.config.max = value
     return newInstance
   }
@@ -125,7 +125,7 @@ class ColumnConfigBuilder<
         'options() is only applicable to option or multiOption columns',
       )
     }
-    const newInstance = this.clone() as any
+    const newInstance = this.clone() as ColumnConfigBuilder<any, any, any, any>
     newInstance.config.options = value
     return newInstance
   }
@@ -143,7 +143,7 @@ class ColumnConfigBuilder<
         'transformOptionFn() is only applicable to option or multiOption columns',
       )
     }
-    const newInstance = this.clone() as any
+    const newInstance = this.clone() as ColumnConfigBuilder<any, any, any, any>
     newInstance.config.transformOptionFn = fn
     return newInstance
   }
@@ -162,7 +162,7 @@ class ColumnConfigBuilder<
         'orderFn() is only applicable to option or multiOption columns',
       )
     }
-    const newInstance = this.clone() as any
+    const newInstance = this.clone() as ColumnConfigBuilder<any, any, any, any>
 
     if (typeof fn === 'function') {
       newInstance.config.orderFn = fn
