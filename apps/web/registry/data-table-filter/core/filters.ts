@@ -166,11 +166,11 @@ class ColumnConfigBuilder<
 
     if (typeof fn === 'function') {
       newInstance.config.orderFn = fn
-      newInstance.config.orderFnType = 'custom'
+      newInstance.config.orderType = 'custom'
     } else {
       newInstance.config.orderFn = fn
-      newInstance.config.orderFnDirection = direction ?? 'desc'
-      newInstance.config.orderFnType = 'built-in'
+      newInstance.config.orderDirection = direction ?? 'desc'
+      newInstance.config.orderType = 'built-in'
     }
 
     return newInstance
