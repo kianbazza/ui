@@ -11,7 +11,7 @@ import {
   type UsePopupMenuRootParams,
   usePopupMenuRoot,
 } from '../../internal/popup-menu/index.js'
-import type { GetRowIdFn } from '../../internal/popup-menu/menu-tree/types.js'
+import type { GetResolvedIdFn } from '../../internal/popup-menu/menu-tree/types.js'
 import type {
   DropdownMenuHighlightChangeEventDetails,
   DropdownMenuOpenChangeEventDetails,
@@ -81,7 +81,7 @@ export interface DropdownMenuRootProps
   /**
    * Callback when the highlighted item changes.
    * Useful for synchronizing with a virtualizer (e.g., scrollToIndex) or other UI state.
-   * `id` is first. `node` is the resolved menu node carrying the highlighted id, looked up in the menu's data-first tree — `null` when the highlight clears or when no data-first node carries that id (e.g. JSX-defined rows). A JSX row that shares an id with a data-first node yields that node; row ids are expected to be unique per menu.
+   * `id` is first. `node` is the resolved menu node carrying the highlighted ID, looked up in the menu's data-first tree — `null` when the highlight clears or when no data-first node carries that ID (e.g. JSX-defined rows). A JSX row that shares an ID with a data-first node yields that node; Resolved IDs are expected to be unique per menu.
    * The fourth parameter contains event details including the reason for the change.
    */
   onHighlightChange?: PopupMenuHighlightChangeHandler<DropdownMenuHighlightChangeEventDetails>
@@ -110,13 +110,13 @@ export interface DropdownMenuRootProps
   actionsRef?: React.RefObject<DropdownMenuRoot.Actions | null>
 
   /**
-   * Computes canonical row ids for data-first content from the unidentified resolved node (definitional facts only).
+   * Computes canonical Resolved IDs for data-first content from the Unresolved Menu Node (definitional facts only).
    * @default explicit `def.id` verbatim, else the joined definition path
    * Read once when the menu root mounts — later changes have no effect.
    * @example
-   * <DropdownMenu.Root getRowId={(node) => node.def.id ?? node.defPath.join('.')} />
+   * <DropdownMenu.Root getResolvedId={(node) => node.def.id ?? node.definitionPath.join('.')} />
    */
-  getRowId?: GetRowIdFn
+  getResolvedId?: GetResolvedIdFn
 
   /**
    * Debug visualization options for submenu interaction heuristics.
@@ -144,7 +144,7 @@ export function DropdownMenuRoot(props: DropdownMenuRoot.Props) {
     closeOnOutsidePress = 'pointerdown',
     onOpenChangeComplete: onOpenChangeCompleteProp,
     actionsRef,
-    getRowId,
+    getResolvedId,
     debug,
     children,
     ...rest
@@ -173,7 +173,7 @@ export function DropdownMenuRoot(props: DropdownMenuRoot.Props) {
       onHighlightChange as unknown as UsePopupMenuRootParams['onHighlightChange'],
     closeOnOutsidePress,
     disabled,
-    getRowId,
+    getResolvedId,
   })
 
   const popoverActionsRef = useRef<Popover.Root.Actions | null>(null)

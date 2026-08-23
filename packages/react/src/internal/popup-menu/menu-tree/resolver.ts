@@ -1,15 +1,15 @@
 import type { NodeDef } from '../deep-search/types.js'
 import {
   childDefsOf,
-  contributesPathSegment,
-  defaultGetRowId,
+  contributesDefinitionPath,
+  defaultGetResolvedId,
+  definitionKeyForDef,
   resolveNodeDefs,
-  segmentForDef,
 } from './resolve.js'
 import type {
-  GetRowIdFn,
+  GetResolvedIdFn,
   PopupMenuNode,
-  UnidentifiedMenuNode,
+  UnresolvedMenuNode,
 } from './types.js'
 
 /**
@@ -39,8 +39,8 @@ const ROW_KINDS: ReadonlySet<NodeDef['kind']> = new Set<RowKind>([
  * identical arguments are no-ops.
  */
 export interface MenuTreeResolver {
-  /** The row-id seam this resolver was created with. */
-  readonly getRowId: GetRowIdFn
+  /** The Resolved ID seam this resolver was created with. */
+  readonly getResolvedId: GetResolvedIdFn
   /** Current root nodes, in def order. */
   readonly rootNodes: readonly PopupMenuNode[]
   /** Re-supply the root def list and reconcile the whole tree. */
@@ -58,8 +58,8 @@ export interface MenuTreeResolver {
 }
 
 export interface MenuTreeResolverOptions {
-  /** Row-id seam; defaults to `defaultGetRowId`. */
-  getRowId?: GetRowIdFn
+  /** Resolved-ID seam; defaults to `defaultGetResolvedId`. */
+  getResolvedId?: GetResolvedIdFn
 }
 
 function prospectiveIdentity(
@@ -67,27 +67,29 @@ function prospectiveIdentity(
   parent: PopupMenuNode | null,
   basePath: readonly string[],
   index: number,
-  getRowId: GetRowIdFn,
-): { pathSegment: string; defPath: string[]; id: string } {
-  const segment = segmentForDef(def)
-  const defPath = segment ? [...basePath, segment] : [...basePath]
-  const probe: UnidentifiedMenuNode = {
+  getResolvedId: GetResolvedIdFn,
+): { definitionKey: string; definitionPath: string[]; id: string } {
+  const definitionKey = definitionKeyForDef(def)
+  const definitionPath = definitionKey
+    ? [...basePath, definitionKey]
+    : [...basePath]
+  const probe: UnresolvedMenuNode = {
     def,
     kind: def.kind,
-    pathSegment: segment,
-    defPath,
+    definitionKey,
+    definitionPath,
     parent,
     children: [],
     depth: parent ? parent.depth + 1 : 0,
     index,
   }
-  return { pathSegment: segment, defPath, id: getRowId(probe) }
+  return { definitionKey, definitionPath, id: getResolvedId(probe) }
 }
 
 export function createMenuTreeResolver(
   options: MenuTreeResolverOptions = {},
 ): MenuTreeResolver {
-  const getRowId = options.getRowId ?? defaultGetRowId
+  const getResolvedId = options.getResolvedId ?? defaultGetResolvedId
   let rootNodes: PopupMenuNode[] = []
   let lastRootDefs: readonly NodeDef[] | null = null
   const defToNode = new Map<NodeDef, PopupMenuNode>()
@@ -104,7 +106,7 @@ export function createMenuTreeResolver(
     if (warnedDuplicateIds.has(node.id)) return
     warnedDuplicateIds.add(node.id)
     console.warn(
-      `[PopupMenu] Duplicate row id "${node.id}" resolved for multiple rows in the same menu. Row ids must be unique for stable highlight, keyboard navigation, and persistent row state. Give the rows distinct explicit \`id\`s or distinct \`value\`s.`,
+      `[PopupMenu] Duplicate Resolved ID "${node.id}" resolved for multiple rows in the same menu. Resolved IDs must be unique for stable highlight, keyboard navigation, and persistent row state. Give the rows distinct explicit \`id\`s or distinct \`value\`s.`,
     )
   }
 
@@ -127,8 +129,8 @@ export function createMenuTreeResolver(
     left.every((part, index) => part === right[index])
 
   const baseOf = (node: PopupMenuNode): readonly string[] =>
-    contributesPathSegment(node.def)
-      ? node.defPath
+    contributesDefinitionPath(node.def)
+      ? node.definitionPath
       : node.parent
         ? baseOf(node.parent)
         : []
@@ -149,7 +151,13 @@ export function createMenuTreeResolver(
     const matches: Array<PopupMenuNode | undefined> = []
     const matched = new Set<PopupMenuNode>()
     for (const [index, def] of defs.entries()) {
-      const { id } = prospectiveIdentity(def, parent, basePath, index, getRowId)
+      const { id } = prospectiveIdentity(
+        def,
+        parent,
+        basePath,
+        index,
+        getResolvedId,
+      )
       const bucket = buckets.get(id)
       // Kind participates in matching (not just id): a kind mismatch must
       // not consume the candidate, so a later same-kind def can still match.
@@ -168,37 +176,42 @@ export function createMenuTreeResolver(
 
     return defs.map((def, index) => {
       const node = matches[index]
-      const { pathSegment, defPath, id } = prospectiveIdentity(
+      const { definitionKey, definitionPath, id } = prospectiveIdentity(
         def,
         parent,
         basePath,
         index,
-        getRowId,
+        getResolvedId,
       )
 
       if (!node) {
-        const created = resolveNodeDefs([def], parent, basePath, getRowId)[0]!
+        const created = resolveNodeDefs(
+          [def],
+          parent,
+          basePath,
+          getResolvedId,
+        )[0]!
         created.index = index
         created.id = prospectiveIdentity(
           def,
           parent,
           basePath,
           index,
-          getRowId,
+          getResolvedId,
         ).id
         register(created)
         return created
       }
 
-      if (node.def === def && samePath(node.defPath, defPath)) {
+      if (node.def === def && samePath(node.definitionPath, definitionPath)) {
         node.index = index
         return node
       }
 
       if (defToNode.get(node.def) === node) defToNode.delete(node.def)
       node.def = def
-      node.pathSegment = pathSegment
-      node.defPath = defPath
+      node.definitionKey = definitionKey
+      node.definitionPath = definitionPath
       node.index = index
       if (node.id !== id) {
         if (idToNode.get(node.id) === node) idToNode.delete(node.id)
@@ -213,14 +226,14 @@ export function createMenuTreeResolver(
         node.children,
         childDefsOf(def),
         node,
-        contributesPathSegment(def) ? node.defPath : basePath,
+        contributesDefinitionPath(def) ? node.definitionPath : basePath,
       )
       return node
     })
   }
 
   return {
-    getRowId,
+    getResolvedId,
     get rootNodes() {
       return rootNodes
     },

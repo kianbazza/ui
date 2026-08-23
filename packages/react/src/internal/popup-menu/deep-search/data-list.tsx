@@ -18,7 +18,7 @@ import { useMenuTreeResolver } from '../contexts/menu-tree-resolver-context.js'
 import { useMaybeSubpageContext } from '../contexts/subpage-context.js'
 import { useMaybeSubpageStack } from '../contexts/subpage-stack-context.js'
 import {
-  defaultGetRowId,
+  defaultGetResolvedId,
   isPopupMenuNode,
   resolveDetachedNode,
 } from '../menu-tree/resolve.js'
@@ -71,7 +71,7 @@ export function warnOutOfTreeDef(def: NodeDef): void {
   if (process.env.NODE_ENV !== 'production' && !warnedOutOfTreeDefs.has(def)) {
     warnedOutOfTreeDefs.add(def)
     console.warn(
-      "[PopupMenu] Computed a row id for a definition outside the resolved menu tree. The id falls back to a root-relative resolution. Supply the definition through the menu's content/async pipeline, or memoize definitions passed to renderNode.",
+      "[PopupMenu] Computed a Resolved ID for a definition outside the resolved menu tree. The ID falls back to a root-relative resolution. Supply the definition through the menu's content/async pipeline, or memoize definitions passed to renderNode.",
     )
   }
 }
@@ -556,8 +556,8 @@ export const DataListInner = React.forwardRef<
       const resolved = resolver?.getNodeForDef(def)
       if (resolved) return resolved
       warnOutOfTreeDef(def)
-      const getRowId = resolver?.getRowId ?? defaultGetRowId
-      return resolveDetachedNode(def, getRowId)
+      const getResolvedId = resolver?.getResolvedId ?? defaultGetResolvedId
+      return resolveDetachedNode(def, getResolvedId)
     },
     [resolver],
   )
@@ -1402,7 +1402,7 @@ export const DataListInner = React.forwardRef<
           ref={forwardedRef}
           label={label}
           {...listProps}
-          // Re-measure rows when deep-search mode toggles — the same row IDs
+          // Re-measure rows when deep-search mode toggles — the same Resolved IDs
           // render different content (label vs breadcrumb row). Consumer deps
           // are merged in rather than replaced.
           remeasureDependencies={[

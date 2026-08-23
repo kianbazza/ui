@@ -59,7 +59,7 @@ describe('getSubpagePageId', () => {
     ).toBe('subpage.parent-value.Parent.Page.current-page')
   })
 
-  it('drops empty breadcrumb and leaf segments', () => {
+  it('drops empty breadcrumb and leaf Definition Keys', () => {
     expect(
       getSubpagePageId(subpage('', { id: '' }), [
         breadcrumb('', ''),
@@ -68,10 +68,10 @@ describe('getSubpagePageId', () => {
     ).toBe('subpage.visible-value')
   })
 
-  it('drops an empty explicit id even when the value is non-empty (canonical empty-segment rule)', () => {
-    // Per the canonical Segment rule, an explicit id is used verbatim — an
-    // empty-string id therefore resolves to an empty segment, which is
-    // dropped from the path (matching resolver defPath semantics). Consumers
+  it('drops an empty explicit id even when the value is non-empty (canonical empty Definition Key rule)', () => {
+    // Per the canonical Definition Key rule, an explicit id is used verbatim — an
+    // empty-string id therefore resolves to an empty Definition Key, which is
+    // dropped from the path (matching resolver definitionPath semantics). Consumers
     // must omit `id` (not pass '') to fall back to the slugified value.
     expect(getSubpagePageId(subpage('Settings', { id: '' }), [])).toBe(
       'subpage',

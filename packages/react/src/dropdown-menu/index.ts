@@ -259,7 +259,7 @@ export type {
   DisplayRowNode,
   DisplaySeparatorNode,
   DisplaySubpageNode,
-  GetRowIdFn,
+  GetResolvedIdFn,
   GroupBehavior,
   GroupDef,
   GroupLabelRenderParams,
@@ -301,11 +301,12 @@ export type {
   TreeItemDef,
   TreeItemRenderParams,
   TreeItemRenderProps,
-  UnidentifiedMenuNode,
+  UnresolvedMenuNode,
 } from '../internal/popup-menu/index.js'
 export {
   DataListContext,
   DataSurfaceContext,
+  defaultGetResolvedId,
   defineRadioGroup,
   isDisplayGroupNode,
   isDisplayRadioGroupNode,

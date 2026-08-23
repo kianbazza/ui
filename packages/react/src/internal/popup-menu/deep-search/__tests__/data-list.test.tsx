@@ -43,8 +43,8 @@ void commandNodeDefAlias
 
 /**
  * Creates an ItemDef with a render function that includes data-testid.
- * Note: Does NOT set explicit `id` so that defaultGetQualifiedRowId generates
- * composite IDs from breadcrumbs + value during deep search.
+ * Note: Does NOT set explicit `id` so that the default Resolved ID is derived
+ * from the definition path during deep search.
  */
 function createTestItemDef(
   testId: string,
@@ -399,18 +399,18 @@ describe('useDataList', () => {
     await waitFor(() =>
       expect(warn).toHaveBeenCalledWith(
         expect.stringContaining(
-          '[PopupMenu] Duplicate row id "same" resolved for multiple rows in the same menu',
+          '[PopupMenu] Duplicate Resolved ID "same" resolved for multiple rows in the same menu',
         ),
       ),
     )
     expect(
       warn.mock.calls.filter(([message]) =>
-        String(message).startsWith('[PopupMenu] Duplicate row id'),
+        String(message).startsWith('[PopupMenu] Duplicate Resolved ID'),
       ),
     ).toHaveLength(1)
   })
 
-  it('does not warn for a clean menu with respect to duplicate row ids', async () => {
+  it('does not warn for a clean menu with respect to duplicate Resolved IDs', async () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     render(<MenuWithFlatItems />)
 
@@ -420,7 +420,7 @@ describe('useDataList', () => {
 
     expect(
       warn.mock.calls.some(([message]) =>
-        String(message).startsWith('[PopupMenu] Duplicate row id'),
+        String(message).startsWith('[PopupMenu] Duplicate Resolved ID'),
       ),
     ).toBe(false)
   })
@@ -751,7 +751,7 @@ function NestedSurfaceMenu({
   )
 }
 
-it('warns when nested surfaces share an explicit row id', async () => {
+it('warns when nested surfaces share an explicit Resolved ID', async () => {
   const user = userEvent.setup()
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
@@ -767,12 +767,12 @@ it('warns when nested surfaces share an explicit row id', async () => {
 
   expect(
     warn.mock.calls.filter(([message]) =>
-      String(message).startsWith('[PopupMenu] Duplicate row id'),
+      String(message).startsWith('[PopupMenu] Duplicate Resolved ID'),
     ),
   ).toHaveLength(1)
   expect(warn).toHaveBeenCalledWith(
     expect.stringContaining(
-      '[PopupMenu] Duplicate row id "shared-row" resolved for multiple rows in the same menu',
+      '[PopupMenu] Duplicate Resolved ID "shared-row" resolved for multiple rows in the same menu',
     ),
   )
 })
@@ -1328,7 +1328,7 @@ describe('resolved render params', () => {
     const child = createTestItemDef('path-child', 'Child', {
       render: ({ props, node }) => (
         <DropdownMenu.Item {...props} data-testid="path-child">
-          <span data-testid="child-path">{node.defPath.join('/')}</span>
+          <span data-testid="child-path">{node.definitionPath.join('/')}</span>
         </DropdownMenu.Item>
       ),
     })
@@ -1370,14 +1370,14 @@ describe('resolved render params', () => {
   })
 })
 
-describe('resolved row ids', () => {
+describe('Resolved IDs', () => {
   function ResolvedRowsMenu({
     search = false,
-    getRowId,
+    getResolvedId,
     captureSubpageParams,
   }: {
     search?: boolean
-    getRowId?: (node: { def: NodeDef; defPath: string[] }) => string
+    getResolvedId?: (node: { def: NodeDef; definitionPath: string[] }) => string
     captureSubpageParams?: (params: ItemRenderParams) => void
   }) {
     const content = React.useMemo(
@@ -1405,7 +1405,7 @@ describe('resolved row ids', () => {
     )
 
     return (
-      <DropdownMenu.Root defaultOpen getRowId={getRowId}>
+      <DropdownMenu.Root defaultOpen getResolvedId={getResolvedId}>
         <DropdownMenu.Trigger>Open</DropdownMenu.Trigger>
         <DropdownMenu.Portal>
           <DropdownMenu.Positioner>
@@ -1428,7 +1428,7 @@ describe('resolved row ids', () => {
     )
   }
 
-  it('uses definition paths for nested browse row ids', async () => {
+  it('uses definition paths for nested browse Resolved IDs', async () => {
     const user = userEvent.setup()
     render(<ResolvedRowsMenu />)
     await user.hover(screen.getByTestId('submenu-trigger-status'))
@@ -1440,7 +1440,7 @@ describe('resolved row ids', () => {
     )
   })
 
-  it('keeps nested row ids while deep-searching', async () => {
+  it('keeps nested Resolved IDs while deep-searching', async () => {
     const user = userEvent.setup()
     render(<ResolvedRowsMenu search />)
     await user.type(screen.getByRole('combobox', { name: 'Search' }), 'backlog')
@@ -1452,12 +1452,14 @@ describe('resolved row ids', () => {
     )
   })
 
-  it('uses the root getRowId seam for rendered rows', async () => {
+  it('uses the root getResolvedId seam for rendered rows', async () => {
     const user = userEvent.setup()
     render(
       <ResolvedRowsMenu
         search
-        getRowId={(node) => `x-${node.def.id ?? node.defPath.join('.')}`}
+        getResolvedId={(node) =>
+          `x-${node.def.id ?? node.definitionPath.join('.')}`
+        }
       />,
     )
     await user.type(screen.getByRole('combobox', { name: 'Search' }), 'backlog')
@@ -1466,7 +1468,7 @@ describe('resolved row ids', () => {
     )
   })
 
-  it('uses subpage-qualified ids and the root getRowId seam for subpage rows', async () => {
+  it('uses subpage-qualified ids and the root getResolvedId seam for subpage rows', async () => {
     const user = userEvent.setup()
     let subpageParams: ItemRenderParams | undefined
     const { unmount } = render(
@@ -1484,12 +1486,17 @@ describe('resolved row ids', () => {
       ),
     )
     expect(subpageParams!.node.id).toBe('details.assigned-to-me')
-    expect(subpageParams!.node.defPath).toEqual(['details', 'assigned-to-me'])
+    expect(subpageParams!.node.definitionPath).toEqual([
+      'details',
+      'assigned-to-me',
+    ])
 
     unmount()
     render(
       <ResolvedRowsMenu
-        getRowId={(node) => `x-${node.def.id ?? node.defPath.join('.')}`}
+        getResolvedId={(node) =>
+          `x-${node.def.id ?? node.definitionPath.join('.')}`
+        }
       />,
     )
     await user.click(screen.getByTestId('subpage-trigger-details'))

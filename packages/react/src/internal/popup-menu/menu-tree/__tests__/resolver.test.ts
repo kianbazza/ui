@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { NodeDef } from '../../deep-search/types.js'
-import { defaultGetRowId, resolveNodeDefs } from '../resolve.js'
+import { defaultGetResolvedId, resolveNodeDefs } from '../resolve.js'
 import { createMenuTreeResolver } from '../resolver.js'
 
 const item = (value: string, id?: string): NodeDef =>
@@ -21,7 +21,7 @@ describe('createMenuTreeResolver', () => {
     resolver.setContent([status])
 
     expect(resolver.rootNodes).toEqual(
-      resolveNodeDefs([status], null, [], defaultGetRowId),
+      resolveNodeDefs([status], null, [], defaultGetResolvedId),
     )
     expect(resolver.getNodeById('status.backlog')?.def).toBe(backlog)
     expect(resolver.getNodeForDef(backlog)).toBe(
@@ -137,8 +137,11 @@ describe('createMenuTreeResolver', () => {
     const renamedExplicit = submenu('Workflow', [item('Backlog')], 'status-id')
     resolver.setContent([renamedExplicit])
     expect(resolver.rootNodes[0]).toBe(explicitNode)
-    expect(explicitNode.defPath).toEqual(['status-id'])
-    expect(explicitNode.children[0]!.defPath).toEqual(['status-id', 'backlog'])
+    expect(explicitNode.definitionPath).toEqual(['status-id'])
+    expect(explicitNode.children[0]!.definitionPath).toEqual([
+      'status-id',
+      'backlog',
+    ])
   })
 
   it('pairwise re-matches duplicate sibling ids', () => {
@@ -225,7 +228,7 @@ describe('createMenuTreeResolver', () => {
 
     expect(statusNode.children[0]).toBe(backlogNode)
     expect(statusNode.children[1]).toMatchObject({
-      defPath: ['status', 'in-review'],
+      definitionPath: ['status', 'in-review'],
       id: 'status.in-review',
       parent: statusNode,
       depth: statusNode.depth + 1,
@@ -273,7 +276,7 @@ describe('createMenuTreeResolver', () => {
 
     resolver.graft(groupNode, [groupNode.children[0]!.def, late])
 
-    expect(groupNode.children[1]!.defPath).toEqual(['status', 'late'])
+    expect(groupNode.children[1]!.definitionPath).toEqual(['status', 'late'])
     expect(groupNode.children[1]!.id).toBe('status.late')
   })
 })
@@ -281,7 +284,7 @@ describe('createMenuTreeResolver', () => {
 describe('duplicate detection', () => {
   const duplicateWarnings = (warn: ReturnType<typeof vi.spyOn>) =>
     warn.mock.calls.filter(([message]) =>
-      String(message).startsWith('[PopupMenu] Duplicate row id'),
+      String(message).startsWith('[PopupMenu] Duplicate Resolved ID'),
     )
 
   it('warns once for sibling id-less same-value items', () => {
@@ -372,10 +375,11 @@ describe('duplicate detection', () => {
   })
 })
 
-describe('getRowId seam', () => {
+describe('getResolvedId seam', () => {
   it('custom seam shapes ids', () => {
     const resolver = createMenuTreeResolver({
-      getRowId: (node) => node.defPath.join('/') || node.def.id || '',
+      getResolvedId: (node) =>
+        node.definitionPath.join('/') || node.def.id || '',
     })
     resolver.setContent([submenu('Status', [item('Backlog')])])
 
@@ -385,7 +389,8 @@ describe('getRowId seam', () => {
 
   it('matching agrees with the seam', () => {
     const resolver = createMenuTreeResolver({
-      getRowId: (node) => node.defPath.join('/') || node.def.id || '',
+      getResolvedId: (node) =>
+        node.definitionPath.join('/') || node.def.id || '',
     })
     resolver.setContent([submenu('Status', [item('Backlog')])])
     const statusNode = resolver.rootNodes[0]!
@@ -403,11 +408,11 @@ describe('getRowId seam', () => {
       hasId: boolean
     }> = []
     const resolver = createMenuTreeResolver({
-      getRowId: (node) => {
+      getResolvedId: (node) => {
         if (node.parent) {
           captures.push({ node: { ...node }, hasId: 'id' in node })
         }
-        return node.defPath.join('.')
+        return node.definitionPath.join('.')
       },
     })
     resolver.setContent([submenu('Status', [item('Backlog')])])
@@ -416,8 +421,8 @@ describe('getRowId seam', () => {
 
     expect(capture.node).toMatchObject({
       def: parent.children[0]!.def,
-      pathSegment: 'backlog',
-      defPath: ['status', 'backlog'],
+      definitionKey: 'backlog',
+      definitionPath: ['status', 'backlog'],
       parent,
       depth: 1,
       index: 0,
@@ -427,7 +432,7 @@ describe('getRowId seam', () => {
 
   it('index-dependent seam is stable', () => {
     const resolver = createMenuTreeResolver({
-      getRowId: (node) => `${node.defPath.join('.')}#${node.index}`,
+      getResolvedId: (node) => `${node.definitionPath.join('.')}#${node.index}`,
     })
     resolver.setContent([item('First'), item('Second')])
     const before = [...resolver.rootNodes]
@@ -448,8 +453,8 @@ describe('getRowId seam', () => {
     const explicitProbe = {
       def: explicit,
       kind: explicit.kind,
-      pathSegment: 'explicit',
-      defPath: ['different'],
+      definitionKey: 'explicit',
+      definitionPath: ['different'],
       parent: null,
       children: [],
       depth: 0,
@@ -459,19 +464,19 @@ describe('getRowId seam', () => {
     const idlessProbe = {
       def: idless,
       kind: idless.kind,
-      pathSegment: 'ignored',
-      defPath: ['path', 'ignored'],
+      definitionKey: 'ignored',
+      definitionPath: ['path', 'ignored'],
       parent: null,
       children: [],
       depth: 0,
       index: 0,
     }
 
-    expect(defaultGetRowId(explicitProbe)).toBe(
-      explicit.id ?? explicitProbe.defPath.join('.'),
+    expect(defaultGetResolvedId(explicitProbe)).toBe(
+      explicit.id ?? explicitProbe.definitionPath.join('.'),
     )
-    expect(defaultGetRowId(idlessProbe)).toBe(
-      idless.id ?? idlessProbe.defPath.join('.'),
+    expect(defaultGetResolvedId(idlessProbe)).toBe(
+      idless.id ?? idlessProbe.definitionPath.join('.'),
     )
   })
 })

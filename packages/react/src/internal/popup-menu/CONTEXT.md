@@ -15,7 +15,7 @@ A user-authored, declarative description of one menu entry (item, checkbox item,
 _Avoid_: node config, definition object
 
 **Menu Node**:
-The library-created, resolved instance of a node def — carries identity (row id, path segment, definition path), tree links (parent, children), and a reference to its originating def. Exactly one per logical row per menu root, in every render context; created by resolution at the root, or by grafting. Surfaced to consumers as `Node` under each family namespace.
+The library-created, resolved instance of a node def — carries identity (resolved ID, definition key, definition path), tree links (parent, children), and a reference to its originating def. Exactly one per logical row per menu root, in every render context; created by resolution at the root, or by grafting. Surfaced to consumers as `Node` under each family namespace.
 _Avoid_: resolved node (as a noun — "resolution" stays as the process), wrapper, instance
 
 **Menu Tree**:
@@ -26,11 +26,11 @@ _Avoid_: node graph, model
 The render-scoped wrapper the pipeline builds from node defs for one surface's current render (filtering, scoring, grouping applied). Rebuilt per render; context-dependent.
 _Avoid_: row wrapper
 
-**Segment** (field: `pathSegment`):
-A node's single path component: its explicit id verbatim when present, otherwise its slugified value. A segment is not necessarily slug-shaped (explicit ids pass through untouched); segments that resolve to empty are dropped from paths. The concept is "segment"; the field is named `pathSegment` because a bare `segment` reads as a synonym for the row id (they are in fact equal whenever a def carries an explicit id).
-_Avoid_: slug, key, part
+**Definition Key** (field: `definitionKey`):
+A node's single definition-path component: its explicit id verbatim when present, otherwise its slugified value. Keys that resolve to empty are dropped from paths.
+_Avoid_: segment, slug, part
 
-**Definition Path** (`defPath`):
+**Definition Path** (`definitionPath`):
 The segments from the menu root to a node in the definition tree, including the node's own segment. Identical wherever the node renders — browse, deep search, or recursion. The canonical identity path.
 _Avoid_: absolute path, tree path, full path, ancestor path
 
@@ -41,12 +41,15 @@ _Avoid_: trail, crumb path
 **Browse / Deep Search**:
 The two render contexts: browsing renders each surface's own nodes in place; deep search flattens a subtree into the searching surface as results. A row's identity must not depend on which context displays it.
 
-**Row Id**:
-The unique identity of a menu node — the value persistent state, registration, and highlight key off. Produced once per node by `getRowId` (default: explicit id verbatim, else the joined definition path). Definitional and context-free: a row id never depends on how or where the row is rendered. Context-dependent ids are inexpressible by construction — `getRowId` receives only definitional facts.
+**Resolved ID** (`id`):
+The unique identity of a menu node — the value persistent state, registration, and highlight key off. Produced once per node by `getResolvedId` (default: explicit `def.id` verbatim, otherwise the dot-joined `definitionPath`). This slice preserves that current dot-path behavior. Definitional and context-free: a resolved ID never depends on how or where the row is rendered. Context-dependent ids are inexpressible by construction — `getResolvedId` receives only definitional facts.
 _Avoid_: composite id, qualified id
 
+**Unresolved Menu Node** (`UnresolvedMenuNode`):
+The definitional menu-node facts passed to `getResolvedId` before the resolved ID is assigned.
+
 **Graft**:
-Resolving node defs that arrive after mount (async loader results; render-time content) and attaching the resulting nodes under an already-resolved parent — the graft point — so they join the single resolved tree with correct lineage (definition path, row id).
+Resolving node defs that arrive after mount (async loader results; render-time content) and attaching the resulting nodes under an already-resolved parent — the graft point — so they join the single resolved tree with correct lineage (definition path, Resolved ID).
 _Avoid_: merge, inject, append
 
 **Detached Node**:
@@ -61,5 +64,7 @@ _Avoid_: list store, selection engine
 
 These terms described the string-based identity model and no longer exist in the code. They appear here only so the names are not reintroduced with new meanings.
 
-- **Row Id Strategy** (`rowIdStrategy`: `qualified` / `explicit` / `hybrid`) and `getQualifiedRowId` — superseded by the `getRowId` seam. `hybrid` has no successor: it made ids depend on render context, which the resolved-node model forbids by construction.
+- **Row Id Strategy** (`rowIdStrategy`: `qualified` / `explicit` / `hybrid`) and `getQualifiedRowId` — superseded by the `getResolvedId` seam. `hybrid` has no successor: it made ids depend on render context, which the resolved-node model forbids by construction.
+- **Row ID** / `getRowId` — replaced by Resolved ID / `getResolvedId`.
+- **Segment** / `pathSegment` — replaced by Definition Key / `definitionKey`.
 - **Display Path** (`displayPath`) — the segments of the submenus enclosing the surface a row was displayed in. Contextual by nature; deleted along with the strategy machinery that consumed it.

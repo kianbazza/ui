@@ -1,6 +1,9 @@
 import { commandScore } from '../../listbox/utils/command-score.js'
 import { normalizeValue, slugify } from '../../listbox/utils/normalize.js'
-import { defaultGetRowId, resolveDetachedNode } from '../menu-tree/resolve.js'
+import {
+  defaultGetResolvedId,
+  resolveDetachedNode,
+} from '../menu-tree/resolve.js'
 import type { PopupMenuNode } from '../menu-tree/types.js'
 import type {
   AsyncNodesConfig,
@@ -30,9 +33,9 @@ const identityQuery = (query: string) => query
 
 // ============================================================================
 /**
- * Computes a row's canonical definition-tree path (`defPath`): the display
- * path of the computing surface, then breadcrumb segments, then the node's
- * own segment (`id`, or its slugified `value`), root-first. Empty segments
+ * Computes a row's canonical definition-tree path (`definitionPath`): the display
+ * path of the computing surface, then breadcrumb components, then the node's
+ * own Definition Key (`id`, or its slugified `value`), root-first. Empty keys
  * are skipped. Identical wherever the row renders — browse, deep search,
  * or recursion.
  */
@@ -862,7 +865,7 @@ function expandTreeNode(
 export function resolveDetachedNodeForDef<D extends NodeDef>(
   def: D,
 ): PopupMenuNode<D> {
-  return resolveDetachedNode(def, defaultGetRowId)
+  return resolveDetachedNode(def, defaultGetResolvedId)
 }
 
 export function getBrowseNodesPreserve(

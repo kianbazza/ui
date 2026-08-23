@@ -79,7 +79,7 @@ export type {
   DisplayRowNode,
   DisplaySeparatorNode,
   DisplaySubpageNode,
-  GetRowIdFn,
+  GetResolvedIdFn,
   GroupBehavior,
   GroupDef,
   GroupRenderContext,
@@ -116,11 +116,12 @@ export type {
   SubpageDef,
   SubpageTriggerRenderParams,
   SubpageTriggerRenderProps,
-  UnidentifiedMenuNode,
+  UnresolvedMenuNode,
 } from '../internal/popup-menu/index.js'
 export {
   DataListContext,
   DataSurfaceContext,
+  defaultGetResolvedId,
   defineRadioGroup,
   isDisplayGroupNode,
   isDisplayRadioGroupNode,

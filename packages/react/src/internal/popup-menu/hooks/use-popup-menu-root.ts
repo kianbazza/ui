@@ -16,7 +16,7 @@ import type {
 } from '../events.js'
 import type { MenuTreeResolver } from '../menu-tree/resolver.js'
 import { createMenuTreeResolver } from '../menu-tree/resolver.js'
-import type { GetRowIdFn } from '../menu-tree/types.js'
+import type { GetResolvedIdFn } from '../menu-tree/types.js'
 import { FocusOwnerStore } from '../store/FocusOwnerStore.js'
 import { OpenChainStore } from '../store/OpenChainStore.js'
 
@@ -26,11 +26,11 @@ import { OpenChainStore } from '../store/OpenChainStore.js'
 
 export interface UsePopupMenuRootParams {
   /**
-   * Computes canonical row ids for data-first content from the unidentified resolved node (definitional facts only).
+   * Computes canonical Resolved IDs for data-first content from the Unresolved Menu Node (definitional facts only).
    * @default explicit `def.id` verbatim, else the joined definition path
    * Read once when the menu root mounts — later changes have no effect.
    */
-  getRowId?: GetRowIdFn
+  getResolvedId?: GetResolvedIdFn
   /**
    * Callback when the open state changes.
    * The second parameter contains event details including the reason for the change.
@@ -152,13 +152,13 @@ export function usePopupMenuRoot(
     closeOnOutsidePress = 'pointerdown',
     disabled: disabledProp = false,
     defaultDisabled = false,
-    getRowId,
+    getResolvedId,
   } = params
 
   const menuTreeResolverRef = React.useRef<MenuTreeResolver | null>(null)
   if (menuTreeResolverRef.current === null) {
     menuTreeResolverRef.current = createMenuTreeResolver(
-      getRowId ? { getRowId } : undefined,
+      getResolvedId ? { getResolvedId } : undefined,
     )
   }
   const menuTreeResolver = menuTreeResolverRef.current
