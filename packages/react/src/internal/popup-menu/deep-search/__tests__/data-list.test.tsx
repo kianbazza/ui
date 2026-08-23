@@ -399,7 +399,7 @@ describe('useDataList', () => {
     await waitFor(() =>
       expect(warn).toHaveBeenCalledWith(
         expect.stringContaining(
-          '[PopupMenu] Duplicate Resolved ID "same" resolved for multiple rows in the same menu',
+          '[PopupMenu] Duplicate Resolved ID "same" in menu scope',
         ),
       ),
     )
@@ -509,9 +509,9 @@ describe('DOM ID verification', () => {
     })
 
     // Find items by their composite IDs (slugified)
-    const statusBacklog = document.getElementById('status.backlog')
+    const statusBacklog = document.getElementById('status/backlog')
     const projectStatusBacklog = document.getElementById(
-      'project-status.backlog',
+      'project-status/backlog',
     )
 
     expect(statusBacklog).toBeInTheDocument()
@@ -538,9 +538,9 @@ describe('DOM ID verification', () => {
     })
 
     // Both items should have data-value="Backlog" (the original value)
-    const statusBacklog = document.getElementById('status.backlog')
+    const statusBacklog = document.getElementById('status/backlog')
     const projectStatusBacklog = document.getElementById(
-      'project-status.backlog',
+      'project-status/backlog',
     )
 
     expect(statusBacklog).toHaveAttribute('data-value', 'Backlog')
@@ -570,21 +570,21 @@ describe('deep search duplicate ID scenario', () => {
     // First item should auto-highlight after search
     // Wait for auto-highlight to settle
     await waitFor(() => {
-      const statusBacklog = document.getElementById('status.backlog')
+      const statusBacklog = document.getElementById('status/backlog')
       expect(statusBacklog).toHaveAttribute('data-highlighted', '')
     })
 
-    // Navigate down - should highlight second item (project-status.backlog)
+    // Navigate down - should highlight second item (project-status/backlog)
     await user.keyboard('{ArrowDown}')
 
     await waitFor(() => {
       const projectStatusBacklog = document.getElementById(
-        'project-status.backlog',
+        'project-status/backlog',
       )
       expect(projectStatusBacklog).toHaveAttribute('data-highlighted', '')
     })
 
-    const statusBacklog = document.getElementById('status.backlog')
+    const statusBacklog = document.getElementById('status/backlog')
     expect(statusBacklog).not.toHaveAttribute('data-highlighted')
   })
 
@@ -614,8 +614,8 @@ describe('deep search duplicate ID scenario', () => {
       expect(items.length).toBe(2)
     })
 
-    // Click the first backlog (status.backlog)
-    const statusBacklog = document.getElementById('status.backlog')
+    // Click the first backlog (status/backlog)
+    const statusBacklog = document.getElementById('status/backlog')
     await user.click(statusBacklog!)
 
     expect(onSelectStatus).toHaveBeenCalledTimes(1)
@@ -643,7 +643,7 @@ describe('deep search duplicate ID scenario', () => {
     // First item should be auto-highlighted after search
     // The aria-activedescendant is set on the input (combobox role)
     await waitFor(() => {
-      expect(input).toHaveAttribute('aria-activedescendant', 'status.backlog')
+      expect(input).toHaveAttribute('aria-activedescendant', 'status/backlog')
     })
 
     // Navigate down to second item
@@ -652,7 +652,7 @@ describe('deep search duplicate ID scenario', () => {
     await waitFor(() => {
       expect(input).toHaveAttribute(
         'aria-activedescendant',
-        'project-status.backlog',
+        'project-status/backlog',
       )
     })
   })
@@ -751,7 +751,7 @@ function NestedSurfaceMenu({
   )
 }
 
-it('warns when nested surfaces share an explicit Resolved ID', async () => {
+it('keeps explicit IDs surface-scoped across nested surfaces', async () => {
   const user = userEvent.setup()
   const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
@@ -769,12 +769,7 @@ it('warns when nested surfaces share an explicit Resolved ID', async () => {
     warn.mock.calls.filter(([message]) =>
       String(message).startsWith('[PopupMenu] Duplicate Resolved ID'),
     ),
-  ).toHaveLength(1)
-  expect(warn).toHaveBeenCalledWith(
-    expect.stringContaining(
-      '[PopupMenu] Duplicate Resolved ID "shared-row" resolved for multiple rows in the same menu',
-    ),
-  )
+  ).toHaveLength(0)
 })
 
 describe('edge cases', () => {
@@ -879,9 +874,9 @@ describe('edge cases', () => {
 
     // Verify composite IDs are slugified
     const underscoreItem = document.getElementById(
-      'my-submenu.item-with-underscore',
+      'my-submenu/item-with-underscore',
     )
-    const dashItem = document.getElementById('my-submenu.item-with-dashes')
+    const dashItem = document.getElementById('my-submenu/item-with-dashes')
 
     expect(underscoreItem).toBeInTheDocument()
     expect(dashItem).toBeInTheDocument()
@@ -1358,8 +1353,8 @@ describe('resolved render params', () => {
       const childRows = screen.getAllByTestId('path-child')
       expect(childRows).toHaveLength(2)
       expect(childRows.map((row) => row.id)).toEqual([
-        'parent.child',
-        'parent.child',
+        'parent/child',
+        'parent/child',
       ])
       expect(
         childRows.map(
@@ -1435,7 +1430,7 @@ describe('Resolved IDs', () => {
     await waitFor(() =>
       expect(screen.getByTestId('item-backlog')).toHaveAttribute(
         'id',
-        'status.backlog',
+        'status/backlog',
       ),
     )
   })
@@ -1447,7 +1442,7 @@ describe('Resolved IDs', () => {
     await waitFor(() =>
       expect(screen.getByTestId('item-backlog')).toHaveAttribute(
         'id',
-        'status.backlog',
+        'status/backlog',
       ),
     )
   })
@@ -1482,10 +1477,10 @@ describe('Resolved IDs', () => {
     await waitFor(() =>
       expect(screen.getByTestId('item-assigned-to-me')).toHaveAttribute(
         'id',
-        'details.assigned-to-me',
+        'details/assigned-to-me',
       ),
     )
-    expect(subpageParams!.node.id).toBe('details.assigned-to-me')
+    expect(subpageParams!.node.id).toBe('details/assigned-to-me')
     expect(subpageParams!.node.definitionPath).toEqual([
       'details',
       'assigned-to-me',

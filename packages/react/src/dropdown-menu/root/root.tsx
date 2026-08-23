@@ -11,7 +11,10 @@ import {
   type UsePopupMenuRootParams,
   usePopupMenuRoot,
 } from '../../internal/popup-menu/index.js'
-import type { GetResolvedIdFn } from '../../internal/popup-menu/menu-tree/types.js'
+import type {
+  GetResolvedIdFn,
+  PopupMenuIdScope,
+} from '../../internal/popup-menu/menu-tree/types.js'
 import type {
   DropdownMenuHighlightChangeEventDetails,
   DropdownMenuOpenChangeEventDetails,
@@ -111,12 +114,14 @@ export interface DropdownMenuRootProps
 
   /**
    * Computes canonical Resolved IDs for data-first content from the Unresolved Menu Node (definitional facts only).
-   * @default explicit `def.id` verbatim, else the joined definition path
-   * Read once when the menu root mounts — later changes have no effect.
+   * @default encoded surface Definition Path joined with `/`; `idScope="menu"` uses the Definition Key
+   * Read once when the menu root mounts — later changes have no effect. To retain the old dot-path default, use `node => node.def.id ?? node.definitionPath.join('.')`. This does not recreate former tree-item ancestry; exact compatibility requires walking `node.parent` and reproducing the old slug/key lineage.
    * @example
    * <DropdownMenu.Root getResolvedId={(node) => node.def.id ?? node.definitionPath.join('.')} />
    */
   getResolvedId?: GetResolvedIdFn
+  /** Definition Key uniqueness scope. Read once when the menu root mounts. @default 'surface' */
+  idScope?: PopupMenuIdScope
 
   /**
    * Debug visualization options for submenu interaction heuristics.
@@ -145,6 +150,7 @@ export function DropdownMenuRoot(props: DropdownMenuRoot.Props) {
     onOpenChangeComplete: onOpenChangeCompleteProp,
     actionsRef,
     getResolvedId,
+    idScope = 'surface',
     debug,
     children,
     ...rest
@@ -174,6 +180,7 @@ export function DropdownMenuRoot(props: DropdownMenuRoot.Props) {
     closeOnOutsidePress,
     disabled,
     getResolvedId,
+    idScope,
   })
 
   const popoverActionsRef = useRef<Popover.Root.Actions | null>(null)

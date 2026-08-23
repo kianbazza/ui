@@ -1,5 +1,7 @@
 import type { NodeDef } from '../deep-search/types.js'
 
+export type PopupMenuIdScope = 'menu' | 'surface'
+
 /**
  * A menu node: the library-created, resolved instance of a node def.
  * Exactly one per logical row per menu root, in every render context —
@@ -20,17 +22,16 @@ export interface PopupMenuNode<D extends NodeDef = NodeDef> {
   /**
    * This node's path component: explicit `def.id` verbatim when present,
    * otherwise the slugified `value` (kinds without a display value use
-   * their required `id`; id-less separators have an empty Definition Key).
+   * their required `id`).
    */
   definitionKey: string
   /**
    * Definition Path: Definition Keys from the menu root to this node,
-   * including its own key, root-first. Only submenu, subpage, and tree-item
-   * ancestors contribute keys (groups and radio-groups are path-transparent).
-   * Empty keys are dropped.
+   * including its own key, root-first. Only submenu and subpage ancestors
+   * contribute keys (groups, radio-groups, and tree-items are path-transparent).
    */
   definitionPath: string[]
-  /** Resolved ID: `def.id` verbatim when present, else `definitionPath.join('.')`. */
+  /** Resolved ID selected by the root's identity policy. */
   id: string
   parent: PopupMenuNode | null
   children: PopupMenuNode[]

@@ -27,11 +27,11 @@ The render-scoped wrapper the pipeline builds from node defs for one surface's c
 _Avoid_: row wrapper
 
 **Definition Key** (field: `definitionKey`):
-A node's single definition-path component: its explicit id verbatim when present, otherwise its slugified value. Keys that resolve to empty are dropped from paths.
+A node's single definition-path component: its explicit id verbatim when present, otherwise its slugified value. Every Node Def must have an explicit or inferred key; empty keys are diagnosed in development. `idScope` controls whether keys must be unique across the whole `menu` root or only within each `surface` (the default).
 _Avoid_: segment, slug, part
 
 **Definition Path** (`definitionPath`):
-The segments from the menu root to a node in the definition tree, including the node's own segment. Identical wherever the node renders — browse, deep search, or recursion. The canonical identity path.
+The segments from the menu root to a node in the definition tree, including the node's own segment. Only submenu and subpage ancestors contribute segments; groups, radio groups, and tree items are surface-transparent. Identical wherever the node renders — browse, deep search, or recursion.
 _Avoid_: absolute path, tree path, full path, ancestor path
 
 **Breadcrumbs**:
@@ -42,7 +42,7 @@ _Avoid_: trail, crumb path
 The two render contexts: browsing renders each surface's own nodes in place; deep search flattens a subtree into the searching surface as results. A row's identity must not depend on which context displays it.
 
 **Resolved ID** (`id`):
-The unique identity of a menu node — the value persistent state, registration, and highlight key off. Produced once per node by `getResolvedId` (default: explicit `def.id` verbatim, otherwise the dot-joined `definitionPath`). This slice preserves that current dot-path behavior. Definitional and context-free: a resolved ID never depends on how or where the row is rendered. Context-dependent ids are inexpressible by construction — `getResolvedId` receives only definitional facts.
+The unique identity of a menu node — the value persistent state, registration, and highlight key off. Produced once per root by `getResolvedId`; the default is `definitionKey` for `idScope="menu"`, or a total UTF-16 code-unit encoding of every Definition Path entry joined with `/` for `idScope="surface"`. The encoder preserves ASCII letters, digits, `.`, `_`, `~`, and `-`, and encodes every other code unit as `%` plus four lowercase hexadecimal digits. IDs are opaque. `idScope` and the selected resolver are read once when the root resolver is created; later prop changes have no effect. Custom resolution replaces only final ID generation, while `idScope` still controls Definition Key validation. Separator definitions require an authored `id`.
 _Avoid_: composite id, qualified id
 
 **Unresolved Menu Node** (`UnresolvedMenuNode`):

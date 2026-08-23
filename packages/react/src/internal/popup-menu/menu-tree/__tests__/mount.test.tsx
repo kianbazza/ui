@@ -1,11 +1,11 @@
-import { render, screen, waitFor } from '@testing-library/react'
+import { cleanup, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { DropdownMenu } from '../../../../dropdown-menu/index.js'
 import { useMenuTreeResolver } from '../../contexts/menu-tree-resolver-context.js'
 import type { ItemDef, NodeDef, SubmenuDef } from '../../deep-search/types.js'
 import type { MenuTreeResolver } from '../resolver.js'
-import type { GetResolvedIdFn } from '../types.js'
+import type { GetResolvedIdFn, PopupMenuIdScope } from '../types.js'
 
 function item(value: string): ItemDef {
   return {
@@ -37,14 +37,20 @@ function Menu({
   onResolver,
   search = false,
   getResolvedId,
+  idScope,
 }: {
   content: NodeDef[]
   onResolver: (value: MenuTreeResolver) => void
   search?: boolean
   getResolvedId?: GetResolvedIdFn
+  idScope?: PopupMenuIdScope
 }) {
   return (
-    <DropdownMenu.Root defaultOpen getResolvedId={getResolvedId}>
+    <DropdownMenu.Root
+      defaultOpen
+      getResolvedId={getResolvedId}
+      idScope={idScope}
+    >
       <DropdownMenu.Trigger>Open</DropdownMenu.Trigger>
       <Probe onResolver={onResolver} />
       <DropdownMenu.Portal>
@@ -103,6 +109,89 @@ function submenu(
 }
 
 describe('mounted menu-tree resolution', () => {
+  it('uses the public surface default and explicit menu scope', async () => {
+    let resolver!: MenuTreeResolver
+    const view = render(
+      <Menu
+        onResolver={(value) => {
+          resolver = value
+        }}
+        content={[submenu('Status', [item('Backlog')], [])]}
+      />,
+    )
+    await waitFor(() => expect(resolver.getNodeById('status')).toBeDefined())
+    expect(resolver.getNodeById('status')?.id).toBe('status')
+    expect(resolver.getNodeById('status')?.children[0]?.id).toBe(
+      'status/backlog',
+    )
+
+    view.rerender(
+      <Menu
+        onResolver={(value) => {
+          resolver = value
+        }}
+        idScope="menu"
+        content={[submenu('Status', [item('Backlog')], [])]}
+      />,
+    )
+    expect(resolver.getNodeById('status')?.children[0]?.id).toBe(
+      'status/backlog',
+    )
+
+    view.unmount()
+    render(
+      <Menu
+        onResolver={(value) => {
+          resolver = value
+        }}
+        idScope="menu"
+        content={[submenu('Status', [item('Backlog')], [])]}
+      />,
+    )
+    await waitFor(() => expect(resolver.getNodeById('backlog')).toBeDefined())
+    expect(resolver.getNodeById('backlog')?.id).toBe('backlog')
+
+    cleanup()
+    render(
+      <Menu
+        onResolver={(value) => {
+          resolver = value
+        }}
+        content={[submenu('Status', [item('Backlog')], [])]}
+      />,
+    )
+    await waitFor(() =>
+      expect(resolver.getNodeById('status/backlog')).toBeDefined(),
+    )
+  })
+
+  it('reads idScope and getResolvedId once for the root lifetime', async () => {
+    let resolver!: MenuTreeResolver
+    const view = render(
+      <Menu
+        onResolver={(value) => {
+          resolver = value
+        }}
+        getResolvedId={() => 'first'}
+        content={[item('Backlog')]}
+      />,
+    )
+    await waitFor(() => expect(resolver.getNodeById('first')).toBeDefined())
+
+    view.rerender(
+      <Menu
+        onResolver={(value) => {
+          resolver = value
+        }}
+        idScope="menu"
+        getResolvedId={() => 'second'}
+        content={[item('Backlog')]}
+      />,
+    )
+    expect(resolver.getNodeById('first')).toBeDefined()
+    expect(resolver.getNodeById('second')).toBeUndefined()
+  })
+
   describe('public getResolvedId prop', () => {
     it('uses the custom Resolved ID seam for resolver node IDs', async () => {
       let resolver!: MenuTreeResolver
@@ -140,9 +229,9 @@ describe('mounted menu-tree resolution', () => {
     )
 
     await waitFor(() =>
-      expect(resolver.getNodeById('status.backlog')).toBeDefined(),
+      expect(resolver.getNodeById('status/backlog')).toBeDefined(),
     )
-    const node = resolver.getNodeById('status.backlog')!
+    const node = resolver.getNodeById('status/backlog')!
     expect(node.definitionPath).toEqual(['status', 'backlog'])
     expect(node.parent?.id).toBe('status')
     expect(resolver.rootNodes).toHaveLength(2)
@@ -163,9 +252,9 @@ describe('mounted menu-tree resolution', () => {
       />,
     )
     await waitFor(() =>
-      expect(resolver.getNodeById('status.backlog')).toBeDefined(),
+      expect(resolver.getNodeById('status/backlog')).toBeDefined(),
     )
-    const before = resolver.getNodeById('status.backlog')
+    const before = resolver.getNodeById('status/backlog')
     view.rerender(
       <Menu
         onResolver={(value) => {
@@ -174,7 +263,7 @@ describe('mounted menu-tree resolution', () => {
         content={content()}
       />,
     )
-    expect(resolver.getNodeById('status.backlog')).toBe(before)
+    expect(resolver.getNodeById('status/backlog')).toBe(before)
   })
 
   it('grafts nested-surface defs outside the static def tree', async () => {
@@ -191,16 +280,16 @@ describe('mounted menu-tree resolution', () => {
         content={content}
       />,
     )
-    await waitFor(() => expect(resolver.getNodeById('a.extra')).toBeUndefined())
+    await waitFor(() => expect(resolver.getNodeById('a/extra')).toBeUndefined())
     await user.click(screen.getByRole('menuitem', { name: 'A' }))
-    await waitFor(() => expect(resolver.getNodeById('a.extra')).toBeDefined())
+    await waitFor(() => expect(resolver.getNodeById('a/extra')).toBeDefined())
     const parent = resolver.getNodeById('a')!
-    expect(resolver.getNodeById('a.extra')?.parent).toBe(parent)
-    expect(resolver.getNodeById('a.extra')?.definitionPath).toEqual([
+    expect(resolver.getNodeById('a/extra')?.parent).toBe(parent)
+    expect(resolver.getNodeById('a/extra')?.definitionPath).toEqual([
       'a',
       'extra',
     ])
-    expect(parent.children.filter((node) => node.id === 'a.leaf')).toHaveLength(
+    expect(parent.children.filter((node) => node.id === 'a/leaf')).toHaveLength(
       1,
     )
   })
@@ -221,8 +310,8 @@ describe('mounted menu-tree resolution', () => {
       />,
     )
     await user.click(screen.getByRole('menuitem', { name: 'A' }))
-    await waitFor(() => expect(resolver.getNodeById('a.leaf')).toBeDefined())
-    const before = resolver.getNodeById('a.leaf')
+    await waitFor(() => expect(resolver.getNodeById('a/leaf')).toBeDefined())
+    const before = resolver.getNodeById('a/leaf')
     nestedContent = [leaf, late]
     view.rerender(
       <Menu
@@ -233,8 +322,8 @@ describe('mounted menu-tree resolution', () => {
       />,
     )
     await user.click(screen.getByRole('menuitem', { name: 'A' }))
-    await waitFor(() => expect(resolver.getNodeById('a.late')).toBeDefined())
-    expect(resolver.getNodeById('a.leaf')).toBe(before)
+    await waitFor(() => expect(resolver.getNodeById('a/late')).toBeDefined())
+    expect(resolver.getNodeById('a/leaf')).toBe(before)
   })
 
   it('asserts browse pipeline wiring: the DOM reads the Resolved IDs computed by the resolver', async () => {
@@ -270,7 +359,7 @@ describe('mounted menu-tree resolution', () => {
     await waitFor(() =>
       expect(screen.getByRole('option', { name: 'Backlog' })).toHaveAttribute(
         'id',
-        'status.backlog',
+        'status/backlog',
       ),
     )
   })

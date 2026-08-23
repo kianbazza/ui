@@ -23,9 +23,9 @@ describe('createMenuTreeResolver', () => {
     expect(resolver.rootNodes).toEqual(
       resolveNodeDefs([status], null, [], defaultGetResolvedId),
     )
-    expect(resolver.getNodeById('status.backlog')?.def).toBe(backlog)
+    expect(resolver.getNodeById('status/backlog')?.def).toBe(backlog)
     expect(resolver.getNodeForDef(backlog)).toBe(
-      resolver.getNodeById('status.backlog'),
+      resolver.getNodeById('status/backlog'),
     )
   })
 
@@ -127,8 +127,8 @@ describe('createMenuTreeResolver', () => {
     const renamedChild = item('Backlog')
     resolver.setContent([submenu('Workflow', [renamedChild])])
     expect(resolver.rootNodes[0]).not.toBe(oldNode)
-    expect(resolver.getNodeById('status.backlog')).toBeUndefined()
-    expect(resolver.getNodeById('workflow.backlog')?.def).toBe(renamedChild)
+    expect(resolver.getNodeById('status/backlog')).toBeUndefined()
+    expect(resolver.getNodeById('workflow/backlog')?.def).toBe(renamedChild)
 
     const explicitChild = item('Backlog')
     const explicit = submenu('Status', [explicitChild], 'status-id')
@@ -195,7 +195,7 @@ describe('createMenuTreeResolver', () => {
     resolver.setContent([submenu('Status', [item('Backlog')])])
     resolver.graft(resolver.rootNodes[0]!, graftDefs)
 
-    expect(resolver.rootNodes[0]!.children[1]!.id).toBe('status.extra')
+    expect(resolver.rootNodes[0]!.children[1]!.id).toBe('status/extra')
     expect(resolver.rootNodes[0]!.children[1]!.def).toBe(extra)
   })
 
@@ -212,7 +212,7 @@ describe('createMenuTreeResolver', () => {
     resolver.graft(aNode, [submenu('B', [leaf])])
     resolver.graft(bNode, graftDefs)
 
-    expect(bNode.children[1]!.id).toBe('a.b.extra')
+    expect(bNode.children[1]!.id).toBe('a/b/extra')
   })
 
   it('grafts late children while preserving static children', () => {
@@ -229,11 +229,11 @@ describe('createMenuTreeResolver', () => {
     expect(statusNode.children[0]).toBe(backlogNode)
     expect(statusNode.children[1]).toMatchObject({
       definitionPath: ['status', 'in-review'],
-      id: 'status.in-review',
+      id: 'status/in-review',
       parent: statusNode,
       depth: statusNode.depth + 1,
     })
-    expect(resolver.getNodeById('status.in-review')).toBe(
+    expect(resolver.getNodeById('status/in-review')).toBe(
       statusNode.children[1],
     )
   })
@@ -258,13 +258,13 @@ describe('createMenuTreeResolver', () => {
     expect(statusNode.children[1]).toBe(grafted)
 
     resolver.setContent([submenu('Status', [item('Backlog')])])
-    expect(resolver.getNodeById('status.in-review')).toBeUndefined()
+    expect(resolver.getNodeById('status/in-review')).toBeUndefined()
     resolver.graft(resolver.rootNodes[0]!, [
       resolver.rootNodes[0]!.children[0]!.def,
       inReview,
     ])
     expect(resolver.rootNodes[0]!.children[1]).not.toBe(grafted)
-    expect(resolver.rootNodes[0]!.children[1]!.id).toBe('status.in-review')
+    expect(resolver.rootNodes[0]!.children[1]!.id).toBe('status/in-review')
   })
 
   it('uses the submenu base path when grafting under a transparent group', () => {
@@ -277,7 +277,7 @@ describe('createMenuTreeResolver', () => {
     resolver.graft(groupNode, [groupNode.children[0]!.def, late])
 
     expect(groupNode.children[1]!.definitionPath).toEqual(['status', 'late'])
-    expect(groupNode.children[1]!.id).toBe('status.late')
+    expect(groupNode.children[1]!.id).toBe('status/late')
   })
 })
 
@@ -285,6 +285,10 @@ describe('duplicate detection', () => {
   const duplicateWarnings = (warn: ReturnType<typeof vi.spyOn>) =>
     warn.mock.calls.filter(([message]) =>
       String(message).startsWith('[PopupMenu] Duplicate Resolved ID'),
+    )
+  const keyWarnings = (warn: ReturnType<typeof vi.spyOn>) =>
+    warn.mock.calls.filter(([message]) =>
+      String(message).startsWith('[PopupMenu] Duplicate Definition Key'),
     )
 
   it('warns once for sibling id-less same-value items', () => {
@@ -315,7 +319,7 @@ describe('duplicate detection', () => {
 
   it('warns for duplicate explicit ids across different branches', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const resolver = createMenuTreeResolver()
+    const resolver = createMenuTreeResolver({ idScope: 'menu' })
 
     resolver.setContent([
       submenu('Branch A', [item('First', 'branch-shared')]),
@@ -326,17 +330,20 @@ describe('duplicate detection', () => {
     warn.mockRestore()
   })
 
-  it('does not warn for two id-less separators', () => {
+  it('warns for duplicate identified separators', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const resolver = createMenuTreeResolver()
 
-    resolver.setContent([{ kind: 'separator' }, { kind: 'separator' }])
+    resolver.setContent([
+      { kind: 'separator', id: 'separator' },
+      { kind: 'separator', id: 'separator' },
+    ])
 
-    expect(duplicateWarnings(warn)).toHaveLength(0)
+    expect(duplicateWarnings(warn)).toHaveLength(1)
     warn.mockRestore()
   })
 
-  it('does not warn when a group id collides with an item id', () => {
+  it('warns when a group id collides with an item id', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     const resolver = createMenuTreeResolver()
 
@@ -345,7 +352,7 @@ describe('duplicate detection', () => {
       item('Row', 'namespace-shared'),
     ])
 
-    expect(duplicateWarnings(warn)).toHaveLength(0)
+    expect(duplicateWarnings(warn)).toHaveLength(1)
     warn.mockRestore()
   })
 
@@ -372,6 +379,96 @@ describe('duplicate detection', () => {
 
     expect(duplicateWarnings(warn)).toHaveLength(0)
     warn.mockRestore()
+  })
+
+  it('validates Definition Keys at menu scope but not across surfaces', () => {
+    const surfaceWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const surfaceResolver = createMenuTreeResolver()
+    surfaceResolver.setContent([
+      submenu('A', [item('Shared')]),
+      submenu('B', [item('Shared')]),
+    ])
+    expect(keyWarnings(surfaceWarn)).toHaveLength(0)
+    surfaceWarn.mockRestore()
+
+    const menuWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const menuResolver = createMenuTreeResolver({ idScope: 'menu' })
+    menuResolver.setContent([
+      submenu('A', [item('Shared')]),
+      submenu('B', [item('Shared')]),
+    ])
+    expect(keyWarnings(menuWarn)).toHaveLength(1)
+    menuWarn.mockRestore()
+  })
+
+  it('warns independently for duplicate keys in distinct equivalent surfaces', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const resolver = createMenuTreeResolver()
+    resolver.setContent([
+      submenu('A', [item('Shared'), item('Shared')]),
+      submenu('B', [item('Shared'), item('Shared')]),
+    ])
+    expect(keyWarnings(warn)).toHaveLength(2)
+    warn.mockRestore()
+  })
+
+  it('warns once for empty Definition Keys and empty Resolved IDs', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const resolver = createMenuTreeResolver({ getResolvedId: () => '' })
+    resolver.setContent([item('⚙️'), item('⚙️'), item('⚙️')])
+
+    expect(
+      warn.mock.calls.filter(([message]) =>
+        String(message).startsWith('[PopupMenu] Empty Definition Key'),
+      ),
+    ).toHaveLength(1)
+    expect(
+      warn.mock.calls.filter(([message]) =>
+        String(message).startsWith('[PopupMenu] Empty Resolved ID'),
+      ),
+    ).toHaveLength(1)
+    expect(duplicateWarnings(warn)).toHaveLength(1)
+    warn.mockRestore()
+  })
+
+  it('detects custom Resolved ID collisions across structural nodes', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const resolver = createMenuTreeResolver({ getResolvedId: () => 'shared' })
+    resolver.setContent([
+      group('group', []),
+      { kind: 'separator', id: 'separator' },
+    ])
+    expect(duplicateWarnings(warn)).toHaveLength(1)
+    expect(warn.mock.calls.at(-1)?.[0]).toEqual(
+      expect.stringContaining('group and separator'),
+    )
+    warn.mockRestore()
+  })
+
+  it('retires active key holders during reconciliation', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const first = item('Shared')
+    const second = item('Shared')
+    const third = item('Shared')
+    const resolver = createMenuTreeResolver({
+      getResolvedId: (node) =>
+        node.def === first ? 'a' : node.def === second ? 'b' : 'c',
+    })
+    resolver.setContent([first, second])
+    resolver.setContent([second])
+    resolver.setContent([second, third])
+    expect(keyWarnings(warn)).toHaveLength(1)
+    warn.mockRestore()
+  })
+
+  it('is silent in production', () => {
+    vi.stubEnv('NODE_ENV', 'production')
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+    const resolver = createMenuTreeResolver({ getResolvedId: () => '' })
+    resolver.setContent([item('⚙️'), item('⚙️')])
+    expect(warn).not.toHaveBeenCalled()
+    warn.mockRestore()
+    vi.unstubAllEnvs()
   })
 })
 
@@ -473,10 +570,12 @@ describe('getResolvedId seam', () => {
     }
 
     expect(defaultGetResolvedId(explicitProbe)).toBe(
-      explicit.id ?? explicitProbe.definitionPath.join('.'),
+      explicitProbe.definitionPath
+        .map((entry) => entry.replaceAll(' ', '%0020').replaceAll('!', '%0021'))
+        .join('/'),
     )
     expect(defaultGetResolvedId(idlessProbe)).toBe(
-      idless.id ?? idlessProbe.definitionPath.join('.'),
+      idlessProbe.definitionPath.join('/'),
     )
   })
 })
