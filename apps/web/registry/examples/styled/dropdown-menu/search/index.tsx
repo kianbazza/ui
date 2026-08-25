@@ -17,7 +17,6 @@ export default function DropdownMenuSearch() {
             <DropdownMenu.Surface>
               <DropdownMenu.Input placeholder="Search labels..." />
               <DropdownMenu.List>
-                <DropdownMenu.Empty />
                 {labelData.map((label) => (
                   <DropdownMenu.Item
                     key={label.id}

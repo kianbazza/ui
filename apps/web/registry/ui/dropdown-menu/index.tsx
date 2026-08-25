@@ -953,28 +953,41 @@ const CheckboxItem = forwardRef<
 ))
 CheckboxItem.displayName = 'DropdownMenu.CheckboxItem'
 
+type CheckboxItemIndicatorVariant = 'checkbox' | 'check'
+
+interface CheckboxItemIndicatorProps
+  extends React.ComponentProps<typeof Primitive.CheckboxItemIndicator> {
+  /** The indicator style and position. */
+  variant?: CheckboxItemIndicatorVariant
+}
+
 const CheckboxItemIndicator = forwardRef<
   HTMLDivElement,
-  React.ComponentProps<typeof Primitive.CheckboxItemIndicator>
->(({ className, keepMounted = true, ...props }, ref) => (
+  CheckboxItemIndicatorProps
+>(({ className, keepMounted = true, variant = 'checkbox', ...props }, ref) => (
   <Primitive.CheckboxItemIndicator
     ref={ref}
     className={cn(
       'flex items-center justify-center shrink-0 relative',
       "after:absolute after:inset-x-0 after:-inset-y-2 after:content-['']",
+      variant === 'check' && 'order-last ml-auto',
       className,
     )}
     keepMounted={keepMounted}
-    render={(props, state) => (
-      <Checkbox
-        {...props}
-        checked={state.checked}
-        onClick={(e) => {
-          e.stopPropagation()
-          state.toggle()
-        }}
-      />
-    )}
+    render={(props, state) =>
+      variant === 'check' ? (
+        <CheckIcon {...props} className="size-4" />
+      ) : (
+        <Checkbox
+          {...props}
+          checked={state.checked}
+          onClick={(e) => {
+            e.stopPropagation()
+            state.toggle()
+          }}
+        />
+      )
+    }
     {...props}
   />
 ))
