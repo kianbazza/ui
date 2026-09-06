@@ -1348,395 +1348,6 @@
   "@bazza-ui/react": {
     "entrypoint": "../../packages/react/src/docs-types-entry.ts",
     "types": {
-      "CreateSWRQueryLoaderProps": {
-        "name": "CreateSWRQueryLoaderProps",
-        "kind": "interface",
-        "doc": "Props for creating a query-dependent SWR loader component.",
-        "props": [
-          {
-            "name": "useSWR",
-            "type": "(query: string, options?: { enabled: boolean; } | undefined) => SWRResult<NodeDef[], Error>",
-            "formattedType": "(\n  query: string,\n  options?: { enabled: boolean } | undefined,\n) => SWRResult<NodeDef[], Error>",
-            "required": true,
-            "description": "Hook that returns an SWR result based on the search query.\n`options.enabled` can be used to derive a `null` key and disable fetching."
-          },
-          {
-            "name": "minQueryLength",
-            "type": "number | undefined",
-            "formattedType": "number",
-            "required": false,
-            "description": "Minimum query length before fetching.",
-            "default": "1"
-          },
-          {
-            "name": "initialQueryBehavior",
-            "type": "false | InitialQueryBehavior | undefined",
-            "formattedType": "false | InitialQueryBehavior",
-            "required": false,
-            "description": "Initial query behavior before user input reaches minQueryLength.\nDefaults to fetching with an empty query."
-          },
-          {
-            "name": "initialQuery",
-            "type": "string | undefined",
-            "formattedType": "string",
-            "required": false
-          },
-          {
-            "name": "loadStrategy",
-            "type": "\"eager\" | \"lazy\" | undefined",
-            "formattedType": "\"eager\" | \"lazy\"",
-            "required": false,
-            "description": "When to trigger the loader:\n- 'eager': Load when root menu opens (good for deep search)\n- 'lazy': Load when submenu opens (default)",
-            "default": "'lazy'"
-          },
-          {
-            "name": "belowMinBehavior",
-            "type": "\"empty\" | \"placeholder\" | undefined",
-            "formattedType": "\"empty\" | \"placeholder\"",
-            "required": false,
-            "description": "What to show when query is below minQueryLength.",
-            "default": "'empty'"
-          },
-          {
-            "name": "placeholderNodes",
-            "type": "NodeDef[] | undefined",
-            "formattedType": "NodeDef[]",
-            "required": false,
-            "description": "Placeholder nodes shown when query is below minQueryLength."
-          }
-        ]
-      },
-      "CreateSWRStaticLoaderProps": {
-        "name": "CreateSWRStaticLoaderProps",
-        "kind": "interface",
-        "doc": "Props for creating a static SWR loader component.",
-        "props": [
-          {
-            "name": "useSWR",
-            "type": "() => SWRResult<NodeDef[], Error>",
-            "required": true,
-            "description": "Hook that returns an SWR result."
-          },
-          {
-            "name": "loadStrategy",
-            "type": "\"eager\" | \"lazy\" | undefined",
-            "formattedType": "\"eager\" | \"lazy\"",
-            "required": false,
-            "description": "When to trigger the loader:\n- 'eager': Load when root menu opens\n- 'lazy': Load when submenu opens (default)"
-          }
-        ]
-      },
-      "SWRResult": {
-        "name": "SWRResult",
-        "kind": "interface",
-        "typeParams": [
-          {
-            "name": "TData"
-          },
-          {
-            "name": "TError",
-            "default": "Error"
-          }
-        ],
-        "doc": "SWR result shape (subset of SWRResponse).\nThis allows the adapter to work without requiring `swr` as a dependency.",
-        "props": [
-          {
-            "name": "data",
-            "type": "TData | undefined",
-            "formattedType": "TData",
-            "required": true
-          },
-          {
-            "name": "error",
-            "type": "TError | undefined",
-            "formattedType": "TError",
-            "required": true
-          },
-          {
-            "name": "isLoading",
-            "type": "boolean | undefined",
-            "formattedType": "false | true",
-            "required": false
-          },
-          {
-            "name": "isValidating",
-            "type": "boolean",
-            "formattedType": "false | true",
-            "required": true
-          },
-          {
-            "name": "isPaused",
-            "type": "boolean | undefined",
-            "formattedType": "false | true",
-            "required": false
-          },
-          {
-            "name": "mutate",
-            "type": "(...args: unknown[]) => unknown",
-            "required": true
-          }
-        ]
-      },
-      "CreateQueryLoaderProps": {
-        "name": "CreateQueryLoaderProps",
-        "kind": "interface",
-        "doc": "Props for creating a query loader component.",
-        "props": [
-          {
-            "name": "useQuery",
-            "type": "(query: string, options?: { enabled: boolean; } | undefined) => TanStackQueryResult<NodeDef[], Error>",
-            "formattedType": "(\n  query: string,\n  options?: { enabled: boolean } | undefined,\n) => TanStackQueryResult<NodeDef[], Error>",
-            "required": true,
-            "description": "Hook that returns a TanStack Query result based on the search query.\nThis hook will be called inside the loader component with the current query."
-          },
-          {
-            "name": "minQueryLength",
-            "type": "number | undefined",
-            "formattedType": "number",
-            "required": false,
-            "description": "Minimum query length before fetching.",
-            "default": "1"
-          },
-          {
-            "name": "initialQueryBehavior",
-            "type": "false | InitialQueryBehavior | undefined",
-            "formattedType": "false | InitialQueryBehavior",
-            "required": false,
-            "description": "Initial query behavior before user input reaches minQueryLength.\nDefaults to fetching with an empty query."
-          },
-          {
-            "name": "initialQuery",
-            "type": "string | undefined",
-            "formattedType": "string",
-            "required": false
-          },
-          {
-            "name": "loadStrategy",
-            "type": "\"eager\" | \"lazy\" | undefined",
-            "formattedType": "\"eager\" | \"lazy\"",
-            "required": false,
-            "description": "When to trigger the loader:\n- 'eager': Load when root menu opens (good for deep search)\n- 'lazy': Load when submenu opens (default)",
-            "default": "'lazy'"
-          },
-          {
-            "name": "belowMinBehavior",
-            "type": "\"empty\" | \"placeholder\" | undefined",
-            "formattedType": "\"empty\" | \"placeholder\"",
-            "required": false,
-            "description": "What to show when query is below minQueryLength.",
-            "default": "'empty'"
-          },
-          {
-            "name": "placeholderNodes",
-            "type": "NodeDef[] | undefined",
-            "formattedType": "NodeDef[]",
-            "required": false,
-            "description": "Placeholder nodes shown when query is below minQueryLength."
-          }
-        ]
-      },
-      "CreateStaticLoaderProps": {
-        "name": "CreateStaticLoaderProps",
-        "kind": "interface",
-        "doc": "Props for creating a static loader component.",
-        "props": [
-          {
-            "name": "useQuery",
-            "type": "() => TanStackQueryResult<NodeDef[], Error>",
-            "formattedType": "() => TanStackQueryResult<\n  NodeDef[],\n  Error\n>",
-            "required": true,
-            "description": "Hook that returns a TanStack Query result.\nThis hook will be called inside the loader component."
-          },
-          {
-            "name": "loadStrategy",
-            "type": "\"eager\" | \"lazy\" | undefined",
-            "formattedType": "\"eager\" | \"lazy\"",
-            "required": false,
-            "description": "When to trigger the loader:\n- 'eager': Load when root menu opens\n- 'lazy': Load when submenu opens (default)"
-          }
-        ]
-      },
-      "TanStackQueryResult": {
-        "name": "TanStackQueryResult",
-        "kind": "interface",
-        "typeParams": [
-          {
-            "name": "TData"
-          },
-          {
-            "name": "TError",
-            "default": "Error"
-          }
-        ],
-        "doc": "TanStack Query result shape (subset of UseQueryResult).\nThis allows the adapter to work without requiring",
-        "props": [
-          {
-            "name": "status",
-            "type": "\"error\" | \"pending\" | \"success\" | undefined",
-            "formattedType": "\"error\" | \"pending\" | \"success\"",
-            "required": false,
-            "description": "TanStack status (`pending` | `error` | `success`)"
-          },
-          {
-            "name": "fetchStatus",
-            "type": "\"paused\" | \"idle\" | \"fetching\" | undefined",
-            "formattedType": "\"paused\" | \"idle\" | \"fetching\"",
-            "required": false,
-            "description": "TanStack fetch status (`fetching` | `paused` | `idle`)"
-          },
-          {
-            "name": "data",
-            "type": "TData | undefined",
-            "formattedType": "TData",
-            "required": true
-          },
-          {
-            "name": "error",
-            "type": "TError | null | undefined",
-            "formattedType": "null | TError",
-            "required": true
-          },
-          {
-            "name": "isLoading",
-            "type": "boolean | undefined",
-            "formattedType": "false | true",
-            "required": false,
-            "description": "v5: true when first fetch is in-flight"
-          },
-          {
-            "name": "isPending",
-            "type": "boolean | undefined",
-            "formattedType": "false | true",
-            "required": false,
-            "description": "v5: true when status is pending"
-          },
-          {
-            "name": "isSuccess",
-            "type": "boolean | undefined",
-            "formattedType": "false | true",
-            "required": false,
-            "description": "true when status is success"
-          },
-          {
-            "name": "isError",
-            "type": "boolean | undefined",
-            "formattedType": "false | true",
-            "required": false,
-            "description": "true when status is error"
-          },
-          {
-            "name": "isFetching",
-            "type": "boolean | undefined",
-            "formattedType": "false | true",
-            "required": false,
-            "description": "true while any fetch is in-flight"
-          },
-          {
-            "name": "isRefetching",
-            "type": "boolean | undefined",
-            "formattedType": "false | true",
-            "required": false,
-            "description": "true while background refetch is in-flight"
-          },
-          {
-            "name": "isPaused",
-            "type": "boolean | undefined",
-            "formattedType": "false | true",
-            "required": false,
-            "description": "true when fetch is paused"
-          },
-          {
-            "name": "isFetched",
-            "type": "boolean | undefined",
-            "formattedType": "false | true",
-            "required": false,
-            "description": "true once query has fetched at least once"
-          },
-          {
-            "name": "refetch",
-            "type": "() => unknown",
-            "required": true
-          }
-        ]
-      },
-      "CreateVanillaQueryLoaderProps": {
-        "name": "CreateVanillaQueryLoaderProps",
-        "kind": "interface",
-        "doc": "Props for creating a query loader with vanilla fetch.",
-        "props": [
-          {
-            "name": "fetcher",
-            "type": "(query: string, options?: { signal?: AbortSignal | undefined; } | undefined) => Promise<NodeDef[]>",
-            "formattedType": "(\n  query: string,\n  options?:\n    | { signal?: AbortSignal | undefined }\n    | undefined,\n) => Promise<NodeDef[]>",
-            "required": true,
-            "description": "Async function that fetches menu items based on the search query.\nReceives an optional `signal` that is aborted when a newer query is issued,\nallowing you to cancel in-flight requests (e.g. pass it to `fetch()`)."
-          },
-          {
-            "name": "minQueryLength",
-            "type": "number | undefined",
-            "formattedType": "number",
-            "required": false,
-            "description": "Minimum query length before fetching.",
-            "default": "1"
-          },
-          {
-            "name": "initialQueryBehavior",
-            "type": "false | InitialQueryBehavior | undefined",
-            "formattedType": "false | InitialQueryBehavior",
-            "required": false,
-            "description": "Initial query behavior before user input reaches minQueryLength.\nDefaults to fetching with an empty query."
-          },
-          {
-            "name": "initialQuery",
-            "type": "string | undefined",
-            "formattedType": "string",
-            "required": false
-          },
-          {
-            "name": "loadStrategy",
-            "type": "\"eager\" | \"lazy\" | undefined",
-            "formattedType": "\"eager\" | \"lazy\"",
-            "required": false,
-            "description": "When to trigger the loader:\n- 'eager': Load when root menu opens (good for deep search)\n- 'lazy': Load when submenu opens (default)",
-            "default": "'lazy'"
-          },
-          {
-            "name": "belowMinBehavior",
-            "type": "\"empty\" | \"placeholder\" | undefined",
-            "formattedType": "\"empty\" | \"placeholder\"",
-            "required": false,
-            "description": "What to show when query is below minQueryLength.",
-            "default": "'empty'"
-          },
-          {
-            "name": "placeholderNodes",
-            "type": "NodeDef[] | undefined",
-            "formattedType": "NodeDef[]",
-            "required": false,
-            "description": "Placeholder nodes shown when query is below minQueryLength."
-          }
-        ]
-      },
-      "CreateVanillaStaticLoaderProps": {
-        "name": "CreateVanillaStaticLoaderProps",
-        "kind": "interface",
-        "doc": "Props for creating a static loader with vanilla fetch.",
-        "props": [
-          {
-            "name": "fetcher",
-            "type": "() => Promise<NodeDef[]>",
-            "required": true,
-            "description": "Async function that fetches the menu items."
-          },
-          {
-            "name": "loadStrategy",
-            "type": "\"eager\" | \"lazy\" | undefined",
-            "formattedType": "\"eager\" | \"lazy\"",
-            "required": false,
-            "description": "When to trigger the loader:\n- 'eager': Load when root menu opens\n- 'lazy': Load when submenu opens (default)"
-          }
-        ]
-      },
       "ComboboxClearProps": {
         "name": "ComboboxClearProps",
         "kind": "interface",
@@ -2547,8 +2158,8 @@
           },
           {
             "name": "content",
-            "type": "PopupMenuNode<NodeDef>[] | NodeDef[] | undefined",
-            "formattedType": "PopupMenuNode<NodeDef>[] | NodeDef[]",
+            "type": "NodeDef[] | PopupMenuNode<NodeDef>[] | undefined",
+            "formattedType": "NodeDef[] | PopupMenuNode<NodeDef>[]",
             "required": false,
             "description": "The menu content (node definitions with render functions). Resolved nodes\nare accepted anywhere defs are; they are unwrapped to their defs, and\nre-supplying the same nodes preserves identity."
           },
@@ -4269,10 +3880,10 @@
           },
           {
             "name": "onHighlightChange",
-            "type": "((node: PopupMenuNode<NodeDef> | null, id: string | null, index: number, eventDetails: ContextMenuHighlightChangeEventDetails) => void) | undefined",
-            "formattedType": "(\n  node: PopupMenuNode<NodeDef> | null,\n  id: string | null,\n  index: number,\n  eventDetails: ContextMenuHighlightChangeEventDetails,\n) => void",
+            "type": "PopupMenuHighlightChangeHandler<ContextMenuHighlightChangeEventDetails> | undefined",
+            "formattedType": "PopupMenuHighlightChangeHandler<ContextMenuHighlightChangeEventDetails>",
             "required": false,
-            "description": "Callback when the highlighted item changes.\nUseful for synchronizing with a virtualizer (e.g., scrollToIndex) or other UI state.\n`node` is the resolved menu node carrying the highlighted id, looked up in the menu's data-first tree — `null` when the highlight clears or when no data-first node carries that id (e.g. JSX-defined rows). A JSX row that shares an id with a data-first node yields that node; row ids are expected to be unique per menu.\nThe fourth parameter contains event details including the reason for the change."
+            "description": "Callback when the highlighted item changes.\nUseful for synchronizing with a virtualizer (e.g., scrollToIndex) or other UI state.\n`id` is first. `node` is the resolved menu node carrying the highlighted id, looked up in the menu's data-first tree — `null` when the highlight clears or when no data-first node carries that id (e.g. JSX-defined rows). A JSX row that shares an id with a data-first node yields that node; row ids are expected to be unique per menu.\nThe fourth parameter contains event details including the reason for the change."
           },
           {
             "name": "disabled",
@@ -6087,10 +5698,10 @@
           },
           {
             "name": "onHighlightChange",
-            "type": "((node: PopupMenuNode<NodeDef> | null, id: string | null, index: number, eventDetails: GenericEventDetails<string, { index: number; }>) => void) | undefined",
-            "formattedType": "(\n  node: PopupMenuNode<NodeDef> | null,\n  id: string | null,\n  index: number,\n  eventDetails: GenericEventDetails<\n    string,\n    { index: number }\n  >,\n) => void",
+            "type": "PopupMenuHighlightChangeHandler<HighlightChangeEventDetails> | undefined",
+            "formattedType": "PopupMenuHighlightChangeHandler<HighlightChangeEventDetails>",
             "required": false,
-            "description": "Callback when the highlighted item changes.\nUseful for synchronizing with a virtualizer (e.g., scrollToIndex)."
+            "description": "Callback when the highlighted item changes. `id` is first; `node` is the\nresolved menu node enrichment and may be null.\nUseful for synchronizing with a virtualizer (e.g., scrollToIndex)."
           },
           {
             "name": "onOpenChangeComplete",
@@ -6232,6 +5843,14 @@
             "required": false,
             "description": "Delay before closing the submenu when pointer leaves (in milliseconds).",
             "default": "0"
+          },
+          {
+            "name": "closeOnPointerLeave",
+            "type": "boolean | undefined",
+            "formattedType": "false | true",
+            "required": false,
+            "description": "Whether the submenu closes when the pointer leaves the trigger without aiming at the submenu popup.\nWhen `false`, the submenu stays open until closed by another path (sibling highlight, keyboard, outside click, etc.).",
+            "default": "true"
           },
           {
             "name": "forceOrder",
@@ -6807,8 +6426,8 @@
           },
           {
             "name": "content",
-            "type": "PopupMenuNode<NodeDef>[] | NodeDef[] | undefined",
-            "formattedType": "PopupMenuNode<NodeDef>[] | NodeDef[]",
+            "type": "NodeDef[] | PopupMenuNode<NodeDef>[] | undefined",
+            "formattedType": "NodeDef[] | PopupMenuNode<NodeDef>[]",
             "required": false,
             "description": "The menu content (node definitions with render functions). Resolved nodes\nare accepted anywhere defs are; they are unwrapped to their defs, and\nre-supplying the same nodes preserves identity."
           },
@@ -8238,6 +7857,12 @@
             "default": "true"
           },
           {
+            "name": "children",
+            "type": "ReactNode",
+            "required": false,
+            "description": "Children (used for text content inference when value is not provided)."
+          },
+          {
             "name": "keywords",
             "type": "string[] | undefined",
             "formattedType": "string[]",
@@ -8266,12 +7891,6 @@
             "formattedType": "() => void",
             "required": false,
             "description": "Callback when this item is selected (via click or Enter key).\nFor simple items, pass this directly. For checkbox/radio items,\nuse registerSelect() to register a dynamic handler."
-          },
-          {
-            "name": "children",
-            "type": "ReactNode",
-            "required": false,
-            "description": "Children (used for text content inference when value is not provided)."
           }
         ]
       },
@@ -10518,10 +10137,10 @@
           },
           {
             "name": "onHighlightChange",
-            "type": "((node: PopupMenuNode<NodeDef> | null, id: string | null, index: number, eventDetails: DropdownMenuHighlightChangeEventDetails) => void) | undefined",
-            "formattedType": "(\n  node: PopupMenuNode<NodeDef> | null,\n  id: string | null,\n  index: number,\n  eventDetails: DropdownMenuHighlightChangeEventDetails,\n) => void",
+            "type": "PopupMenuHighlightChangeHandler<DropdownMenuHighlightChangeEventDetails> | undefined",
+            "formattedType": "PopupMenuHighlightChangeHandler<DropdownMenuHighlightChangeEventDetails>",
             "required": false,
-            "description": "Callback when the highlighted item changes.\nUseful for synchronizing with a virtualizer (e.g., scrollToIndex) or other UI state.\n`node` is the resolved menu node carrying the highlighted id, looked up in the menu's data-first tree — `null` when the highlight clears or when no data-first node carries that id (e.g. JSX-defined rows). A JSX row that shares an id with a data-first node yields that node; row ids are expected to be unique per menu.\nThe fourth parameter contains event details including the reason for the change."
+            "description": "Callback when the highlighted item changes.\nUseful for synchronizing with a virtualizer (e.g., scrollToIndex) or other UI state.\n`id` is first. `node` is the resolved menu node carrying the highlighted id, looked up in the menu's data-first tree — `null` when the highlight clears or when no data-first node carries that id (e.g. JSX-defined rows). A JSX row that shares an id with a data-first node yields that node; row ids are expected to be unique per menu.\nThe fourth parameter contains event details including the reason for the change."
           },
           {
             "name": "closeOnOutsidePress",
@@ -12371,10 +11990,10 @@
           },
           {
             "name": "onHighlightChange",
-            "type": "((node: PopupMenuNode<NodeDef> | null, id: string | null, index: number, eventDetails: GenericEventDetails<string, { index: number; }>) => void) | undefined",
-            "formattedType": "(\n  node: PopupMenuNode<NodeDef> | null,\n  id: string | null,\n  index: number,\n  eventDetails: GenericEventDetails<\n    string,\n    { index: number }\n  >,\n) => void",
+            "type": "PopupMenuHighlightChangeHandler<HighlightChangeEventDetails> | undefined",
+            "formattedType": "PopupMenuHighlightChangeHandler<HighlightChangeEventDetails>",
             "required": false,
-            "description": "Callback when the highlighted item changes.\nUseful for synchronizing with a virtualizer (e.g., scrollToIndex)."
+            "description": "Callback when the highlighted item changes. `id` is first; `node` is the\nresolved menu node enrichment and may be null.\nUseful for synchronizing with a virtualizer (e.g., scrollToIndex)."
           },
           {
             "name": "onOpenChangeComplete",
@@ -12516,6 +12135,14 @@
             "required": false,
             "description": "Delay before closing the submenu when pointer leaves (in milliseconds).",
             "default": "0"
+          },
+          {
+            "name": "closeOnPointerLeave",
+            "type": "boolean | undefined",
+            "formattedType": "false | true",
+            "required": false,
+            "description": "Whether the submenu closes when the pointer leaves the trigger without aiming at the submenu popup.\nWhen `false`, the submenu stays open until closed by another path (sibling highlight, keyboard, outside click, etc.).",
+            "default": "true"
           },
           {
             "name": "forceOrder",
@@ -13091,11 +12718,11 @@
           },
           {
             "name": "content",
-            "type": "PopupMenuNode<NodeDef>[] | NodeDef[] | undefined",
-            "formattedType": "PopupMenuNode<NodeDef>[] | NodeDef[]",
+            "type": "NodeDef[] | PopupMenuNode<NodeDef>[] | undefined",
+            "formattedType": "NodeDef[] | PopupMenuNode<NodeDef>[]",
             "required": false,
             "description": "The menu content (node definitions with render functions). Resolved nodes\nare accepted anywhere defs are; they are unwrapped to their defs, and\nre-supplying the same nodes preserves identity.",
-            "referencePath": "@bazza-ui/react.PopupMenuNode"
+            "referencePath": "@bazza-ui/react.NodeDef"
           },
           {
             "name": "asyncContent",
@@ -14666,7 +14293,7 @@
       "QueryAsyncNodesConfig": {
         "name": "QueryAsyncNodesConfig",
         "kind": "typealias",
-        "doc": "Query-dependent async nodes configuration for submenus.",
+        "doc": "Query async nodes configuration for submenus.",
         "definition": "QueryLoaderConfig",
         "props": [
           {
@@ -14732,7 +14359,7 @@
       "QueryLoaderConfig": {
         "name": "QueryLoaderConfig",
         "kind": "interface",
-        "doc": "Query-dependent loader configuration.\nRefetches based on search query - server does the filtering.",
+        "doc": "Query loader configuration.\nRefetches based on search query - server does the filtering.",
         "props": [
           {
             "name": "type",
@@ -15051,6 +14678,398 @@
             "required": false,
             "description": "When to trigger the loader:\n- 'eager': Load when menu opens (good for deep search)\n- 'lazy': Load when submenu opens (default)",
             "default": "'lazy'"
+          }
+        ]
+      },
+      "CreateSWRQueryLoaderProps": {
+        "name": "CreateSWRQueryLoaderProps",
+        "kind": "interface",
+        "doc": "Props for creating a query SWR loader component.",
+        "props": [
+          {
+            "name": "useSWR",
+            "type": "(query: string, options?: { enabled: boolean; } | undefined) => SWRResult<NodeDef[], Error>",
+            "formattedType": "(\n  query: string,\n  options?: { enabled: boolean } | undefined,\n) => SWRResult<NodeDef[], Error>",
+            "required": true,
+            "description": "Hook that returns an SWR result based on the search query.\n`options.enabled` can be used to derive a `null` key and disable fetching."
+          },
+          {
+            "name": "minQueryLength",
+            "type": "number | undefined",
+            "formattedType": "number",
+            "required": false,
+            "description": "Minimum query length before fetching.",
+            "default": "1"
+          },
+          {
+            "name": "initialQueryBehavior",
+            "type": "false | InitialQueryBehavior | undefined",
+            "formattedType": "false | InitialQueryBehavior",
+            "required": false,
+            "description": "Initial query behavior before user input reaches minQueryLength.\nDefaults to fetching with an empty query."
+          },
+          {
+            "name": "initialQuery",
+            "type": "string | undefined",
+            "formattedType": "string",
+            "required": false
+          },
+          {
+            "name": "loadStrategy",
+            "type": "\"eager\" | \"lazy\" | undefined",
+            "formattedType": "\"eager\" | \"lazy\"",
+            "required": false,
+            "description": "When to trigger the loader:\n- 'eager': Load when root menu opens (good for deep search)\n- 'lazy': Load when submenu opens (default)",
+            "default": "'lazy'"
+          },
+          {
+            "name": "belowMinBehavior",
+            "type": "\"empty\" | \"placeholder\" | undefined",
+            "formattedType": "\"empty\" | \"placeholder\"",
+            "required": false,
+            "description": "What to show when query is below minQueryLength.",
+            "default": "'empty'"
+          },
+          {
+            "name": "placeholderNodes",
+            "type": "NodeDef[] | undefined",
+            "formattedType": "NodeDef[]",
+            "required": false,
+            "description": "Placeholder nodes shown when query is below minQueryLength.",
+            "referencePath": "@bazza-ui/react.NodeDef"
+          }
+        ]
+      },
+      "CreateSWRStaticLoaderProps": {
+        "name": "CreateSWRStaticLoaderProps",
+        "kind": "interface",
+        "doc": "Props for creating a static SWR loader component.",
+        "props": [
+          {
+            "name": "useSWR",
+            "type": "() => SWRResult<NodeDef[], Error>",
+            "required": true,
+            "description": "Hook that returns an SWR result."
+          },
+          {
+            "name": "loadStrategy",
+            "type": "\"eager\" | \"lazy\" | undefined",
+            "formattedType": "\"eager\" | \"lazy\"",
+            "required": false,
+            "description": "When to trigger the loader:\n- 'eager': Load when root menu opens\n- 'lazy': Load when submenu opens (default)"
+          }
+        ]
+      },
+      "SWRResult": {
+        "name": "SWRResult",
+        "kind": "interface",
+        "typeParams": [
+          {
+            "name": "TData"
+          },
+          {
+            "name": "TError",
+            "default": "Error"
+          }
+        ],
+        "doc": "SWR result shape (subset of SWRResponse).\nThis allows the adapter to work without requiring `swr` as a dependency.",
+        "props": [
+          {
+            "name": "data",
+            "type": "TData | undefined",
+            "formattedType": "TData",
+            "required": true
+          },
+          {
+            "name": "error",
+            "type": "TError | undefined",
+            "formattedType": "TError",
+            "required": true
+          },
+          {
+            "name": "isLoading",
+            "type": "boolean | undefined",
+            "formattedType": "false | true",
+            "required": false
+          },
+          {
+            "name": "isValidating",
+            "type": "boolean",
+            "formattedType": "false | true",
+            "required": true
+          },
+          {
+            "name": "isPaused",
+            "type": "boolean | undefined",
+            "formattedType": "false | true",
+            "required": false
+          },
+          {
+            "name": "mutate",
+            "type": "(...args: unknown[]) => unknown",
+            "required": true
+          }
+        ]
+      },
+      "CreateQueryLoaderProps": {
+        "name": "CreateQueryLoaderProps",
+        "kind": "interface",
+        "doc": "Props for creating a query loader component.",
+        "props": [
+          {
+            "name": "useQuery",
+            "type": "(query: string, options?: { enabled: boolean; } | undefined) => TanStackQueryResult<NodeDef[], Error>",
+            "formattedType": "(\n  query: string,\n  options?: { enabled: boolean } | undefined,\n) => TanStackQueryResult<NodeDef[], Error>",
+            "required": true,
+            "description": "Hook that returns a TanStack Query result based on the search query.\nThis hook will be called inside the loader component with the current query."
+          },
+          {
+            "name": "minQueryLength",
+            "type": "number | undefined",
+            "formattedType": "number",
+            "required": false,
+            "description": "Minimum query length before fetching.",
+            "default": "1"
+          },
+          {
+            "name": "initialQueryBehavior",
+            "type": "false | InitialQueryBehavior | undefined",
+            "formattedType": "false | InitialQueryBehavior",
+            "required": false,
+            "description": "Initial query behavior before user input reaches minQueryLength.\nDefaults to fetching with an empty query."
+          },
+          {
+            "name": "initialQuery",
+            "type": "string | undefined",
+            "formattedType": "string",
+            "required": false
+          },
+          {
+            "name": "loadStrategy",
+            "type": "\"eager\" | \"lazy\" | undefined",
+            "formattedType": "\"eager\" | \"lazy\"",
+            "required": false,
+            "description": "When to trigger the loader:\n- 'eager': Load when root menu opens (good for deep search)\n- 'lazy': Load when submenu opens (default)",
+            "default": "'lazy'"
+          },
+          {
+            "name": "belowMinBehavior",
+            "type": "\"empty\" | \"placeholder\" | undefined",
+            "formattedType": "\"empty\" | \"placeholder\"",
+            "required": false,
+            "description": "What to show when query is below minQueryLength.",
+            "default": "'empty'"
+          },
+          {
+            "name": "placeholderNodes",
+            "type": "NodeDef[] | undefined",
+            "formattedType": "NodeDef[]",
+            "required": false,
+            "description": "Placeholder nodes shown when query is below minQueryLength.",
+            "referencePath": "@bazza-ui/react.NodeDef"
+          }
+        ]
+      },
+      "CreateStaticLoaderProps": {
+        "name": "CreateStaticLoaderProps",
+        "kind": "interface",
+        "doc": "Props for creating a static loader component.",
+        "props": [
+          {
+            "name": "useQuery",
+            "type": "() => TanStackQueryResult<NodeDef[], Error>",
+            "formattedType": "() => TanStackQueryResult<\n  NodeDef[],\n  Error\n>",
+            "required": true,
+            "description": "Hook that returns a TanStack Query result.\nThis hook will be called inside the loader component."
+          },
+          {
+            "name": "loadStrategy",
+            "type": "\"eager\" | \"lazy\" | undefined",
+            "formattedType": "\"eager\" | \"lazy\"",
+            "required": false,
+            "description": "When to trigger the loader:\n- 'eager': Load when root menu opens\n- 'lazy': Load when submenu opens (default)"
+          }
+        ]
+      },
+      "TanStackQueryResult": {
+        "name": "TanStackQueryResult",
+        "kind": "interface",
+        "typeParams": [
+          {
+            "name": "TData"
+          },
+          {
+            "name": "TError",
+            "default": "Error"
+          }
+        ],
+        "doc": "TanStack Query result shape (subset of UseQueryResult).\nThis allows the adapter to work without requiring",
+        "props": [
+          {
+            "name": "status",
+            "type": "\"error\" | \"pending\" | \"success\" | undefined",
+            "formattedType": "\"error\" | \"pending\" | \"success\"",
+            "required": false,
+            "description": "TanStack status (`pending` | `error` | `success`)"
+          },
+          {
+            "name": "fetchStatus",
+            "type": "\"paused\" | \"idle\" | \"fetching\" | undefined",
+            "formattedType": "\"paused\" | \"idle\" | \"fetching\"",
+            "required": false,
+            "description": "TanStack fetch status (`fetching` | `paused` | `idle`)"
+          },
+          {
+            "name": "data",
+            "type": "TData | undefined",
+            "formattedType": "TData",
+            "required": true
+          },
+          {
+            "name": "error",
+            "type": "TError | null | undefined",
+            "formattedType": "null | TError",
+            "required": true
+          },
+          {
+            "name": "isLoading",
+            "type": "boolean | undefined",
+            "formattedType": "false | true",
+            "required": false,
+            "description": "v5: true when first fetch is in-flight"
+          },
+          {
+            "name": "isPending",
+            "type": "boolean | undefined",
+            "formattedType": "false | true",
+            "required": false,
+            "description": "v5: true when status is pending"
+          },
+          {
+            "name": "isSuccess",
+            "type": "boolean | undefined",
+            "formattedType": "false | true",
+            "required": false,
+            "description": "true when status is success"
+          },
+          {
+            "name": "isError",
+            "type": "boolean | undefined",
+            "formattedType": "false | true",
+            "required": false,
+            "description": "true when status is error"
+          },
+          {
+            "name": "isFetching",
+            "type": "boolean | undefined",
+            "formattedType": "false | true",
+            "required": false,
+            "description": "true while any fetch is in-flight"
+          },
+          {
+            "name": "isRefetching",
+            "type": "boolean | undefined",
+            "formattedType": "false | true",
+            "required": false,
+            "description": "true while background refetch is in-flight"
+          },
+          {
+            "name": "isPaused",
+            "type": "boolean | undefined",
+            "formattedType": "false | true",
+            "required": false,
+            "description": "true when fetch is paused"
+          },
+          {
+            "name": "isFetched",
+            "type": "boolean | undefined",
+            "formattedType": "false | true",
+            "required": false,
+            "description": "true once query has fetched at least once"
+          },
+          {
+            "name": "refetch",
+            "type": "() => unknown",
+            "required": true
+          }
+        ]
+      },
+      "CreateVanillaQueryLoaderProps": {
+        "name": "CreateVanillaQueryLoaderProps",
+        "kind": "interface",
+        "doc": "Props for creating a query loader with vanilla fetch.",
+        "props": [
+          {
+            "name": "fetcher",
+            "type": "(query: string, options?: { signal?: AbortSignal | undefined; } | undefined) => Promise<NodeDef[]>",
+            "formattedType": "(\n  query: string,\n  options?:\n    | { signal?: AbortSignal | undefined }\n    | undefined,\n) => Promise<NodeDef[]>",
+            "required": true,
+            "description": "Async function that fetches menu items based on the search query.\nReceives an optional `signal` that is aborted when a newer query is issued,\nallowing you to cancel in-flight requests (e.g. pass it to `fetch()`)."
+          },
+          {
+            "name": "minQueryLength",
+            "type": "number | undefined",
+            "formattedType": "number",
+            "required": false,
+            "description": "Minimum query length before fetching.",
+            "default": "1"
+          },
+          {
+            "name": "initialQueryBehavior",
+            "type": "false | InitialQueryBehavior | undefined",
+            "formattedType": "false | InitialQueryBehavior",
+            "required": false,
+            "description": "Initial query behavior before user input reaches minQueryLength.\nDefaults to fetching with an empty query."
+          },
+          {
+            "name": "initialQuery",
+            "type": "string | undefined",
+            "formattedType": "string",
+            "required": false
+          },
+          {
+            "name": "loadStrategy",
+            "type": "\"eager\" | \"lazy\" | undefined",
+            "formattedType": "\"eager\" | \"lazy\"",
+            "required": false,
+            "description": "When to trigger the loader:\n- 'eager': Load when root menu opens (good for deep search)\n- 'lazy': Load when submenu opens (default)",
+            "default": "'lazy'"
+          },
+          {
+            "name": "belowMinBehavior",
+            "type": "\"empty\" | \"placeholder\" | undefined",
+            "formattedType": "\"empty\" | \"placeholder\"",
+            "required": false,
+            "description": "What to show when query is below minQueryLength.",
+            "default": "'empty'"
+          },
+          {
+            "name": "placeholderNodes",
+            "type": "NodeDef[] | undefined",
+            "formattedType": "NodeDef[]",
+            "required": false,
+            "description": "Placeholder nodes shown when query is below minQueryLength.",
+            "referencePath": "@bazza-ui/react.NodeDef"
+          }
+        ]
+      },
+      "CreateVanillaStaticLoaderProps": {
+        "name": "CreateVanillaStaticLoaderProps",
+        "kind": "interface",
+        "doc": "Props for creating a static loader with vanilla fetch.",
+        "props": [
+          {
+            "name": "fetcher",
+            "type": "() => Promise<NodeDef[]>",
+            "required": true,
+            "description": "Async function that fetches the menu items."
+          },
+          {
+            "name": "loadStrategy",
+            "type": "\"eager\" | \"lazy\" | undefined",
+            "formattedType": "\"eager\" | \"lazy\"",
+            "required": false,
+            "description": "When to trigger the loader:\n- 'eager': Load when root menu opens\n- 'lazy': Load when submenu opens (default)"
           }
         ]
       },
@@ -16806,11 +16825,11 @@
           },
           {
             "name": "content",
-            "type": "PopupMenuNode<NodeDef>[] | NodeDef[] | undefined",
-            "formattedType": "PopupMenuNode<NodeDef>[] | NodeDef[]",
+            "type": "NodeDef[] | PopupMenuNode<NodeDef>[] | undefined",
+            "formattedType": "NodeDef[] | PopupMenuNode<NodeDef>[]",
             "required": false,
             "description": "The menu content (node definitions with render functions). Resolved nodes\nare accepted anywhere defs are; they are unwrapped to their defs, and\nre-supplying the same nodes preserves identity.",
-            "referencePath": "@bazza-ui/react.PopupMenuNode"
+            "referencePath": "@bazza-ui/react.NodeDef"
           },
           {
             "name": "render",

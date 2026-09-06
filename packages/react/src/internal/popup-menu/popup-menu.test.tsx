@@ -746,6 +746,7 @@ function FocusOwnershipSyncMenu() {
 function NestedMenuForDataAttrs({
   debug,
   submenuCloseDelay,
+  submenuCloseOnPointerLeave,
 }: {
   debug?: {
     showSafeTriangleArea?:
@@ -770,6 +771,7 @@ function NestedMenuForDataAttrs({
     logAimGuardEvents?: boolean
   }
   submenuCloseDelay?: number
+  submenuCloseOnPointerLeave?: boolean
 } = {}) {
   return (
     <DropdownMenu.Root debug={debug}>
@@ -788,6 +790,7 @@ function NestedMenuForDataAttrs({
                   <DropdownMenu.SubmenuTrigger
                     data-testid="submenu-trigger-1"
                     closeDelay={submenuCloseDelay}
+                    closeOnPointerLeave={submenuCloseOnPointerLeave}
                   >
                     Submenu 1
                   </DropdownMenu.SubmenuTrigger>
@@ -2119,6 +2122,138 @@ describe('PopupMenu', () => {
           },
           { timeout: 700 },
         )
+      } finally {
+        scenario.cleanup()
+      }
+    })
+  })
+
+  describe('submenu closeOnPointerLeave', () => {
+    const setupScenario = async (closeDelay = 0) => {
+      const user = userEvent.setup()
+      render(
+        <NestedMenuForDataAttrs
+          submenuCloseOnPointerLeave={false}
+          submenuCloseDelay={closeDelay}
+        />,
+      )
+
+      await user.click(screen.getByTestId('trigger'))
+      await waitFor(() => {
+        expect(screen.getByTestId('popup-root')).toBeInTheDocument()
+      })
+
+      const submenuTrigger = screen.getByTestId('submenu-trigger-1')
+      await user.hover(submenuTrigger)
+      await waitFor(() => {
+        expect(screen.getByTestId('popup-submenu-1')).toBeInTheDocument()
+      })
+
+      const submenuPopup = screen.getByTestId('popup-submenu-1')
+      const triggerRectSpy = vi
+        .spyOn(submenuTrigger, 'getBoundingClientRect')
+        .mockImplementation(() =>
+          createRect({ top: 60, left: 80, width: 120, height: 30 }),
+        )
+      const popupRectSpy = vi
+        .spyOn(submenuPopup, 'getBoundingClientRect')
+        .mockImplementation(() =>
+          createRect({ top: 40, left: 240, width: 180, height: 160 }),
+        )
+
+      return {
+        user,
+        submenuTrigger,
+        cleanup: () => {
+          triggerRectSpy.mockRestore()
+          popupRectSpy.mockRestore()
+        },
+      }
+    }
+
+    const fireMissTrajectory = (submenuTrigger: HTMLElement) => {
+      fireEvent.pointerEnter(submenuTrigger, { clientX: 180, clientY: 220 })
+      fireEvent.pointerMove(window, { clientX: 180, clientY: 220 })
+      fireEvent.pointerMove(window, { clientX: 160, clientY: 230 })
+      fireEvent.pointerMove(window, { clientX: 140, clientY: 240 })
+      fireEvent.pointerLeave(submenuTrigger, { clientX: 130, clientY: 260 })
+    }
+
+    it('keeps the submenu open on a miss when closeOnPointerLeave is false', async () => {
+      const scenario = await setupScenario()
+
+      try {
+        fireMissTrajectory(scenario.submenuTrigger)
+        await new Promise((r) => setTimeout(r, 300))
+        expect(screen.getByTestId('popup-submenu-1')).toBeInTheDocument()
+      } finally {
+        scenario.cleanup()
+      }
+    })
+
+    it('still closes when a sibling item is highlighted', async () => {
+      const scenario = await setupScenario()
+
+      try {
+        fireMissTrajectory(scenario.submenuTrigger)
+        // Prove the miss itself did not close it, so the removal below is
+        // attributable to the sibling highlight.
+        expect(screen.getByTestId('popup-submenu-1')).toBeInTheDocument()
+
+        const rootItem = screen.getByTestId('root-item-1')
+        fireEvent.pointerEnter(rootItem, { clientX: 100, clientY: 20 })
+        fireEvent.pointerMove(rootItem, { clientX: 102, clientY: 22 })
+
+        await waitFor(() => {
+          expect(
+            screen.queryByTestId('popup-submenu-1'),
+          ).not.toBeInTheDocument()
+        })
+      } finally {
+        scenario.cleanup()
+      }
+    })
+
+    it('stops the leave monitor after a reversal so a sibling highlight is not undone (closeDelay > 0)', async () => {
+      const scenario = await setupScenario(240)
+
+      try {
+        // Initial hit trajectory toward the submenu → leave monitor starts
+        fireEvent.pointerMove(window, { clientX: 120, clientY: 90 })
+        fireEvent.pointerMove(window, { clientX: 150, clientY: 92 })
+        fireEvent.pointerMove(window, { clientX: 180, clientY: 94 })
+        fireEvent.pointerLeave(scenario.submenuTrigger, {
+          clientX: 190,
+          clientY: 94,
+        })
+        expect(screen.getByTestId('popup-submenu-1')).toBeInTheDocument()
+
+        // Reverse away from the submenu → miss; with closeOnPointerLeave=false
+        // the popup must stay open, and the monitor must be torn down.
+        fireEvent.pointerMove(window, { clientX: 178, clientY: 94 })
+        fireEvent.pointerMove(window, { clientX: 164, clientY: 94 })
+        expect(screen.getByTestId('popup-submenu-1')).toBeInTheDocument()
+
+        // Highlight a sibling → closes the submenu via closeSiblingSubmenus.
+        const rootItem = screen.getByTestId('root-item-1')
+        fireEvent.pointerEnter(rootItem, { clientX: 96, clientY: 74 })
+        fireEvent.pointerMove(rootItem, { clientX: 100, clientY: 78 })
+
+        await waitFor(() => {
+          expect(
+            screen.queryByTestId('popup-submenu-1'),
+          ).not.toBeInTheDocument()
+        })
+
+        // A stale monitor could re-evaluate a later move as a "hit" and reopen
+        // the submenu / steal the highlight back. Move toward where the popup
+        // was and confirm the sibling highlight and closed state are stable.
+        fireEvent.pointerMove(window, { clientX: 200, clientY: 100 })
+        fireEvent.pointerMove(window, { clientX: 230, clientY: 110 })
+        await sleep(300)
+
+        expect(screen.queryByTestId('popup-submenu-1')).not.toBeInTheDocument()
+        expect(rootItem).toHaveAttribute('data-highlighted', '')
       } finally {
         scenario.cleanup()
       }
