@@ -4,8 +4,8 @@
 
 **bazza/ui** (key `UI`, id `c750e0fc-8df6-45d1-8672-c7966c81e39b`)
 
-States: Triage, Backlog, Icebox, Todo, In Progress, In Review, Canary, Reviewed, Done, Canceled, Duplicate.
-Note: this team has a `Canary` state (merged to canary branch, published as canary release). Ship's "Done" transition happens at reconcile when work merges; use `Canary` for work merged to the canary trunk but not yet in a stable release.
+States: Triage, Backlog, Icebox, Todo, In Progress, In Review, Ready, Canary, Done, Canceled, Duplicate.
+Note: this team has a `Canary` state (merged to canary branch, published as canary release). Ship's "Done" transition happens at reconcile when work merges; use `Canary` for work merged to the canary trunk but not yet in a stable release. `Ready` is also in use for merged-to-canary work (e.g. the resolver stacks); parents should match their sub-issues' state at reconcile.
 
 ## Toolchain
 

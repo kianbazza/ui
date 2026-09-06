@@ -1823,4 +1823,4 @@ function createInitialState(): ListboxState {
 // Re-export types for convenience
 // ============================================================================
 
-export type { ListboxState as State, ListboxContext as Context }
+export type { ListboxContext as Context, ListboxState as State }

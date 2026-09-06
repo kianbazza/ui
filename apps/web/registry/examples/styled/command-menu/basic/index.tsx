@@ -13,8 +13,6 @@ import {
   TagIcon,
   UsersRoundIcon,
 } from 'lucide-react'
-import { useState } from 'react'
-import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { CommandMenu } from '@/registry/ui/command-menu'
 

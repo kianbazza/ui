@@ -188,14 +188,10 @@ export type ColumnConfig<
   meta?: ColumnMeta
 }
 
-export type OptionColumnId<T> = T extends ColumnConfig<
-  any,
-  'option' | 'multiOption',
-  any,
-  infer TId
->
-  ? TId
-  : never
+export type OptionColumnId<T> =
+  T extends ColumnConfig<any, 'option' | 'multiOption', any, infer TId>
+    ? TId
+    : never
 
 export type OptionColumnIds<
   T extends ReadonlyArray<ColumnConfig<any, any, any, any>>,
@@ -203,14 +199,8 @@ export type OptionColumnIds<
   [K in keyof T]: OptionColumnId<T[K]>
 }[number]
 
-export type NumberColumnId<T> = T extends ColumnConfig<
-  any,
-  'number',
-  any,
-  infer TId
->
-  ? TId
-  : never
+export type NumberColumnId<T> =
+  T extends ColumnConfig<any, 'number', any, infer TId> ? TId : never
 
 export type NumberColumnIds<
   T extends ReadonlyArray<ColumnConfig<any, any, any, any>>,
@@ -218,14 +208,8 @@ export type NumberColumnIds<
   [K in keyof T]: NumberColumnId<T[K]>
 }[number]
 
-export type BigIntColumnId<T> = T extends ColumnConfig<
-  any,
-  'bigint',
-  any,
-  infer TId
->
-  ? TId
-  : never
+export type BigIntColumnId<T> =
+  T extends ColumnConfig<any, 'bigint', any, infer TId> ? TId : never
 
 export type BigIntColumnIds<
   T extends ReadonlyArray<ColumnConfig<any, any, any, any>>,

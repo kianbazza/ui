@@ -121,7 +121,6 @@ export function useMaybePopupMenuContext(): PopupMenuContextValue | null {
   return React.useContext(PopupMenuContext)
 }
 
-export { PopupMenuContext }
-
 // Re-export for convenience
 export type { VirtualItem }
+export { PopupMenuContext }

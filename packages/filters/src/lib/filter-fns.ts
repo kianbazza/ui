@@ -141,7 +141,7 @@ export function numberFilterFn(
   filterValue: FilterModel<'number'>,
 ): boolean {
   // Early exit conditions
-  if (!filterValue || !filterValue.values || filterValue.values.length === 0) {
+  if (!filterValue?.values || filterValue.values.length === 0) {
     return true
   }
 
@@ -260,7 +260,7 @@ export function bigIntFilterFn(
   filterValue: FilterModel<'bigint'>,
 ): boolean {
   // Early exit conditions
-  if (!filterValue || !filterValue.values || filterValue.values.length === 0) {
+  if (!filterValue?.values || filterValue.values.length === 0) {
     return true
   }
 

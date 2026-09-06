@@ -31,7 +31,7 @@ export const rehypeCollapsibleHeadings: Plugin<[], Root> = () => {
       if (!HEADING_TAGS.has(node.tagName)) return
 
       const firstChild = node.children[0]
-      if (!firstChild || firstChild.type !== 'text') return
+      if (firstChild?.type !== 'text') return
 
       const textNode = firstChild as Text
       if (!textNode.value.startsWith(COLLAPSIBLE_PREFIX)) return

@@ -1825,8 +1825,8 @@ export const LabelWithBreadcrumbs = ({
   // data-measuring:w-max not-data-measuring:w-[min(500px,max(var(--row-width),200px))]
 
   <div className="flex items-center gap-1 truncate ">
-    {breadcrumbs?.map((crumb, idx) => (
-      <Fragment key={`${idx}-${crumb.id ?? crumb.value}`}>
+    {breadcrumbs?.map((crumb) => (
+      <Fragment key={crumb.id ?? crumb.value}>
         <span
           className={cn(
             'text-muted-foreground not-data-measuring:truncate data-measuring:w-max',

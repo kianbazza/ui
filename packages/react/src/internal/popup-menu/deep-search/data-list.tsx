@@ -484,7 +484,7 @@ function RootAsyncLoader({ query }: RootAsyncLoaderProps) {
   const { asyncContent } = dataSurfaceCtx
 
   const queryExecution = React.useMemo(() => {
-    if (!asyncContent || asyncContent.type !== 'query') {
+    if (asyncContent?.type !== 'query') {
       return null
     }
 

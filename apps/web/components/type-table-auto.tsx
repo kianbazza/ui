@@ -431,7 +431,7 @@ function findTypeMeta(type: string, pkg?: string) {
 export function TypeTableAuto({ type, pkg }: TypeTableAutoProps) {
   const typeMeta = findTypeMeta(type, pkg)
 
-  if (!typeMeta || !typeMeta.props || typeMeta.props.length === 0) {
+  if (!typeMeta?.props || typeMeta.props.length === 0) {
     return (
       <div className="my-6 p-4 border border-destructive/50 rounded-md bg-destructive/10">
         <p className="text-sm text-destructive">
@@ -483,7 +483,7 @@ interface StateTableAutoProps {
 export function StateTableAuto({ type, pkg }: StateTableAutoProps) {
   const typeMeta = findTypeMeta(type, pkg)
 
-  if (!typeMeta || !typeMeta.props || typeMeta.props.length === 0) {
+  if (!typeMeta?.props || typeMeta.props.length === 0) {
     return (
       <div className="my-6 p-4 border border-destructive/50 rounded-md bg-destructive/10">
         <p className="text-sm text-destructive">
