@@ -47,8 +47,8 @@ function LabelWithBreadcrumbs({
 }) {
   return (
     <span className="flex items-center gap-1 truncate min-w-0">
-      {breadcrumbs?.map((crumb, idx) => (
-        <React.Fragment key={`${idx}-${crumb.id ?? crumb.value}`}>
+      {breadcrumbs?.map((crumb) => (
+        <React.Fragment key={crumb.id ?? crumb.value}>
           <span className="text-muted-foreground truncate">{crumb.value}</span>
           <ChevronRightIcon className="size-3 text-muted-foreground/75 shrink-0" />
         </React.Fragment>

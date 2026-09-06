@@ -23,7 +23,7 @@
   "linter": {
     "enabled": true,
     "rules": {
-      "recommended": true,
+      "preset": "recommended",
       "style": {
         "noNonNullAssertion": "off",
         "useSelfClosingElements": {
@@ -45,7 +45,12 @@
       "correctness": {
         "useExhaustiveDependencies": {
           "level": "warn"
-        }
+        },
+        // Biome 2.5 flags hook calls inside `forwardRef` render functions named
+        // `*Impl` (e.g. `SelectItemImpl`, `ComboboxItemImpl`, `SelectValueImpl`)
+        // because it doesn't recognize them as components. All 42 reports are
+        // false positives.
+        "useHookAtTopLevel": "off"
       },
       "a11y": {
         "noSvgWithoutTitle": "off",

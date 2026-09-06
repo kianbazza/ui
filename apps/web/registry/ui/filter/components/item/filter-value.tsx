@@ -424,7 +424,7 @@ function FilterValueNumberDisplay({
   filter: FilterModel<'number'>
   locale?: Locale
 }) {
-  if (!filter || !filter.values || filter.values.length === 0) return null
+  if (!filter?.values || filter.values.length === 0) return null
 
   if (
     filter.operator === 'is between' ||

@@ -20,9 +20,7 @@ export function FilterValueDateController<TData>({
   function changeDateRange(value: DateRange | undefined) {
     const start = value?.from
     const end =
-      start && value && value.to && !isEqual(start, value.to)
-        ? value.to
-        : undefined
+      start && value?.to && !isEqual(start, value.to) ? value.to : undefined
 
     setDate({ from: start, to: end })
 
