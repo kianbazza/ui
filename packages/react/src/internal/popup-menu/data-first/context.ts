@@ -1,6 +1,7 @@
 'use client'
 
 import * as React from 'react'
+import type { PopupMenuNode } from '../menu-tree/types.js'
 import type {
   AsyncLoaderConfig,
   DataListChildrenState,
@@ -38,6 +39,13 @@ export const DataSurfaceContext =
 // Popup-level Data Context (shared across sibling DataSurface/DataSubpages)
 // ============================================================================
 
+export interface ResolvedNodesSlot {
+  nodes: readonly PopupMenuNode[]
+  graftVersion: number
+  /** The `content` prop the slot was published for; consumers drop a slot whose content the root surface no longer supplies. */
+  content: NodeDef[]
+}
+
 export interface DataPopupContextValue {
   /** Latest DataSurface context registered within this popup. */
   dataSurfaceContext: DataSurfaceContextValue | null
@@ -45,9 +53,17 @@ export interface DataPopupContextValue {
   setDataSurfaceContext: React.Dispatch<
     React.SetStateAction<DataSurfaceContextValue | null>
   >
-  /** The root data surface's async-merged content tree — the exact def references fed to the resolver; null until the root list registers. */
-  resolvedContent: NodeDef[] | null
-  setResolvedContent: React.Dispatch<React.SetStateAction<NodeDef[] | null>>
+  /**
+   * The resolved-nodes slot: the root list's current Menu Nodes plus the
+   * graft version that changes when loader results are grafted under a
+   * branch (which mutates `children` without changing the outer array).
+   * Null until the root list registers. Retained while a subpage is active
+   * and the root list is unmounted; the Menu Tree persists on the resolver.
+   */
+  resolvedNodes: ResolvedNodesSlot | null
+  setResolvedNodes: React.Dispatch<
+    React.SetStateAction<ResolvedNodesSlot | null>
+  >
 }
 
 export const DataPopupContext =

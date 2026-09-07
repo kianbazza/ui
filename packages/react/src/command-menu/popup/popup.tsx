@@ -7,9 +7,9 @@ import { SubpageStackContext } from '../../internal/popup-menu/contexts/subpage-
 import {
   DataPopupContext,
   type DataSurfaceContextValue,
+  type ResolvedNodesSlot,
 } from '../../internal/popup-menu/data-first/context.js'
 import { DataSubpagesContent } from '../../internal/popup-menu/data-first/data-subpages.js'
-import type { NodeDef } from '../../internal/popup-menu/data-first/types.js'
 import { useSubpageStackState } from '../../internal/popup-menu/hooks/use-subpage-stack-state.js'
 import { usePopupMenuContext } from '../../internal/popup-menu/index.js'
 import type { ComponentRenderFn } from '../../utils/types.js'
@@ -76,9 +76,8 @@ export const CommandMenuPopup = React.forwardRef<
 
   const [dataSurfaceContext, setDataSurfaceContext] =
     React.useState<DataSurfaceContextValue | null>(null)
-  const [resolvedContent, setResolvedContent] = React.useState<
-    NodeDef[] | null
-  >(null)
+  const [resolvedNodes, setResolvedNodes] =
+    React.useState<ResolvedNodesSlot | null>(null)
 
   const toPopupState = React.useCallback(
     (baseState: Dialog.Popup.State): CommandMenuPopupState => ({
@@ -113,10 +112,10 @@ export const CommandMenuPopup = React.forwardRef<
     () => ({
       dataSurfaceContext,
       setDataSurfaceContext,
-      resolvedContent,
-      setResolvedContent,
+      resolvedNodes,
+      setResolvedNodes,
     }),
-    [dataSurfaceContext, resolvedContent],
+    [dataSurfaceContext, resolvedNodes],
   )
 
   return (

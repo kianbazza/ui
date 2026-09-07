@@ -504,4 +504,151 @@ describe('CommandMenu async data-first API', () => {
       expect(screen.getByTestId('item-beta-result')).toBeInTheDocument()
     })
   })
+
+  it('settles within a bounded number of renders when a root loader and a branch loader resolve together', async () => {
+    const user = userEvent.setup()
+    const rootLoader = createControllableLoader()
+    const branchLoader = createControllableLoader()
+    let renderCount = 0
+
+    const projects = createSubpageDef({
+      id: 'projects',
+      value: 'Projects',
+      asyncNodes: {
+        type: 'static',
+        Loader: branchLoader.Loader,
+        loadStrategy: 'eager',
+      },
+    })
+    const nodes: NodeDef[] = [createItemDef('static', 'Static item'), projects]
+
+    render(
+      <CommandMenu.Root defaultOpen>
+        <CommandMenu.Trigger data-testid="trigger">
+          Open commands
+        </CommandMenu.Trigger>
+        <CommandMenu.Portal>
+          <CommandMenu.Popup data-testid="dialog">
+            <CommandMenu.Surface
+              asyncContent={{
+                type: 'static',
+                Loader: rootLoader.Loader,
+                loadStrategy: 'eager',
+              }}
+              content={nodes}
+              data-testid="surface-root"
+              deepSearch={{ enabled: true, minLength: 0 }}
+            >
+              <CommandMenu.Input
+                aria-label="Search commands"
+                data-testid="input-root"
+              />
+              <React.Profiler
+                id="guard"
+                onRender={() => {
+                  renderCount += 1
+                }}
+              >
+                <CommandMenu.List data-testid="list-root">
+                  <DataRows />
+                </CommandMenu.List>
+              </React.Profiler>
+            </CommandMenu.Surface>
+          </CommandMenu.Popup>
+        </CommandMenu.Portal>
+      </CommandMenu.Root>,
+    )
+
+    await waitForRootInputFocus()
+    await user.type(screen.getByTestId('input-root'), 'loaded')
+
+    // The root result keeps the authored branch so the branch graft has a
+    // target; both loaders resolve in the same commit.
+    await act(async () => {
+      rootLoader.resolve([
+        createItemDef('root-loaded', 'Root loaded'),
+        projects,
+      ])
+      branchLoader.resolve([createItemDef('branch-loaded', 'Branch loaded')])
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('item-root-loaded')).toBeInTheDocument()
+      expect(screen.getByTestId('item-branch-loaded')).toBeInTheDocument()
+    })
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50))
+    })
+
+    expect(renderCount).toBeLessThan(20)
+  })
+
+  it('withdraws grafted branch rows when the loader result is reset', async () => {
+    const user = userEvent.setup()
+    const loader = createControllableLoader({ resetOnQueryChange: true })
+    const nodes: NodeDef[] = [
+      createSubpageDef({
+        id: 'people',
+        value: 'People',
+        nodes: [createItemDef('static-person', 'Alpha static person')],
+        asyncNodes: {
+          type: 'query',
+          Loader: loader.Loader,
+          minQueryLength: 1,
+          initialQueryBehavior: false,
+        },
+      }),
+    ]
+
+    render(
+      <DataCommandMenu
+        deepSearch={{ enabled: true, minLength: 1 }}
+        nodes={nodes}
+      />,
+    )
+
+    await waitForRootInputFocus()
+    const input = screen.getByTestId('input-root')
+    await user.type(input, 'alpha')
+    await waitFor(() => {
+      expect(loader.latestQuery()).toBe('alpha')
+    })
+
+    await resolveLoader(loader, [createItemDef('alpha-person', 'Alpha person')])
+    await waitFor(() => {
+      expect(screen.getByTestId('item-alpha-person')).toBeInTheDocument()
+      expect(screen.getByTestId('item-static-person')).toBeInTheDocument()
+    })
+
+    // A query change resets the loader to pending; its previous result must
+    // leave the Menu Tree while the authored static child stays.
+    await user.type(input, ' s')
+    await waitFor(() => {
+      expect(loader.latestQuery()).toBe('alpha s')
+    })
+    await waitFor(() => {
+      expect(screen.queryByTestId('item-alpha-person')).not.toBeInTheDocument()
+    })
+    expect(screen.getByTestId('item-static-person')).toBeInTheDocument()
+  })
+
+  it('renders a structurally different `content` array on the next render', async () => {
+    const alpha = createItemDef('alpha', 'Alpha')
+    const beta = createItemDef('beta', 'Beta')
+
+    const { rerender } = render(<DataCommandMenu nodes={[alpha]} />)
+    await waitForRootInputFocus()
+    expect(screen.getByTestId('item-alpha')).toBeInTheDocument()
+
+    rerender(<DataCommandMenu nodes={[alpha, beta]} />)
+    await waitFor(() => {
+      expect(screen.getByTestId('item-beta')).toBeInTheDocument()
+    })
+
+    rerender(<DataCommandMenu nodes={[beta]} />)
+    await waitFor(() => {
+      expect(screen.queryByTestId('item-alpha')).not.toBeInTheDocument()
+    })
+    expect(screen.getByTestId('item-beta')).toBeInTheDocument()
+  })
 })
