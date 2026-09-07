@@ -17,6 +17,7 @@ _Avoid_: node config, definition object
 **Menu Node**:
 The library-created, resolved instance of a node def — carries identity (resolved ID, definition key, definition path), tree links (parent, children), and a reference to its originating def. Exactly one per logical row per menu root, in every render context; created by resolution at the root, or by grafting. Surfaced to consumers as `Node` under each family namespace.
 _Avoid_: resolved node (as a noun — "resolution" stays as the process), wrapper, instance
+Submenu and subpage render callbacks receive only resolver-owned child Menu Nodes as `nodes`; authored fields are available through `child.def`.
 
 **Menu Tree**:
 The single resolved node tree owned by one menu root, and the `MenuTreeResolver` that maintains it. Created once per root; re-supplied content reconciles into it rather than rebuilding it.

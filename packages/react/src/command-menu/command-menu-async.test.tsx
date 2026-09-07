@@ -8,6 +8,7 @@ import {
   type DeepSearchConfig,
   type LoaderComponentProps,
   type NodeDef,
+  type PopupMenuNode,
   type SubpageDef,
   useDataList,
 } from './index.js'
@@ -652,7 +653,7 @@ describe('CommandMenu async data-first API', () => {
     expect(screen.getByTestId('item-beta')).toBeInTheDocument()
   })
 
-  it('renders a subpage whose loader replaces its static children without crashing', async () => {
+  it('hands a subpage callback only static children, even after its loader replaces them', async () => {
     const user = userEvent.setup()
     const loader = createControllableLoader()
     const staticProject = createItemDef('static-project', 'Static project')
@@ -666,35 +667,40 @@ describe('CommandMenu async data-first API', () => {
         loadStrategy: 'lazy',
       },
     })
-    // Hand the authored static def straight back through `renderNode`, the
-    // way a custom `renderContent` may.
-    subpage.renderContent = ({ pageId, asyncContent, renderNode }) => (
-      <>
-        <CommandMenu.Subpage pageId={pageId}>
-          <CommandMenu.Surface
-            asyncContent={asyncContent}
-            content={[staticProject]}
-            data-testid="surface-projects"
-          >
-            <CommandMenu.Input
-              aria-label="Search Projects"
-              data-testid="input-projects"
-            />
-            <CommandMenu.List data-testid="list-projects">
-              <CommandMenu.SubpageBackItem
-                data-testid="subpage-back-projects"
-                value="projects-back"
-              >
-                Back
-              </CommandMenu.SubpageBackItem>
-              {renderNode(staticProject)}
-              <DataRows />
-            </CommandMenu.List>
-          </CommandMenu.Surface>
-        </CommandMenu.Subpage>
-        <SubpageContentReady id="projects" />
-      </>
-    )
+    // Render the callback's `nodes` directly (as a custom `renderContent`
+    // may) in addition to the surface's own rows, and record what it was
+    // handed on every render.
+    const seenNodes: PopupMenuNode[][] = []
+    subpage.renderContent = ({ pageId, asyncContent, nodes, renderNode }) => {
+      seenNodes.push(nodes)
+      return (
+        <>
+          <CommandMenu.Subpage pageId={pageId}>
+            <CommandMenu.Surface
+              asyncContent={asyncContent}
+              content={nodes}
+              data-testid="surface-projects"
+            >
+              <CommandMenu.Input
+                aria-label="Search Projects"
+                data-testid="input-projects"
+              />
+              <CommandMenu.List data-testid="list-projects">
+                <CommandMenu.SubpageBackItem
+                  data-testid="subpage-back-projects"
+                  value="projects-back"
+                >
+                  Back
+                </CommandMenu.SubpageBackItem>
+                {nodes.map(renderNode)}
+                <DataRows />
+              </CommandMenu.List>
+            </CommandMenu.Surface>
+          </CommandMenu.Subpage>
+          <SubpageContentReady id="projects" />
+        </>
+      )
+    }
     const nodes: NodeDef[] = [subpage]
 
     render(
@@ -712,16 +718,23 @@ describe('CommandMenu async data-first API', () => {
     await waitForSubpageInputFocus('projects')
     // Once via `DataRows`, once via the direct `renderNode` call.
     expect(screen.getAllByTestId('item-static-project')).toHaveLength(2)
+    expect(seenNodes.at(-1)?.map((n) => n.def)).toEqual([staticProject])
 
-    // `asyncContent` replaces the static children under the subpage branch;
-    // the authored static def handed back through `renderNode` must render
-    // nothing rather than throw.
+    // `asyncContent` replaces the static children under the subpage branch:
+    // the callback's `nodes` never contains loader results, and is empty once
+    // the static children have left the tree.
     await resolveLoader(loader, [
       createItemDef('loaded-project', 'Loaded project'),
     ])
     await waitFor(() => {
       expect(screen.getByTestId('item-loaded-project')).toBeInTheDocument()
+      expect(
+        screen.queryByTestId('item-static-project'),
+      ).not.toBeInTheDocument()
     })
-    expect(screen.queryByTestId('item-static-project')).not.toBeInTheDocument()
+    for (const seen of seenNodes) {
+      expect(seen.every((n) => n.def === staticProject)).toBe(true)
+    }
+    expect(seenNodes.at(-1)).toEqual([])
   })
 })

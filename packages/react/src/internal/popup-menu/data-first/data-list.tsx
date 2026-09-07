@@ -18,7 +18,7 @@ import { useMenuTreeResolver } from '../contexts/menu-tree-resolver-context.js'
 import { useMaybeSubpageContext } from '../contexts/subpage-context.js'
 import { useMaybeSubpageStack } from '../contexts/subpage-stack-context.js'
 import { useResolution } from '../hooks/use-resolution.js'
-import { isPopupMenuNode } from '../menu-tree/resolve.js'
+import { staticChildrenOf } from '../menu-tree/resolve.js'
 import type { PopupMenuNode } from '../menu-tree/types.js'
 import {
   type AsyncMenuState,
@@ -899,7 +899,7 @@ export const DataListInner = React.forwardRef<
         const submenuAsyncState = getBranchAsyncState(node)
 
         // Static nodes only - async content is handled by the submenu's own DataSurface
-        const staticNodes = node.nodes ?? []
+        const staticChildren = staticChildrenOf(resolved)
 
         // Create breadcrumb node for current submenu (used in child contexts)
         const submenuBreadcrumb: BreadcrumbNode = {
@@ -909,23 +909,9 @@ export const DataListInner = React.forwardRef<
           id: node.id,
         }
 
-        // Children of this submenu are Menu Nodes under `resolved`; a def
-        // handed to `renderNode` is matched back to its Menu Node there.
-        const childMenuNodeFor = <D extends NodeDef>(
-          def: D,
-        ): PopupMenuNode<D> | undefined =>
-          resolved.children.find((child) => child.def === def) as
-            | PopupMenuNode<D>
-            | undefined
-
-        const submenuRenderNode = (
-          arg: NodeDef | PopupMenuNode,
-        ): React.ReactNode => {
-          const childMenuNode = isPopupMenuNode(arg)
-            ? arg
-            : childMenuNodeFor(arg)
-          if (!childMenuNode) return null
-          const childNode = childMenuNode.def
+        const submenuRenderNode = (arg: PopupMenuNode): React.ReactNode => {
+          const childMenuNode = arg
+          const childNode = arg.def
           // Skip separators
           if (childNode.kind === 'separator') {
             return null
@@ -1059,7 +1045,7 @@ export const DataListInner = React.forwardRef<
                   disabled: node.disabled ?? false,
                   async: submenuAsyncState,
                 },
-                nodes: staticNodes,
+                nodes: staticChildren,
                 asyncContent: node.asyncNodes,
                 renderNode: submenuRenderNode,
               })}

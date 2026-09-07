@@ -82,7 +82,7 @@ function createTestSubmenuDef(
     id,
     value,
     nodes,
-    render: ({ props, context, renderNode }) => (
+    render: ({ props, context, nodes: resolvedNodes, renderNode }) => (
       <DropdownMenu.Submenu>
         <DropdownMenu.SubmenuTrigger
           {...props}
@@ -95,7 +95,9 @@ function createTestSubmenuDef(
           <DropdownMenu.Positioner>
             <DropdownMenu.Popup>
               <DropdownMenu.Surface>
-                <DropdownMenu.List>{nodes.map(renderNode)}</DropdownMenu.List>
+                <DropdownMenu.List>
+                  {resolvedNodes.map(renderNode)}
+                </DropdownMenu.List>
               </DropdownMenu.Surface>
             </DropdownMenu.Popup>
           </DropdownMenu.Positioner>
@@ -1319,7 +1321,7 @@ describe('resolved render params', () => {
     )
   })
 
-  it('passes definition paths and unwraps resolved renderNode arguments', async () => {
+  it('passes definition paths and resolved renderNode arguments', async () => {
     const child = createTestItemDef('path-child', 'Child', {
       render: ({ props, node }) => (
         <DropdownMenu.Item {...props} data-testid="path-child">
@@ -1328,39 +1330,73 @@ describe('resolved render params', () => {
       ),
     })
     const submenu = createTestSubmenuDef('parent', 'Parent', [child], {
-      render: ({ props, node, renderNode }) => (
-        <DropdownMenu.Submenu>
-          <DropdownMenu.SubmenuTrigger {...props} />
-          <DropdownMenu.Portal>
-            <DropdownMenu.Positioner>
-              <DropdownMenu.Popup>
-                <DropdownMenu.Surface>
-                  <DropdownMenu.List>
-                    {renderNode(node.children[0])}
-                    {renderNode(node.children[0].def)}
-                  </DropdownMenu.List>
-                </DropdownMenu.Surface>
-              </DropdownMenu.Popup>
-            </DropdownMenu.Positioner>
-          </DropdownMenu.Portal>
-        </DropdownMenu.Submenu>
-      ),
+      render: ({ props, node, nodes, renderNode }) => {
+        expect(nodes[0]).toBe(node.children[0])
+        return (
+          <DropdownMenu.Submenu>
+            <DropdownMenu.SubmenuTrigger {...props} />
+            <DropdownMenu.Portal>
+              <DropdownMenu.Positioner>
+                <DropdownMenu.Popup>
+                  <DropdownMenu.Surface>
+                    <DropdownMenu.List>
+                      {renderNode(node.children[0])}
+                    </DropdownMenu.List>
+                  </DropdownMenu.Surface>
+                </DropdownMenu.Popup>
+              </DropdownMenu.Positioner>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Submenu>
+        )
+      },
     })
     const user = userEvent.setup()
     render(<MenuWithDataContent content={[submenu]} />)
     await user.hover(screen.getByRole('menuitem'))
     await waitFor(() => {
       const childRows = screen.getAllByTestId('path-child')
-      expect(childRows).toHaveLength(2)
-      expect(childRows.map((row) => row.id)).toEqual([
-        'parent/child',
-        'parent/child',
-      ])
+      expect(childRows).toHaveLength(1)
+      expect(childRows.map((row) => row.id)).toEqual(['parent/child'])
       expect(
         childRows.map(
           (row) => row.querySelector('[data-testid="child-path"]')?.textContent,
         ),
-      ).toEqual(['parent/child', 'parent/child'])
+      ).toEqual(['parent/child'])
+    })
+  })
+
+  it('callback nodes are resolved children with lineage', async () => {
+    const child1Def = createTestItemDef('first', 'First')
+    const child2Def = createTestItemDef('second', 'Second')
+    let callbackNodes: PopupMenuNode[] | undefined
+    let parentNode: PopupMenuNode | undefined
+    const submenu = createTestSubmenuDef(
+      'lineage-parent',
+      'Parent',
+      [child1Def, child2Def],
+      {
+        render: ({ props, node, nodes }) => {
+          callbackNodes = nodes
+          parentNode = node
+          return (
+            <DropdownMenu.Submenu>
+              <DropdownMenu.SubmenuTrigger {...props} />
+            </DropdownMenu.Submenu>
+          )
+        },
+      },
+    )
+    const user = userEvent.setup()
+    render(<MenuWithDataContent content={[submenu]} />)
+    await user.hover(screen.getByRole('menuitem'))
+    await waitFor(() => {
+      expect(callbackNodes).toHaveLength(2)
+      expect(callbackNodes?.[0].parent).toBe(parentNode)
+      expect(callbackNodes?.[0].def).toBe(child1Def)
+      expect(callbackNodes?.[0].definitionPath).toEqual([
+        ...parentNode.definitionPath,
+        callbackNodes?.[0].definitionKey,
+      ])
     })
   })
 })
