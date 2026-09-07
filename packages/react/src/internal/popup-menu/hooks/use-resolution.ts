@@ -24,7 +24,14 @@ export interface UseResolutionOptions {
 }
 
 export interface ResolutionResult {
+  /**
+   * The Menu Nodes this list renders: `resolver.rootNodes` for the root,
+   * `graftParent.children` for a grafted list, and for a subpage surface the
+   * subpage branch's children (static prefix plus whatever the subpage's own
+   * loader grafted). Reference-stable across renders when nothing changed.
+   */
   nodes: readonly PopupMenuNode[]
+  /** Increments once per loader-effect run that grafted anything anywhere in this list's subtree. */
   graftVersion: number
 }
 
@@ -44,13 +51,33 @@ export function useResolution({
     else if (isResolutionRoot) resolver.setContent(content)
   }, [resolver, content, graftParent, isSubpageSurface, isResolutionRoot])
 
+  // A subpage surface never feeds resolution: its `content` is (by
+  // construction) the branch's already-resolved static children, so its Menu
+  // Nodes are looked up rather than created. The branch is their parent, or
+  // the graft point when the subpage has no static content.
+  const subpageStaticNodes = React.useMemo(
+    () =>
+      isSubpageSurface && resolver
+        ? content
+            .map((def) => resolver.getNodeForDef(def))
+            .filter((node): node is PopupMenuNode => node !== undefined)
+        : [],
+    [isSubpageSurface, resolver, content],
+  )
+  // The graft point (the subpage Menu Node itself) is authoritative; the
+  // parent of the first static child is the fallback for callers without one.
+  const subpageBranch = isSubpageSurface
+    ? (graftParent ?? subpageStaticNodes[0]?.parent ?? null)
+    : null
+
   const [graftVersion, setGraftVersion] = React.useState(0)
   const previousBranchesRef = React.useRef<Set<SubmenuDef | SubpageDef>>(
     new Set(),
   )
   // biome-ignore lint/correctness/useExhaustiveDependencies: ADR-0002 — the loader phase is keyed on the coordinator's loader map (the true input), not the coordinator object or its stable callbacks
   React.useEffect(() => {
-    if (!resolver || !coordinator || isSubpageSurface) return
+    if (!resolver || !coordinator) return
+    if (isSubpageSurface && !subpageBranch) return
     // Every target is re-grafted with its current base on every run — static
     // children alone when its loader has no usable result — so a result that
     // disappears (pending again, errored, unregistered) is withdrawn from the
@@ -68,16 +95,31 @@ export function useResolution({
     }
 
     const rootResult = results.get('__root__')
-    const base = rootResult
-      ? asyncContent
-        ? rootResult
-        : [...content, ...rootResult]
-      : content
-    if (graftParent) graft(graftParent, base)
-    else if (isResolutionRoot) {
-      const before = resolver.rootNodes
-      resolver.setContent(base)
-      changed ||= before !== resolver.rootNodes
+    if (isSubpageSurface && subpageBranch) {
+      // The subpage's own loader (`asyncContent`) grafts under its branch with
+      // the same replace/append rule as a root list.
+      const staticChildren =
+        (subpageBranch.def as SubmenuDef | SubpageDef).nodes ?? []
+      graft(
+        subpageBranch,
+        rootResult
+          ? asyncContent
+            ? rootResult
+            : [...staticChildren, ...rootResult]
+          : staticChildren,
+      )
+    } else {
+      const base = rootResult
+        ? asyncContent
+          ? rootResult
+          : [...content, ...rootResult]
+        : content
+      if (graftParent) graft(graftParent, base)
+      else if (isResolutionRoot) {
+        const before = resolver.rootNodes
+        resolver.setContent(base)
+        changed ||= before !== resolver.rootNodes
+      }
     }
 
     // Branches that left the async set since the last run are restored to
@@ -107,6 +149,7 @@ export function useResolution({
     asyncSubmenus,
     graftParent,
     isSubpageSurface,
+    subpageBranch,
     isResolutionRoot,
   ])
 
@@ -116,12 +159,23 @@ export function useResolution({
   // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the resolution inputs (content, graftVersion), not on resolver fields
   const nodes = React.useMemo(
     () =>
-      graftParent
-        ? graftParent.children
-        : isResolutionRoot && resolver
-          ? resolver.rootNodes
-          : [],
-    [graftParent, resolver, isResolutionRoot, content, graftVersion],
+      isSubpageSurface
+        ? (subpageBranch?.children ?? subpageStaticNodes)
+        : graftParent
+          ? graftParent.children
+          : isResolutionRoot && resolver
+            ? resolver.rootNodes
+            : [],
+    [
+      isSubpageSurface,
+      subpageBranch,
+      subpageStaticNodes,
+      graftParent,
+      resolver,
+      isResolutionRoot,
+      content,
+      graftVersion,
+    ],
   )
   return { nodes, graftVersion }
 }

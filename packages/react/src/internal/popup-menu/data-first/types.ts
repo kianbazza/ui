@@ -295,6 +295,8 @@ export interface AsyncState {
 export interface BreadcrumbNode {
   /** The branch node definition */
   node: SubmenuDef | SubpageDef | TreeItemDef
+  /** The branch Menu Node. `node`, `value`, and `id` mirror its def for compatibility. */
+  menuNode: PopupMenuNode<SubmenuDef | SubpageDef | TreeItemDef>
   /** The branch node's value */
   value: string
   /** The branch node's explicit id (if provided) */
@@ -1082,14 +1084,8 @@ export type NodeDef =
  * Used internally during filtering and scoring.
  */
 export interface ScoredNode {
-  /** The original node definition */
-  node:
-    | ItemDef
-    | RadioItemDef
-    | CheckboxItemDef
-    | SubmenuDef
-    | SubpageDef
-    | TreeItemDef
+  /** The row's Menu Node; its authored definition is `node.def`. */
+  node: PopupMenuNode<RowNodeDef>
   /** Search match score (higher = better match). */
   score: number
   /**
@@ -1098,13 +1094,43 @@ export interface ScoredNode {
    */
   breadcrumbs: BreadcrumbNode[]
   /** The group this node belongs to, if any */
-  group: { id: string; label?: string; groupDef: GroupDef } | null
+  group: {
+    id: string
+    label?: string
+    groupDef: GroupDef
+    menuNode: PopupMenuNode<GroupDef>
+  } | null
   /** The radio group this node belongs to, if any */
   radioGroup: {
     id: string
     label?: string
     radioGroupDef: RadioGroupDef
+    menuNode: PopupMenuNode<RadioGroupDef>
   } | null
+}
+
+/** A row surfaced by `flattenNodes`, with the containers it was found under. */
+export interface FlattenedNode {
+  /** The row's Menu Node; its authored definition is `node.def`. */
+  node: PopupMenuNode<RowNodeDef>
+  /** Breadcrumb nodes (branch nodes from root to parent) */
+  breadcrumbs: BreadcrumbNode[]
+  /** The group this node belongs to, if any */
+  group: {
+    id: string
+    label?: string
+    groupDef: GroupDef
+    menuNode: PopupMenuNode<GroupDef>
+  } | null
+  /** The radio group this node belongs to, if any */
+  radioGroup: {
+    id: string
+    label?: string
+    radioGroupDef: RadioGroupDef
+    menuNode: PopupMenuNode<RadioGroupDef>
+  } | null
+  /** Keywords inherited from tree ancestors. */
+  inheritedKeywords: string[]
 }
 
 // ============================================================================

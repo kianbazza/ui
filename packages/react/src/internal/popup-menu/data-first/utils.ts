@@ -10,7 +10,6 @@ export {
   shouldLoadEagerly,
 } from './async.js'
 export { getBrowseNodesFlatten, getBrowseNodesPreserve } from './browse.js'
-export { resolveDetachedNodeForDef } from './detached.js'
 export { buildDisplayRowNodes } from './display.js'
 export { flattenNodes, getSupportedTreeChildren } from './flatten.js'
 export {

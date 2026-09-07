@@ -1,8 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
+import { createMenuTreeResolver } from '../../menu-tree/resolver.js'
 import type {
   DisplayNode,
   DisplayRowNode,
   ItemDef,
+  NodeDef,
   TreeItemDef,
 } from '../types.js'
 import {
@@ -11,6 +13,13 @@ import {
   getBrowseNodesFlatten,
   getBrowseNodesPreserve,
 } from '../utils.js'
+
+/** Resolves defs into Menu Nodes the way a root list does. */
+function resolve(nodes: NodeDef[]) {
+  const resolver = createMenuTreeResolver()
+  resolver.setContent(nodes)
+  return resolver.rootNodes
+}
 
 describe('computeDefPath', () => {
   it('keeps only submenu/subpage breadcrumbs and retains an empty leaf key', () => {
@@ -88,7 +97,7 @@ function search(query: string) {
   return rows(
     filterNodes({
       query,
-      nodes,
+      nodes: resolve(nodes),
       highlightedId: null,
     }).displayNodes,
   )
@@ -96,7 +105,11 @@ function search(query: string) {
 
 describe('tree nodes', () => {
   it('expands browse rows depth-first with tree context and group membership', () => {
-    const result = filterNodes({ query: '', nodes, highlightedId: null })
+    const result = filterNodes({
+      query: '',
+      nodes: resolve(nodes),
+      highlightedId: null,
+    })
     const browseRows = rows(result.displayNodes)
 
     expect(browseRows.map((row) => row.node.def.value)).toEqual([
@@ -132,7 +145,8 @@ describe('tree nodes', () => {
 
   it('qualifies browse IDs for distinct tree branches', () => {
     const browseRows = rows(
-      filterNodes({ query: '', nodes, highlightedId: null }).displayNodes,
+      filterNodes({ query: '', nodes: resolve(nodes), highlightedId: null })
+        .displayNodes,
     ).filter((row) => row.node.def.value === 'Design team')
     const getId = (row: DisplayRowNode) =>
       [
@@ -190,8 +204,11 @@ describe('tree nodes', () => {
     ]
     expect(
       rows(
-        filterNodes({ query: 'core', nodes: shallowNodes, highlightedId: null })
-          .displayNodes,
+        filterNodes({
+          query: 'core',
+          nodes: resolve(shallowNodes),
+          highlightedId: null,
+        }).displayNodes,
       ),
     ).toHaveLength(0)
   })
@@ -202,12 +219,18 @@ describe('tree nodes', () => {
       tree('Root', [{ kind: 'separator' as const, id: 'separator' }]),
     ]
     expect(
-      filterNodes({ query: '', nodes: withSeparator, highlightedId: null })
-        .displayNodes,
+      filterNodes({
+        query: '',
+        nodes: resolve(withSeparator),
+        highlightedId: null,
+      }).displayNodes,
     ).toHaveLength(1)
     expect(
-      filterNodes({ query: 'root', nodes: withSeparator, highlightedId: null })
-        .displayNodes,
+      filterNodes({
+        query: 'root',
+        nodes: resolve(withSeparator),
+        highlightedId: null,
+      }).displayNodes,
     ).toHaveLength(1)
     expect(warn).toHaveBeenCalled()
     warn.mockRestore()
@@ -226,8 +249,11 @@ describe('tree nodes', () => {
       },
     ]
     const browseRows = rows(
-      filterNodes({ query: '', nodes: groupedNodes, highlightedId: null })
-        .displayNodes,
+      filterNodes({
+        query: '',
+        nodes: resolve(groupedNodes),
+        highlightedId: null,
+      }).displayNodes,
     )
 
     expect(browseRows[0].context.tree?.isLastChild).toBe(false)
@@ -241,7 +267,7 @@ describe('tree nodes', () => {
       tree('Second root', [item('Second child')], { id: undefined }),
     ]
     const browseRows = getBrowseNodesPreserve(
-      ungroupedNodes,
+      resolve(ungroupedNodes),
       null,
     ) as DisplayRowNode[]
 
@@ -256,7 +282,7 @@ describe('tree nodes', () => {
       tree('Second root', [item('Second child')], { id: undefined }),
     ]
     const browseRows = getBrowseNodesFlatten(
-      ungroupedNodes,
+      resolve(ungroupedNodes),
       null,
     ) as DisplayRowNode[]
 
@@ -267,7 +293,7 @@ describe('tree nodes', () => {
 
   it('does not render hidden tree children or count them as children', () => {
     const browseRows = getBrowseNodesPreserve(
-      [
+      resolve([
         tree('Visible parent', [
           { ...item('Hidden child'), hidden: true },
           item('Visible child'),
@@ -279,7 +305,7 @@ describe('tree nodes', () => {
           item('Visible-first child'),
           { ...item('Hidden-after child'), hidden: true },
         ]),
-      ],
+      ]),
       null,
     ) as DisplayRowNode[]
 

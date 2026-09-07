@@ -2,22 +2,18 @@
 // Flatten Nodes for Search
 // ============================================================================
 
+import type { PopupMenuNode } from '../menu-tree/types.js'
+import { isMenuNodeOfKind, isRowMenuNode } from './type-guards.js'
 import type {
   BreadcrumbNode,
-  CheckboxItemDef,
+  FlattenedNode,
   GroupDef,
   IncludeInDeepSearch,
   ItemDef,
-  NodeDef,
   RadioGroupDef,
-  RadioItemDef,
   SubmenuDef,
-  SubpageDef,
   TreeItemDef,
 } from './types.js'
-
-// Flatten Nodes for Search
-// ============================================================================
 
 interface FlattenOptions {
   /** Whether to include children of branch nodes (submenu/subpage) */
@@ -29,49 +25,23 @@ interface FlattenOptions {
   /** Parent breadcrumb nodes (branch nodes from root to parent) */
   breadcrumbs?: BreadcrumbNode[]
   /** Current group context (nested groups not supported) */
-  group?: { id: string; label?: string; groupDef: GroupDef } | null
+  group?: FlattenedNode['group']
   /** Current radio group context */
-  radioGroup?: {
-    id: string
-    label?: string
-    radioGroupDef: RadioGroupDef
-  } | null
+  radioGroup?: FlattenedNode['radioGroup']
   /** Keywords inherited from tree ancestors. */
   inheritedKeywords?: string[]
 }
 
-export interface FlattenedNode {
-  node:
-    | ItemDef
-    | RadioItemDef
-    | CheckboxItemDef
-    | SubmenuDef
-    | SubpageDef
-    | TreeItemDef
-  /** Breadcrumb nodes (branch nodes from root to parent) */
-  breadcrumbs: BreadcrumbNode[]
-  /** The group this node belongs to, if any */
-  group: { id: string; label?: string; groupDef: GroupDef } | null
-  /** The radio group this node belongs to, if any */
-  radioGroup: {
-    id: string
-    label?: string
-    radioGroupDef: RadioGroupDef
-  } | null
-  /** Keywords inherited from tree ancestors. */
-  inheritedKeywords: string[]
-}
-
 /** Returns the child kinds supported by v1 inline trees. */
 export function getSupportedTreeChildren(
-  nodes: NodeDef[],
-): Array<TreeItemDef | ItemDef | SubmenuDef> {
-  const supported: Array<TreeItemDef | ItemDef | SubmenuDef> = []
+  nodes: readonly PopupMenuNode[],
+): Array<PopupMenuNode<TreeItemDef | ItemDef | SubmenuDef>> {
+  const supported: Array<PopupMenuNode<TreeItemDef | ItemDef | SubmenuDef>> = []
   for (const node of nodes) {
     if (
-      node.kind === 'tree-item' ||
-      node.kind === 'item' ||
-      node.kind === 'submenu'
+      isMenuNodeOfKind(node, 'tree-item') ||
+      isMenuNodeOfKind(node, 'item') ||
+      isMenuNodeOfKind(node, 'submenu')
     ) {
       supported.push(node)
     } else if (process.env.NODE_ENV !== 'production') {
@@ -82,12 +52,12 @@ export function getSupportedTreeChildren(
 }
 
 /**
- * Flattens a tree of node definitions into a flat array.
+ * Flattens a tree of Menu Nodes into a flat array.
  * When deep=true, includes children of branch nodes with their breadcrumb paths.
  * Tracks group and radio group membership for each node.
  */
 export function flattenNodes(
-  nodes: NodeDef[],
+  nodes: readonly PopupMenuNode[],
   options: FlattenOptions = {},
 ): FlattenedNode[] {
   const {
@@ -102,17 +72,22 @@ export function flattenNodes(
   const result: FlattenedNode[] = []
 
   for (const node of nodes) {
-    if (node.kind === 'separator') {
+    if (isMenuNodeOfKind(node, 'separator')) {
       // Skip separators during search
       continue
     }
 
-    if (node.kind === 'group') {
+    if (isMenuNodeOfKind(node, 'group')) {
       // Groups are containers - recurse into their children with group context
       // Note: Nested groups are not supported, so we pass this group directly
-      const groupInfo = { id: node.id, label: node.label, groupDef: node }
+      const groupInfo = {
+        id: node.def.id,
+        label: node.def.label,
+        groupDef: node.def as GroupDef,
+        menuNode: node,
+      }
       result.push(
-        ...flattenNodes(node.nodes, {
+        ...flattenNodes(node.children, {
           deep,
           includeInDeepSearch,
           descendantsIncluded,
@@ -125,17 +100,18 @@ export function flattenNodes(
       continue
     }
 
-    if (node.kind === 'radio-group') {
+    if (isMenuNodeOfKind(node, 'radio-group')) {
       // Radio groups are containers - recurse into their children with radio group context
-      if (node.hidden) continue
+      if (node.def.hidden) continue
 
       const radioGroupInfo = {
-        id: node.id,
-        label: node.label,
-        radioGroupDef: node,
+        id: node.def.id,
+        label: node.def.label,
+        radioGroupDef: node.def as RadioGroupDef,
+        menuNode: node,
       }
       result.push(
-        ...flattenNodes(node.nodes, {
+        ...flattenNodes(node.children, {
           deep,
           includeInDeepSearch,
           descendantsIncluded,
@@ -148,53 +124,54 @@ export function flattenNodes(
       continue
     }
 
-    if (node.hidden) {
+    if (!isRowMenuNode(node)) continue
+
+    if (node.def.hidden) {
       continue
     }
 
     if (
-      node.kind === 'item' ||
-      node.kind === 'radio-item' ||
-      node.kind === 'checkbox-item'
+      isMenuNodeOfKind(node, 'item') ||
+      isMenuNodeOfKind(node, 'radio-item') ||
+      isMenuNodeOfKind(node, 'checkbox-item')
     ) {
-      result.push({
-        node,
-        breadcrumbs,
-        group,
-        radioGroup,
-        inheritedKeywords,
-      })
+      result.push({ node, breadcrumbs, group, radioGroup, inheritedKeywords })
       continue
     }
 
-    if (node.kind === 'tree-item') {
-      if (node.selectable !== false) {
+    if (isMenuNodeOfKind(node, 'tree-item')) {
+      if (node.def.selectable !== false) {
         result.push({ node, breadcrumbs, group, radioGroup, inheritedKeywords })
       }
 
-      if (node.nodes?.length && node.deepSearch !== false) {
+      if (node.children.length && node.def.deepSearch !== false) {
         const treeBreadcrumb: BreadcrumbNode = {
-          node,
-          value: node.value,
-          id: node.id,
+          node: node.def,
+          menuNode: node,
+          value: node.def.value,
+          id: node.def.id,
         }
         result.push(
-          ...flattenNodes(getSupportedTreeChildren(node.nodes), {
+          ...flattenNodes(getSupportedTreeChildren(node.children), {
             deep,
             includeInDeepSearch,
             descendantsIncluded,
             breadcrumbs: [...breadcrumbs, treeBreadcrumb],
             group,
             radioGroup,
-            inheritedKeywords: [...inheritedKeywords, node.value],
+            inheritedKeywords: [...inheritedKeywords, node.def.value],
           }),
         )
       }
       continue
     }
 
-    if (node.kind === 'submenu' || node.kind === 'subpage') {
-      const branchIncludeMode = node.includeInDeepSearch ?? includeInDeepSearch
+    if (
+      isMenuNodeOfKind(node, 'submenu') ||
+      isMenuNodeOfKind(node, 'subpage')
+    ) {
+      const branchIncludeMode =
+        node.def.includeInDeepSearch ?? includeInDeepSearch
 
       // includeInDeepSearch only affects deep search results.
       // In shallow mode, branch triggers remain searchable as normal rows.
@@ -202,13 +179,7 @@ export function flattenNodes(
         !deep || (descendantsIncluded && branchIncludeMode !== false)
 
       if (shouldIncludeBranchTrigger) {
-        result.push({
-          node,
-          breadcrumbs,
-          group,
-          radioGroup,
-          inheritedKeywords,
-        })
+        result.push({ node, breadcrumbs, group, radioGroup, inheritedKeywords })
       }
 
       // If deep search enabled and branch allows descendants, include children.
@@ -216,13 +187,14 @@ export function flattenNodes(
         deep &&
         descendantsIncluded &&
         branchIncludeMode === true &&
-        node.deepSearch !== false
+        node.def.deepSearch !== false
 
-      if (shouldIncludeBranchDescendants && node.nodes) {
+      if (shouldIncludeBranchDescendants && node.children.length) {
         const branchBreadcrumb: BreadcrumbNode = {
-          node,
-          value: node.value,
-          id: node.id,
+          node: node.def,
+          menuNode: node,
+          value: node.def.value,
+          id: node.def.id,
         }
         const childBreadcrumbs: BreadcrumbNode[] = [
           ...breadcrumbs,
@@ -231,7 +203,7 @@ export function flattenNodes(
 
         result.push(
           ...flattenNodes(
-            node.nodes.filter((child) => {
+            node.children.filter((child) => {
               if (child.kind === 'tree-item') {
                 if (process.env.NODE_ENV !== 'production') {
                   console.warn(
@@ -260,5 +232,3 @@ export function flattenNodes(
 
   return result
 }
-
-// ============================================================================

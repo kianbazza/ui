@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest'
+import { createMenuTreeResolver } from '../../menu-tree/resolver.js'
 import type {
   CheckboxItemDef,
   GroupDef,
@@ -28,6 +29,13 @@ import {
 // ============================================================================
 // Test Helpers
 // ============================================================================
+
+/** Resolves defs into Menu Nodes the way a root list does. */
+function resolve(nodes: NodeDef[]) {
+  const resolver = createMenuTreeResolver()
+  resolver.setContent(nodes)
+  return resolver.rootNodes
+}
 
 function createItemDef(
   id: string,
@@ -200,10 +208,10 @@ describe('CheckboxItemDef', () => {
         createCheckboxItemDef('cb2', 'Checkbox 2', false),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
 
       expect(flattened).toHaveLength(3)
-      expect(flattened[1].node.id).toBe('cb1')
+      expect(flattened[1].node.def.id).toBe('cb1')
       expect(flattened[1].node.kind).toBe('checkbox-item')
     })
 
@@ -215,7 +223,7 @@ describe('CheckboxItemDef', () => {
         ]),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
 
       expect(flattened).toHaveLength(2)
       expect(flattened[0].group?.id).toBe('g1')
@@ -230,11 +238,11 @@ describe('CheckboxItemDef', () => {
         createCheckboxItemDef('cb2', 'Light Theme', false),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
       const scored = scoreNodes(flattened, 'dark')
 
       expect(scored).toHaveLength(1)
-      expect(scored[0].node.id).toBe('cb1')
+      expect(scored[0].node.def.id).toBe('cb1')
       expect(scored[0].score).toBeGreaterThan(0)
     })
 
@@ -245,7 +253,7 @@ describe('CheckboxItemDef', () => {
         }),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
       const scored = scoreNodes(flattened, 'toggle')
 
       expect(scored).toHaveLength(1)
@@ -258,11 +266,11 @@ describe('CheckboxItemDef', () => {
         createCheckboxItemDef('cb2', 'Light Theme', false),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
       const scored = scoreNodes(flattened, 'dark ')
 
       expect(scored).toHaveLength(1)
-      expect(scored[0].node.id).toBe('cb1')
+      expect(scored[0].node.def.id).toBe('cb1')
       expect(scored[0].score).toBeGreaterThan(0)
     })
   })
@@ -277,14 +285,14 @@ describe('CheckboxItemDef', () => {
 
       const { displayNodes } = filterNodes({
         query: 'dark',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
       })
 
       expect(displayNodes).toHaveLength(1)
       expect(isDisplayRowNode(displayNodes[0])).toBe(true)
       if (isDisplayRowNode(displayNodes[0])) {
-        expect(displayNodes[0].node.id).toBe('cb1')
+        expect(displayNodes[0].node.def.id).toBe('cb1')
         expect(displayNodes[0].node.kind).toBe('checkbox-item')
       }
     })
@@ -297,7 +305,7 @@ describe('CheckboxItemDef', () => {
 
       const { displayNodes, isDeepSearching } = filterNodes({
         query: '   ',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
       })
 
@@ -324,7 +332,7 @@ describe('RadioGroupDef', () => {
         ]),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
 
       expect(flattened).toHaveLength(3)
       expect(flattened[0].radioGroup?.id).toBe('rg1')
@@ -340,7 +348,7 @@ describe('RadioGroupDef', () => {
         ]),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
 
       expect(flattened).toHaveLength(2)
       expect(flattened[0].group?.id).toBe('g1')
@@ -367,7 +375,7 @@ describe('RadioGroupDef', () => {
 
       const { displayNodes } = filterNodes({
         query: 'dark',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
       })
 
@@ -397,7 +405,7 @@ describe('RadioGroupDef', () => {
 
       const { displayNodes } = filterNodes({
         query: 'option',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         groupSearchBehavior: 'flatten', // Even with flatten, radio groups should preserve
       })
@@ -424,7 +432,7 @@ describe('RadioGroupDef', () => {
 
       const { displayNodes, isDeepSearching } = filterNodes({
         query: 'dark',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         deepSearch: true,
         minLength: 0,
@@ -454,31 +462,13 @@ describe('RadioGroupDef', () => {
         ),
       ]
 
-      const displayNodes = getBrowseNodesPreserve(nodes, null)
+      const displayNodes = getBrowseNodesPreserve(resolve(nodes), null)
 
       expect(displayNodes).toHaveLength(1)
       expect(isDisplayRadioGroupNode(displayNodes[0])).toBe(true)
       if (isDisplayRadioGroupNode(displayNodes[0])) {
         expect(displayNodes[0].items).toHaveLength(2)
         expect(displayNodes[0].node.def.label).toBe('Options')
-      }
-    })
-
-    it('resolves a node for the group without an explicit resolver', () => {
-      const nodes: NodeDef[] = [
-        createRadioGroupDef('rg1', 'opt1', [
-          createRadioItemDef('opt1', 'Option 1'),
-        ]),
-      ]
-
-      const displayNodes = getBrowseNodesPreserve(nodes, null)
-
-      // `node` is non-optional, so the detached fallback must supply
-      // one even when no menu-tree resolver is threaded through.
-      if (isDisplayRadioGroupNode(displayNodes[0])) {
-        expect(displayNodes[0].node).toBeDefined()
-        expect(displayNodes[0].node.id).toBe('rg1')
-        expect(displayNodes[0].node.kind).toBe('radio-group')
       }
     })
   })
@@ -498,7 +488,7 @@ describe('RadioItemDef', () => {
         ]),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
 
       expect(flattened).toHaveLength(2)
       expect(flattened[0].node.kind).toBe('radio-item')
@@ -515,7 +505,7 @@ describe('RadioItemDef', () => {
         ),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
 
       expect(flattened).toHaveLength(1)
       expect(flattened[0].radioGroup?.id).toBe('rg1')
@@ -532,11 +522,11 @@ describe('RadioItemDef', () => {
         ]),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
       const scored = scoreNodes(flattened, 'dark')
 
       expect(scored).toHaveLength(1)
-      expect(scored[0].node.value).toBe('Dark Theme')
+      expect(scored[0].node.def.value).toBe('Dark Theme')
       expect(scored[0].score).toBeGreaterThan(0)
     })
 
@@ -550,11 +540,11 @@ describe('RadioItemDef', () => {
         ]),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
       const scored = scoreNodes(flattened, 'equals')
 
       expect(scored).toHaveLength(1)
-      expect(scored[0].node.value).toBe('eq')
+      expect(scored[0].node.def.value).toBe('eq')
       expect(scored[0].score).toBeGreaterThan(0)
     })
 
@@ -573,17 +563,17 @@ describe('RadioItemDef', () => {
         ]),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
 
       // Search for 'same' - should match 'eq' via keywords
       const scoredSame = scoreNodes(flattened, 'same')
       expect(scoredSame).toHaveLength(1)
-      expect(scoredSame[0].node.value).toBe('eq')
+      expect(scoredSame[0].node.def.value).toBe('eq')
 
       // Search for 'includes' - should match 'contains' via keywords
       const scoredIncludes = scoreNodes(flattened, 'includes')
       expect(scoredIncludes).toHaveLength(1)
-      expect(scoredIncludes[0].node.value).toBe('contains')
+      expect(scoredIncludes[0].node.def.value).toBe('contains')
     })
   })
 
@@ -606,7 +596,7 @@ describe('RadioItemDef', () => {
 
       const { displayNodes } = filterNodes({
         query: 'same',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
       })
 
@@ -638,7 +628,7 @@ describe('RadioItemDef', () => {
 
       const { displayNodes, isDeepSearching } = filterNodes({
         query: 'includes',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         deepSearch: true,
         minLength: 0,
@@ -667,7 +657,7 @@ describe('Render Params Structure', () => {
 
     const { displayNodes } = filterNodes({
       query: '',
-      nodes,
+      nodes: resolve(nodes),
       highlightedId: null,
     })
 
@@ -683,7 +673,7 @@ describe('Render Params Structure', () => {
 
     const { displayNodes } = filterNodes({
       query: 'test',
-      nodes,
+      nodes: resolve(nodes),
       highlightedId: null,
     })
 
@@ -704,7 +694,7 @@ describe('Render Params Structure', () => {
 
     const { displayNodes } = filterNodes({
       query: '',
-      nodes,
+      nodes: resolve(nodes),
       highlightedId: null,
     })
 
@@ -752,7 +742,7 @@ describe('radioGroupSearchBehavior', () => {
 
       const { displayNodes } = filterNodes({
         query: 'dark',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         radioGroupSearchBehavior: 'preserve',
       })
@@ -761,7 +751,7 @@ describe('radioGroupSearchBehavior', () => {
       expect(isDisplayRadioGroupNode(displayNodes[0])).toBe(true)
       if (isDisplayRadioGroupNode(displayNodes[0])) {
         expect(displayNodes[0].items).toHaveLength(1)
-        expect(displayNodes[0].items[0].node.id).toBe('dark')
+        expect(displayNodes[0].items[0].node.def.id).toBe('dark')
       }
     })
 
@@ -770,7 +760,7 @@ describe('radioGroupSearchBehavior', () => {
 
       const { displayNodes } = filterNodes({
         query: 'priority',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         radioGroupSearchBehavior: 'preserve',
       })
@@ -788,7 +778,7 @@ describe('radioGroupSearchBehavior', () => {
 
       const { displayNodes } = filterNodes({
         query: 'nonexistent',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         radioGroupSearchBehavior: 'preserve',
       })
@@ -803,7 +793,7 @@ describe('radioGroupSearchBehavior', () => {
 
       const { displayNodes } = filterNodes({
         query: 'dark',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         radioGroupSearchBehavior: 'preserve-show-all',
       })
@@ -814,7 +804,7 @@ describe('radioGroupSearchBehavior', () => {
         // Should have all 3 items even though only "dark" matches
         expect(displayNodes[0].items).toHaveLength(3)
         // Matching item should be first (sorted by score)
-        expect(displayNodes[0].items[0].node.id).toBe('dark')
+        expect(displayNodes[0].items[0].node.def.id).toBe('dark')
         expect(displayNodes[0].items[0].context.search?.score).toBeGreaterThan(
           0,
         )
@@ -829,7 +819,7 @@ describe('radioGroupSearchBehavior', () => {
 
       const { displayNodes } = filterNodes({
         query: 'nonexistent',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         radioGroupSearchBehavior: 'preserve-show-all',
       })
@@ -843,7 +833,7 @@ describe('radioGroupSearchBehavior', () => {
 
       const { displayNodes } = filterNodes({
         query: 'light',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         radioGroupSearchBehavior: 'preserve-show-all',
       })
@@ -851,7 +841,7 @@ describe('radioGroupSearchBehavior', () => {
       expect(isDisplayRadioGroupNode(displayNodes[0])).toBe(true)
       if (isDisplayRadioGroupNode(displayNodes[0])) {
         // Light should be first since it matches
-        expect(displayNodes[0].items[0].node.id).toBe('light')
+        expect(displayNodes[0].items[0].node.def.id).toBe('light')
       }
     })
 
@@ -862,7 +852,7 @@ describe('radioGroupSearchBehavior', () => {
 
       const { displayNodes, isDeepSearching } = filterNodes({
         query: 'dark',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         deepSearch: true,
         minLength: 0,
@@ -888,7 +878,7 @@ describe('radioGroupSearchBehavior', () => {
 
       const { displayNodes } = filterNodes({
         query: 'dark',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         radioGroupSearchBehavior: 'flatten',
       })
@@ -897,7 +887,7 @@ describe('radioGroupSearchBehavior', () => {
       // Should be a row node, not a radio group node
       expect(isDisplayRowNode(displayNodes[0])).toBe(true)
       if (isDisplayRowNode(displayNodes[0])) {
-        expect(displayNodes[0].node.id).toBe('dark')
+        expect(displayNodes[0].node.def.id).toBe('dark')
       }
     })
 
@@ -906,7 +896,7 @@ describe('radioGroupSearchBehavior', () => {
 
       const { displayNodes } = filterNodes({
         query: 'theme',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         radioGroupSearchBehavior: 'flatten',
       })
@@ -924,7 +914,7 @@ describe('radioGroupSearchBehavior', () => {
 
       const { displayNodes } = filterNodes({
         query: 'dark',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         radioGroupSearchBehavior: 'flatten',
       })
@@ -933,7 +923,9 @@ describe('radioGroupSearchBehavior', () => {
       // Both should be row nodes (radio items flattened)
       expect(displayNodes.every(isDisplayRowNode)).toBe(true)
       // Both should match "dark"
-      const ids = displayNodes.filter(isDisplayRowNode).map((n) => n.node.id)
+      const ids = displayNodes
+        .filter(isDisplayRowNode)
+        .map((n) => n.node.def.id)
       expect(ids).toContain('item1')
       expect(ids).toContain('dark')
     })
@@ -950,7 +942,7 @@ describe('radioGroupSearchBehavior', () => {
 
       const { displayNodes } = filterNodes({
         query: 'dark',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         groupSearchBehavior: 'flatten',
         radioGroupSearchBehavior: 'preserve',
@@ -963,7 +955,7 @@ describe('radioGroupSearchBehavior', () => {
 
       expect(radioGroups).toHaveLength(1)
       expect(rowNodes).toHaveLength(1)
-      expect(rowNodes[0].node.id).toBe('grouped-item')
+      expect(rowNodes[0].node.def.id).toBe('grouped-item')
     })
 
     it('should flatten both groups and radio groups when both are set to flatten', () => {
@@ -976,7 +968,7 @@ describe('radioGroupSearchBehavior', () => {
 
       const { displayNodes } = filterNodes({
         query: 'dark',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         groupSearchBehavior: 'flatten',
         radioGroupSearchBehavior: 'flatten',
@@ -997,7 +989,7 @@ describe('radioGroupSearchBehavior', () => {
 
       const { displayNodes } = filterNodes({
         query: 'high',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         radioGroupSearchBehavior: 'preserve',
       })
@@ -1018,7 +1010,7 @@ describe('radioGroupSearchBehavior', () => {
 
       const { displayNodes } = filterNodes({
         query: 'dark',
-        nodes,
+        nodes: resolve(nodes),
         highlightedId: null,
         radioGroupSearchBehavior: 'preserve-show-all',
       })
@@ -1048,7 +1040,7 @@ describe('Mixed Content', () => {
       ]),
     ]
 
-    const displayNodes = getBrowseNodesPreserve(nodes, null)
+    const displayNodes = getBrowseNodesPreserve(resolve(nodes), null)
 
     expect(displayNodes).toHaveLength(3)
     expect(isDisplayRowNode(displayNodes[0])).toBe(true)
@@ -1067,7 +1059,7 @@ describe('Mixed Content', () => {
       ]),
     ]
 
-    const flattened = flattenNodes(nodes)
+    const flattened = flattenNodes(resolve(nodes))
     expect(flattened).toHaveLength(1)
   })
 })
@@ -1084,12 +1076,12 @@ describe('Value Normalization', () => {
         createItemDef('item2', 'Light Mode'),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
       const scored = scoreNodes(flattened, 'dark')
 
       // Should match despite whitespace in value
       expect(scored).toHaveLength(1)
-      expect(scored[0].node.id).toBe('item1')
+      expect(scored[0].node.def.id).toBe('item1')
       expect(scored[0].score).toBeGreaterThan(0)
     })
 
@@ -1100,7 +1092,7 @@ describe('Value Normalization', () => {
         }),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
       const scored = scoreNodes(flattened, 'preferences')
 
       // Should match on trimmed keyword
@@ -1114,11 +1106,11 @@ describe('Value Normalization', () => {
         createItemDef('item2', 'Valid'),
       ]
 
-      const flattened = flattenNodes(nodes)
+      const flattened = flattenNodes(resolve(nodes))
       const scored = scoreNodes(flattened, 'valid')
 
       expect(scored).toHaveLength(1)
-      expect(scored[0].node.id).toBe('item2')
+      expect(scored[0].node.def.id).toBe('item2')
     })
   })
 
@@ -1130,10 +1122,10 @@ describe('Value Normalization', () => {
         ]),
       ]
 
-      const flattened = flattenNodes(nodes, { deep: true })
+      const flattened = flattenNodes(resolve(nodes), { deep: true })
 
       // Find the nested item
-      const nestedItem = flattened.find((f) => f.node.id === 'item1')
+      const nestedItem = flattened.find((f) => f.node.def.id === 'item1')
       expect(nestedItem).toBeDefined()
       // BreadcrumbNode.value preserves the raw value; normalization happens via slugify during ID generation
       expect(nestedItem?.breadcrumbs.map((b) => b.value)).toEqual([
@@ -1150,9 +1142,9 @@ describe('Value Normalization', () => {
         ]),
       ]
 
-      const flattened = flattenNodes(nodes, { deep: true })
+      const flattened = flattenNodes(resolve(nodes), { deep: true })
 
-      const deepItem = flattened.find((f) => f.node.id === 'item1')
+      const deepItem = flattened.find((f) => f.node.def.id === 'item1')
       expect(deepItem).toBeDefined()
       // BreadcrumbNode.value preserves raw values; normalization happens via slugify during ID generation
       expect(deepItem?.breadcrumbs.map((b) => b.value)).toEqual([
@@ -1171,9 +1163,9 @@ describe('Value Normalization', () => {
         ),
       ]
 
-      const flattened = flattenNodes(nodes, { deep: true })
+      const flattened = flattenNodes(resolve(nodes), { deep: true })
 
-      expect(flattened.map((f) => f.node.id)).toEqual(['settings'])
+      expect(flattened.map((f) => f.node.def.id)).toEqual(['settings'])
     })
 
     it('supports includeInDeepSearch=false on submenus', () => {
@@ -1186,7 +1178,7 @@ describe('Value Normalization', () => {
         ),
       ]
 
-      const flattened = flattenNodes(nodes, { deep: true })
+      const flattened = flattenNodes(resolve(nodes), { deep: true })
 
       expect(flattened).toHaveLength(0)
     })
@@ -1198,9 +1190,12 @@ describe('Value Normalization', () => {
         ]),
       ]
 
-      const flattened = flattenNodes(nodes, { deep: true })
+      const flattened = flattenNodes(resolve(nodes), { deep: true })
 
-      expect(flattened.map((f) => f.node.id)).toEqual(['ai-filter', 'assigned'])
+      expect(flattened.map((f) => f.node.def.id)).toEqual([
+        'ai-filter',
+        'assigned',
+      ])
     })
 
     it('supports includeInDeepSearch="trigger-only" on subpages', () => {
@@ -1213,9 +1208,9 @@ describe('Value Normalization', () => {
         ),
       ]
 
-      const flattened = flattenNodes(nodes, { deep: true })
+      const flattened = flattenNodes(resolve(nodes), { deep: true })
 
-      expect(flattened.map((f) => f.node.id)).toEqual(['ai-filter'])
+      expect(flattened.map((f) => f.node.def.id)).toEqual(['ai-filter'])
     })
 
     it('supports includeInDeepSearch=false on subpages', () => {
@@ -1228,7 +1223,7 @@ describe('Value Normalization', () => {
         ),
       ]
 
-      const flattened = flattenNodes(nodes, { deep: true })
+      const flattened = flattenNodes(resolve(nodes), { deep: true })
 
       expect(flattened).toHaveLength(0)
     })
@@ -1243,18 +1238,18 @@ describe('Value Normalization', () => {
         ]),
       ]
 
-      const flattened = flattenNodes(nodes, {
+      const flattened = flattenNodes(resolve(nodes), {
         deep: true,
         includeInDeepSearch: 'trigger-only',
       })
 
-      expect(flattened.map((f) => f.node.id)).toEqual([
+      expect(flattened.map((f) => f.node.def.id)).toEqual([
         'overridden',
         'defaulted',
       ])
 
       const withOverride = flattenNodes(
-        [
+        resolve([
           createSubmenuDef(
             'overridden',
             'Overridden',
@@ -1264,14 +1259,14 @@ describe('Value Normalization', () => {
           createSubmenuDef('defaulted', 'Defaulted', [
             createItemDef('item-2', 'Item 2'),
           ]),
-        ],
+        ]),
         {
           deep: true,
           includeInDeepSearch: 'trigger-only',
         },
       )
 
-      expect(withOverride.map((f) => f.node.id)).toEqual([
+      expect(withOverride.map((f) => f.node.def.id)).toEqual([
         'overridden',
         'item-1',
         'defaulted',
@@ -1295,9 +1290,9 @@ describe('Value Normalization', () => {
         ),
       ]
 
-      const flattened = flattenNodes(nodes, { deep: true })
+      const flattened = flattenNodes(resolve(nodes), { deep: true })
 
-      expect(flattened.map((f) => f.node.id)).toEqual(['parent'])
+      expect(flattened.map((f) => f.node.def.id)).toEqual(['parent'])
     })
 
     it('collectAsyncSubmenus only collects submenus with row inclusion', () => {
@@ -1384,11 +1379,11 @@ describe('Forced sorting overrides', () => {
       createItemDef('regular', 'Regular row'),
     ]
 
-    const flattened = flattenNodes(nodes)
+    const flattened = flattenNodes(resolve(nodes))
     const scored = scoreNodes(flattened, 'zzzz')
 
     expect(scored).toHaveLength(1)
-    expect(scored[0].node.id).toBe('pinned')
+    expect(scored[0].node.def.id).toBe('pinned')
     expect(scored[0].score).toBe(5)
   })
 
@@ -1406,7 +1401,7 @@ describe('Forced sorting overrides', () => {
 
     const { displayNodes } = filterNodes({
       query: 'x',
-      nodes,
+      nodes: resolve(nodes),
       highlightedId: null,
       groupSearchBehavior: 'flatten',
     })
@@ -1419,8 +1414,8 @@ describe('Forced sorting overrides', () => {
       isDisplayRowNode(displayNodes[0]) &&
       isDisplayRowNode(displayNodes[1])
     ) {
-      expect(displayNodes[0].node.id).toBe('early')
-      expect(displayNodes[1].node.id).toBe('late')
+      expect(displayNodes[0].node.def.id).toBe('early')
+      expect(displayNodes[1].node.def.id).toBe('late')
     }
   })
 
@@ -1438,7 +1433,7 @@ describe('Forced sorting overrides', () => {
 
     const { displayNodes } = filterNodes({
       query: 'x',
-      nodes,
+      nodes: resolve(nodes),
       highlightedId: null,
       groupSearchBehavior: 'flatten',
     })
@@ -1453,8 +1448,32 @@ describe('Forced sorting overrides', () => {
     ) {
       expect(displayNodes[0].node.kind).toBe('item')
       expect(displayNodes[1].node.kind).toBe('submenu')
-      expect(displayNodes[0].node.id).toBe('item')
-      expect(displayNodes[1].node.id).toBe('submenu')
+      expect(displayNodes[0].node.def.id).toBe('item')
+      expect(displayNodes[1].node.def.id).toBe('submenu')
     }
+  })
+})
+
+describe('Menu Node pipeline', () => {
+  it('deep search sees rows grafted under a branch below a group', () => {
+    const submenu = createSubmenuDef('status', 'Status', [])
+    const group = createGroupDef('filters', [submenu])
+    const resolver = createMenuTreeResolver()
+    resolver.setContent([group])
+    const submenuNode = resolver.rootNodes[0]!.children[0]!
+
+    resolver.graft(submenuNode, [createItemDef('grafted', 'Grafted')])
+
+    const { displayNodes } = filterNodes({
+      query: 'graft',
+      nodes: resolver.rootNodes,
+      highlightedId: null,
+      deepSearch: true,
+    })
+    const rowNodes = displayNodes.filter(isDisplayRowNode)
+
+    expect(rowNodes).toHaveLength(1)
+    expect(rowNodes[0]!.node.def.value).toBe('Grafted')
+    expect(rowNodes[0]!.context.breadcrumbs[0]!.menuNode).toBe(submenuNode)
   })
 })

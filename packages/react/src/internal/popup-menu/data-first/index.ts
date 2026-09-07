@@ -22,7 +22,6 @@ export {
   useMaybeDataPopupContext,
   useMaybeDataSurfaceContext,
 } from './context.js'
-export { defsOf, ownerOfDef } from './defs-of.js'
 // Types
 export type {
   AsyncResultBehavior,

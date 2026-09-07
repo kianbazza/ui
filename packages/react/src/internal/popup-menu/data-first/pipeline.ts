@@ -5,9 +5,8 @@
 import { normalizeValue } from '../../listbox/utils/normalize.js'
 import type { PopupMenuNode } from '../menu-tree/types.js'
 import { getBrowseNodesPreserve } from './browse.js'
-import { resolveDetachedNodeForDef } from './detached.js'
 import { buildDisplayRowNode, buildDisplayRowNodes } from './display.js'
-import { type FlattenedNode, flattenNodes } from './flatten.js'
+import { flattenNodes } from './flatten.js'
 import { scoreNodes } from './score.js'
 import {
   compareScoredNodesByForceOrderAndScore,
@@ -25,11 +24,11 @@ import type {
   DisplayNode,
   DisplayRadioGroupNode,
   DisplayRowNode,
+  FlattenedNode,
   GroupBehavior,
   GroupDef,
   GroupRenderContext,
   IncludeInDeepSearch,
-  NodeDef,
   RadioGroupBehavior,
   RadioGroupDef,
   ScoredNode,
@@ -46,7 +45,7 @@ export interface FilterNodesOptions {
   /** Optional query normalizer. Defaults to trimming whitespace. */
   normalizeQuery?: (query: string) => string
   /** The node definitions to filter */
-  nodes: NodeDef[]
+  nodes: readonly PopupMenuNode[]
   /** Currently highlighted node ID */
   highlightedId: string | null
   /** Whether deep search is enabled */
@@ -61,12 +60,6 @@ export interface FilterNodesOptions {
   radioGroupSearchBehavior?: RadioGroupBehavior
   /** Whether to sort groups by best score */
   sortGroups?: boolean
-  /**
-   * Resolves a def to its resolver-owned node, used to populate
-   * `node` on group display nodes. Defaults to detached resolution for callers
-   * without a menu-tree resolver.
-   */
-  getNodeForDef?: <D extends NodeDef>(def: D) => PopupMenuNode<D>
 }
 
 /**
@@ -87,7 +80,6 @@ function filterNodesFlatten(options: FilterNodesOptions): {
     includeInDeepSearch = true,
     minLength = 0,
     radioGroupSearchBehavior = 'preserve',
-    getNodeForDef = resolveDetachedNodeForDef,
   } = options
 
   // Determine if deep search should activate
@@ -105,6 +97,7 @@ function filterNodesFlatten(options: FilterNodesOptions): {
     string,
     {
       radioGroupDef: RadioGroupDef
+      menuNode: PopupMenuNode<RadioGroupDef>
       items: FlattenedNode[]
       breadcrumbs: BreadcrumbNode[]
     }
@@ -119,6 +112,7 @@ function filterNodesFlatten(options: FilterNodesOptions): {
         } else {
           allRadioGroupItems.set(flatNode.radioGroup.id, {
             radioGroupDef: flatNode.radioGroup.radioGroupDef,
+            menuNode: flatNode.radioGroup.menuNode,
             items: [flatNode],
             breadcrumbs: flatNode.breadcrumbs,
           })
@@ -135,6 +129,7 @@ function filterNodesFlatten(options: FilterNodesOptions): {
     string,
     {
       radioGroupDef: RadioGroupDef
+      menuNode: PopupMenuNode<RadioGroupDef>
       items: ScoredNode[]
       breadcrumbs: BreadcrumbNode[]
     }
@@ -154,6 +149,7 @@ function filterNodesFlatten(options: FilterNodesOptions): {
         } else {
           radioGroupItems.set(scoredNode.radioGroup.id, {
             radioGroupDef: scoredNode.radioGroup.radioGroupDef,
+            menuNode: scoredNode.radioGroup.menuNode,
             items: [scoredNode],
             breadcrumbs: scoredNode.breadcrumbs,
           })
@@ -178,7 +174,6 @@ function filterNodesFlatten(options: FilterNodesOptions): {
     unique,
     query,
     highlightedId,
-    getNodeForDef,
   )
 
   // Build display nodes for radio groups
@@ -187,7 +182,7 @@ function filterNodesFlatten(options: FilterNodesOptions): {
   if (radioGroupSearchBehavior !== 'flatten') {
     for (const [
       radioGroupId,
-      { radioGroupDef, items: matchingItems, breadcrumbs },
+      { items: matchingItems, breadcrumbs },
     ] of radioGroupItems) {
       let itemsToDisplay: ScoredNode[]
 
@@ -230,10 +225,10 @@ function filterNodesFlatten(options: FilterNodesOptions): {
 
       radioGroupDisplayNodes.push({
         kind: 'radio-group',
-        node: getNodeForDef(radioGroupDef),
+        node: radioGroupItems.get(radioGroupId)!.menuNode,
         context: groupContext,
         items: itemsToDisplay.map((item) =>
-          buildDisplayRowNode(item, query, highlightedId, getNodeForDef),
+          buildDisplayRowNode(item, query, highlightedId),
         ),
         bestScore,
       })
@@ -291,7 +286,6 @@ function filterNodesPreserve(options: FilterNodesOptions): {
     minLength = 0,
     sortGroups = true,
     radioGroupSearchBehavior = 'preserve',
-    getNodeForDef = resolveDetachedNodeForDef,
   } = options
 
   // Determine if deep search should activate
@@ -308,6 +302,7 @@ function filterNodesPreserve(options: FilterNodesOptions): {
     string,
     {
       radioGroupDef: RadioGroupDef
+      menuNode: PopupMenuNode<RadioGroupDef>
       items: FlattenedNode[]
       breadcrumbs: BreadcrumbNode[]
     }
@@ -322,6 +317,7 @@ function filterNodesPreserve(options: FilterNodesOptions): {
         } else {
           allRadioGroupItems.set(flatNode.radioGroup.id, {
             radioGroupDef: flatNode.radioGroup.radioGroupDef,
+            menuNode: flatNode.radioGroup.menuNode,
             items: [flatNode],
             breadcrumbs: flatNode.breadcrumbs,
           })
@@ -336,12 +332,18 @@ function filterNodesPreserve(options: FilterNodesOptions): {
   // Partition into groups, radio groups, and ungrouped
   const groupedItems = new Map<
     string,
-    { groupDef: GroupDef; items: ScoredNode[]; breadcrumbs: BreadcrumbNode[] }
+    {
+      groupDef: GroupDef
+      menuNode: PopupMenuNode<GroupDef>
+      items: ScoredNode[]
+      breadcrumbs: BreadcrumbNode[]
+    }
   >()
   const radioGroupedItems = new Map<
     string,
     {
       radioGroupDef: RadioGroupDef
+      menuNode: PopupMenuNode<RadioGroupDef>
       items: ScoredNode[]
       breadcrumbs: BreadcrumbNode[]
     }
@@ -360,6 +362,7 @@ function filterNodesPreserve(options: FilterNodesOptions): {
         } else {
           radioGroupedItems.set(scoredNode.radioGroup.id, {
             radioGroupDef: scoredNode.radioGroup.radioGroupDef,
+            menuNode: scoredNode.radioGroup.menuNode,
             items: [scoredNode],
             breadcrumbs: scoredNode.breadcrumbs,
           })
@@ -372,6 +375,7 @@ function filterNodesPreserve(options: FilterNodesOptions): {
       } else {
         groupedItems.set(scoredNode.group.id, {
           groupDef: scoredNode.group.groupDef,
+          menuNode: scoredNode.group.menuNode,
           items: [scoredNode],
           breadcrumbs: scoredNode.breadcrumbs,
         })
@@ -383,7 +387,7 @@ function filterNodesPreserve(options: FilterNodesOptions): {
 
   // Build display nodes for groups (with items sorted by score)
   const groupDisplayNodes: DisplayGroupNode[] = []
-  for (const [_groupId, { groupDef, items, breadcrumbs }] of groupedItems) {
+  for (const [_groupId, { items, breadcrumbs }] of groupedItems) {
     // Sort items within group by forced order, then score.
     items.sort(compareScoredNodesByForceOrderAndScore)
 
@@ -399,10 +403,10 @@ function filterNodesPreserve(options: FilterNodesOptions): {
 
     groupDisplayNodes.push({
       kind: 'group',
-      node: getNodeForDef(groupDef),
+      node: groupedItems.get(_groupId)!.menuNode,
       context: groupContext,
       items: items.map((item) =>
-        buildDisplayRowNode(item, query, highlightedId, getNodeForDef),
+        buildDisplayRowNode(item, query, highlightedId),
       ),
       bestScore,
     })
@@ -414,7 +418,7 @@ function filterNodesPreserve(options: FilterNodesOptions): {
   if (radioGroupSearchBehavior !== 'flatten') {
     for (const [
       radioGroupId,
-      { radioGroupDef, items: matchingItems, breadcrumbs },
+      { items: matchingItems, breadcrumbs },
     ] of radioGroupedItems) {
       let itemsToDisplay: ScoredNode[]
 
@@ -457,10 +461,10 @@ function filterNodesPreserve(options: FilterNodesOptions): {
 
       radioGroupDisplayNodes.push({
         kind: 'radio-group',
-        node: getNodeForDef(radioGroupDef),
+        node: radioGroupedItems.get(radioGroupId)!.menuNode,
         context: groupContext,
         items: itemsToDisplay.map((item) =>
-          buildDisplayRowNode(item, query, highlightedId, getNodeForDef),
+          buildDisplayRowNode(item, query, highlightedId),
         ),
         bestScore,
       })
@@ -470,9 +474,7 @@ function filterNodesPreserve(options: FilterNodesOptions): {
   // Build display nodes for ungrouped items
   const ungroupedDisplayNodes: DisplayRowNode[] = ungroupedItems
     .sort(compareScoredNodesByForceOrderAndScore)
-    .map((item) =>
-      buildDisplayRowNode(item, query, highlightedId, getNodeForDef),
-    )
+    .map((item) => buildDisplayRowNode(item, query, highlightedId))
 
   // Merge groups, radio groups, and ungrouped items, sorted by forced order then score.
   type SortableNode = {
@@ -528,7 +530,6 @@ export function filterNodes(options: FilterNodesOptions): {
     nodes,
     highlightedId,
     groupSearchBehavior = 'preserve',
-    getNodeForDef = resolveDetachedNodeForDef,
   } = options
   const normalizeQuery = options.normalizeQuery ?? normalizeValue
   const normalizedQuery = normalizeQuery(query)
@@ -545,7 +546,7 @@ export function filterNodes(options: FilterNodesOptions): {
   // Always preserve groups in browse mode (groupSearchBehavior only affects search)
   if (!normalizedQuery) {
     return {
-      displayNodes: getBrowseNodesPreserve(nodes, highlightedId, getNodeForDef),
+      displayNodes: getBrowseNodesPreserve(nodes, highlightedId),
       isDeepSearching: false,
     }
   }

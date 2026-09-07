@@ -16,7 +16,8 @@ export function compareScoredNodesByForceOrderAndScore(
   a: ScoredNode,
   b: ScoredNode,
 ): number {
-  const orderDiff = getNodeForceOrder(a.node) - getNodeForceOrder(b.node)
+  const orderDiff =
+    getNodeForceOrder(a.node.def) - getNodeForceOrder(b.node.def)
   if (orderDiff !== 0) {
     return orderDiff
   }
@@ -93,7 +94,7 @@ export function partitionByKind(nodes: ScoredNode[]): ScoredNode[] {
   >()
 
   for (const node of nodes) {
-    const forceOrder = getNodeForceOrder(node.node)
+    const forceOrder = getNodeForceOrder(node.node.def)
     const bucket = byForceOrder.get(forceOrder) ?? {
       items: [],
       branches: [],
@@ -143,7 +144,7 @@ export function deduplicateNodes(nodes: ScoredNode[]): ScoredNode[] {
       ...scoredNode.breadcrumbs.map(
         (breadcrumb) => breadcrumb.id ?? normalizeValue(breadcrumb.value),
       ),
-      scoredNode.node.id ?? normalizeValue(scoredNode.node.value),
+      scoredNode.node.def.id ?? normalizeValue(scoredNode.node.def.value),
     ].join('.')
     if (!seen.has(compositeId)) {
       seen.add(compositeId)
