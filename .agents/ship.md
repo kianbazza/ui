@@ -18,6 +18,12 @@ Note: this team has a `Canary` state (merged to canary branch, published as cana
 - Changesets: `bun run changeset` to add; publish scripts in root `package.json` (`ci:publish` lists packages explicitly — new publishable packages must be added there)
 - No DB/migrations in this repo (demo DB for examples lives in `apps/web` with `drizzle.config.ts` + seed script when present)
 
+## Stacking
+
+- **Tool**: `gh-stack` (GitHub CLI `gh stack` extension). Alternative value: `graphite` (`gt`).
+- **Trunk**: `canary` (all new Ship work stacks on `canary`; `main` is the stable-release trunk).
+- **Migration note**: stacks created before this switch were built with Graphite (`gt`). When resuming work on one of those stacks (a parent issue with branches already submitted), convert it to a GitHub stack before landing the next slice: `gh stack init --base canary <branch-1> <branch-2> ...` (bottom to top — `init` adopts existing branches) then `gh stack submit --auto --open` to link the existing PRs into a GitHub stack and correct their base branches. Do not run `gt` commands on it afterwards; the two tools' tracking state must not be mixed on one stack.
+
 ## Vocabulary
 
 This repo maintains a domain glossary. Presence of this section enables ship's vocabulary behaviors (see the ship skill's config gates).
