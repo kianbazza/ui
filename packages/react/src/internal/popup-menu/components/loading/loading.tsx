@@ -8,7 +8,7 @@ import {
   getSlotAttribute,
   useMaybeComponentName,
 } from '../../contexts/component-name-context.js'
-import { useMaybeAsyncMenuCoordinator } from '../../deep-search/async-coordinator.js'
+import { useMaybeAsyncMenuCoordinator } from '../../data-first/async-coordinator.js'
 import { PopupMenuLoadingDataAttributes } from './loading.data-attrs.js'
 
 // Loading doesn't have any state - using an empty object type

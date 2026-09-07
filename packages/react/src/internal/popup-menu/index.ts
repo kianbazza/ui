@@ -262,16 +262,16 @@ export { PopupMenuSubpageTrigger } from './components/subpage-trigger/subpage-tr
 // ============================================================================
 
 // Async Coordinator
-export type { AsyncMenuCoordinatorValue } from './deep-search/async-coordinator.js'
+export type { AsyncMenuCoordinatorValue } from './data-first/async-coordinator.js'
 export {
   useAsyncMenuCoordinator,
   useMaybeAsyncMenuCoordinator,
-} from './deep-search/async-coordinator.js'
+} from './data-first/async-coordinator.js'
 // Context
 export type {
   DataSurfaceContextValue,
   RenderNodeFn,
-} from './deep-search/context.js'
+} from './data-first/context.js'
 export {
   DataListContext,
   DataPopupContext,
@@ -280,7 +280,7 @@ export {
   useDataSurfaceContext,
   useMaybeDataList,
   useMaybeDataSurfaceContext,
-} from './deep-search/context.js'
+} from './data-first/context.js'
 // Types
 export type {
   AsyncLoaderConfig,
@@ -346,17 +346,17 @@ export type {
   TreeItemDef,
   TreeItemRenderParams,
   TreeItemRenderProps,
-} from './deep-search/types.js'
+} from './data-first/types.js'
 export {
   defineRadioGroup,
   isDisplayGroupNode,
   isDisplayRadioGroupNode,
   isDisplayRowNode,
   isDisplaySeparatorNode,
-} from './deep-search/types.js'
+} from './data-first/types.js'
 
 // Utilities
-export { isTreeItemDef } from './deep-search/utils.js'
+export { isTreeItemDef } from './data-first/utils.js'
 export type { PopupMenuHighlightChangeHandler } from './events.js'
 export { defaultGetResolvedId, isPopupMenuNode } from './menu-tree/resolve.js'
 export type { MenuTreeResolver } from './menu-tree/resolver.js'

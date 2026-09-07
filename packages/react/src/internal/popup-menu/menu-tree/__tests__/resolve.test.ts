@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { NodeDef } from '../../deep-search/types.js'
-import { computeDefPath } from '../../deep-search/utils.js'
+import type { NodeDef } from '../../data-first/types.js'
+import { computeDefPath } from '../../data-first/utils.js'
 import { defaultGetResolvedId, resolveNodeDefs } from '../resolve.js'
 
 const item = (value: string, id?: string): NodeDef =>

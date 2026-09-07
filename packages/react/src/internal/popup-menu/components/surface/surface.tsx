@@ -29,16 +29,16 @@ import {
   ROOT_SUBPAGE_ID,
   useMaybeSubpageStack,
 } from '../../contexts/subpage-stack-context.js'
-import { AsyncMenuCoordinatorProvider } from '../../deep-search/async-coordinator.js'
+import { AsyncMenuCoordinatorProvider } from '../../data-first/async-coordinator.js'
 import {
   DataSurfaceContext,
   type DataSurfaceContextValue,
   useMaybeDataPopupContext,
-} from '../../deep-search/context.js'
+} from '../../data-first/context.js'
 import type {
   DataSurfaceProps,
   DeepSearchConfig,
-} from '../../deep-search/types.js'
+} from '../../data-first/types.js'
 import { isPopupMenuNode } from '../../menu-tree/resolve.js'
 import { getTabbables } from '../../utils/tabbables.js'
 
