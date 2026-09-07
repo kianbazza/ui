@@ -272,6 +272,7 @@ export type {
   ItemRenderProps,
   LoaderComponentProps,
   NodeDef,
+  PopupMenuIdScope,
   PopupMenuNode,
   PopupMenuRadioGroupValueProps as DropdownMenuRadioGroupValueProps,
   QueryAsyncNodesConfig,

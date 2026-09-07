@@ -16,7 +16,7 @@ import type {
 } from '../events.js'
 import type { MenuTreeResolver } from '../menu-tree/resolver.js'
 import { createMenuTreeResolver } from '../menu-tree/resolver.js'
-import type { GetResolvedIdFn } from '../menu-tree/types.js'
+import type { GetResolvedIdFn, PopupMenuIdScope } from '../menu-tree/types.js'
 import { FocusOwnerStore } from '../store/FocusOwnerStore.js'
 import { OpenChainStore } from '../store/OpenChainStore.js'
 
@@ -31,6 +31,8 @@ export interface UsePopupMenuRootParams {
    * Read once when the menu root mounts — later changes have no effect.
    */
   getResolvedId?: GetResolvedIdFn
+  /** Definition Key uniqueness scope. Read once when the menu root mounts. */
+  idScope?: PopupMenuIdScope
   /**
    * Callback when the open state changes.
    * The second parameter contains event details including the reason for the change.
@@ -153,13 +155,15 @@ export function usePopupMenuRoot(
     disabled: disabledProp = false,
     defaultDisabled = false,
     getResolvedId,
+    idScope = 'surface',
   } = params
 
   const menuTreeResolverRef = React.useRef<MenuTreeResolver | null>(null)
   if (menuTreeResolverRef.current === null) {
-    menuTreeResolverRef.current = createMenuTreeResolver(
-      getResolvedId ? { getResolvedId } : undefined,
-    )
+    menuTreeResolverRef.current = createMenuTreeResolver({
+      getResolvedId,
+      idScope,
+    })
   }
   const menuTreeResolver = menuTreeResolverRef.current
 

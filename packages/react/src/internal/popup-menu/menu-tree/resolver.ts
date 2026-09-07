@@ -8,28 +8,10 @@ import {
 } from './resolve.js'
 import type {
   GetResolvedIdFn,
+  PopupMenuIdScope,
   PopupMenuNode,
   UnresolvedMenuNode,
 } from './types.js'
-
-/**
- * Node kinds that render a navigable row, as opposed to structural kinds
- * (`group`, `radio-group`, `separator`) that only shape the tree.
- */
-type RowKind = Extract<
-  NodeDef['kind'],
-  'item' | 'tree-item' | 'radio-item' | 'checkbox-item' | 'submenu' | 'subpage'
->
-
-/** Widened to `NodeDef['kind']` so `has` accepts any node's kind. */
-const ROW_KINDS: ReadonlySet<NodeDef['kind']> = new Set<RowKind>([
-  'item',
-  'tree-item',
-  'radio-item',
-  'checkbox-item',
-  'submenu',
-  'subpage',
-])
 
 /**
  * Owns the single resolved node tree for one menu root. Content may be
@@ -41,6 +23,8 @@ const ROW_KINDS: ReadonlySet<NodeDef['kind']> = new Set<RowKind>([
 export interface MenuTreeResolver {
   /** The Resolved ID seam this resolver was created with. */
   readonly getResolvedId: GetResolvedIdFn
+  /** Definition Key uniqueness policy, captured when this resolver is created. */
+  readonly idScope: PopupMenuIdScope
   /** Current root nodes, in def order. */
   readonly rootNodes: readonly PopupMenuNode[]
   /** Re-supply the root def list and reconcile the whole tree. */
@@ -60,6 +44,8 @@ export interface MenuTreeResolver {
 export interface MenuTreeResolverOptions {
   /** Resolved-ID seam; defaults to `defaultGetResolvedId`. */
   getResolvedId?: GetResolvedIdFn
+  /** Definition Key uniqueness scope; captured when this resolver is created. */
+  idScope?: PopupMenuIdScope
 }
 
 function prospectiveIdentity(
@@ -70,9 +56,7 @@ function prospectiveIdentity(
   getResolvedId: GetResolvedIdFn,
 ): { definitionKey: string; definitionPath: string[]; id: string } {
   const definitionKey = definitionKeyForDef(def)
-  const definitionPath = definitionKey
-    ? [...basePath, definitionKey]
-    : [...basePath]
+  const definitionPath = [...basePath, definitionKey]
   const probe: UnresolvedMenuNode = {
     def,
     kind: def.kind,
@@ -89,35 +73,112 @@ function prospectiveIdentity(
 export function createMenuTreeResolver(
   options: MenuTreeResolverOptions = {},
 ): MenuTreeResolver {
-  const getResolvedId = options.getResolvedId ?? defaultGetResolvedId
+  const idScope = options.idScope ?? 'surface'
+  const getResolvedId =
+    options.getResolvedId ?? ((node) => defaultGetResolvedId(node, idScope))
   let rootNodes: PopupMenuNode[] = []
   let lastRootDefs: readonly NodeDef[] | null = null
   const defToNode = new Map<NodeDef, PopupMenuNode>()
   const idToNode = new Map<string, PopupMenuNode>()
   const lastGraftDefs = new WeakMap<PopupMenuNode, readonly NodeDef[]>()
   const warnedDuplicateIds = new Set<string>()
+  let warnedEmptyKey = false
+  const warnedDuplicateKeys = new WeakMap<object, Set<string>>()
+  let warnedEmptyId = false
+  const keyHolders = new WeakMap<object, Map<string, Set<PopupMenuNode>>>()
+  const menuScope = {}
+
+  const scopeOf = (node: PopupMenuNode): object => {
+    if (idScope === 'menu') return menuScope
+    let current: PopupMenuNode | null = node.parent
+    while (current) {
+      if (contributesDefinitionPath(current.def)) return current
+      current = current.parent
+    }
+    return menuScope
+  }
+
+  const warn = (message: string): void => {
+    if (process.env.NODE_ENV !== 'production') console.warn(message)
+  }
+
+  const scopeLabel = (scope: object): string => {
+    if (idScope === 'menu') return 'menu'
+    if (scope === menuScope) return 'root surface'
+    const surface = scope as PopupMenuNode
+    return `surface "${surface.definitionPath.join('/')}"`
+  }
 
   const warnDuplicateId = (node: PopupMenuNode): void => {
     if (process.env.NODE_ENV === 'production') return
-    if (!node.id) return
-    if (!ROW_KINDS.has(node.kind)) return
+    if (node.id === '') {
+      if (!warnedEmptyId) {
+        warnedEmptyId = true
+        warn(`[PopupMenu] Empty Resolved ID for ${node.kind} definition.`)
+      }
+    }
     const holder = idToNode.get(node.id)
-    if (!holder || holder === node || !ROW_KINDS.has(holder.kind)) return
+    if (!holder || holder === node) return
     if (warnedDuplicateIds.has(node.id)) return
     warnedDuplicateIds.add(node.id)
-    console.warn(
-      `[PopupMenu] Duplicate Resolved ID "${node.id}" resolved for multiple rows in the same menu. Resolved IDs must be unique for stable highlight, keyboard navigation, and persistent row state. Give the rows distinct explicit \`id\`s or distinct \`value\`s.`,
+    warn(
+      `[PopupMenu] Duplicate Resolved ID "${node.id}" in menu scope; ${holder.kind} and ${node.kind} definitions conflict.`,
     )
   }
 
-  const register = (node: PopupMenuNode): void => {
+  const register = (node: PopupMenuNode, scope: object = menuScope): void => {
+    if (node.definitionKey === '') {
+      if (!warnedEmptyKey) {
+        warnedEmptyKey = true
+        warn(
+          `[PopupMenu] Empty Definition Key in ${node.kind} definition (${scopeLabel(scope)}).`,
+        )
+      }
+    }
+    let holdersByKey = keyHolders.get(scope)
+    if (!holdersByKey) {
+      holdersByKey = new Map()
+      keyHolders.set(scope, holdersByKey)
+    }
+    let holders = holdersByKey.get(node.definitionKey)
+    if (!holders) {
+      holders = new Set()
+      holdersByKey.set(node.definitionKey, holders)
+    }
+    const holder = [...holders].find((candidate) => candidate !== node)
+    if (holder) {
+      let warnedKeys = warnedDuplicateKeys.get(scope)
+      if (!warnedKeys) {
+        warnedKeys = new Set()
+        warnedDuplicateKeys.set(scope, warnedKeys)
+      }
+      if (!warnedKeys.has(node.definitionKey)) {
+        warnedKeys.add(node.definitionKey)
+        warn(
+          `[PopupMenu] Duplicate Definition Key "${node.definitionKey}" in ${scopeLabel(scope)}; ${holder.kind} and ${node.kind} definitions conflict.`,
+        )
+      }
+    }
+    holders.add(node)
     if (!defToNode.has(node.def)) defToNode.set(node.def, node)
     warnDuplicateId(node)
     if (!idToNode.has(node.id)) idToNode.set(node.id, node)
-    for (const child of node.children) register(child)
+    const childScope =
+      idScope === 'surface' && contributesDefinitionPath(node.def)
+        ? node
+        : scope
+    for (const child of node.children) register(child, childScope)
   }
 
   const retire = (node: PopupMenuNode): void => {
+    const scope = scopeOf(node)
+    const holdersByKey = keyHolders.get(scope)
+    const holders = holdersByKey?.get(node.definitionKey)
+    if (holders) {
+      holders.delete(node)
+      if (holders.size === 0) holdersByKey?.delete(node.definitionKey)
+      if (holdersByKey?.size === 0) keyHolders.delete(scope)
+    }
     if (defToNode.get(node.def) === node) defToNode.delete(node.def)
     if (idToNode.get(node.id) === node) idToNode.delete(node.id)
     lastGraftDefs.delete(node)
@@ -199,7 +260,7 @@ export function createMenuTreeResolver(
           index,
           getResolvedId,
         ).id
-        register(created)
+        register(created, scopeOf(created))
         return created
       }
 
@@ -209,6 +270,16 @@ export function createMenuTreeResolver(
       }
 
       if (defToNode.get(node.def) === node) defToNode.delete(node.def)
+      const oldScope = scopeOf(node)
+      const oldHoldersByKey = keyHolders.get(oldScope)
+      const oldHolders = oldHoldersByKey?.get(node.definitionKey)
+      if (oldHolders) {
+        oldHolders.delete(node)
+        if (oldHolders.size === 0) {
+          oldHoldersByKey?.delete(node.definitionKey)
+        }
+        if (oldHoldersByKey?.size === 0) keyHolders.delete(oldScope)
+      }
       node.def = def
       node.definitionKey = definitionKey
       node.definitionPath = definitionPath
@@ -228,12 +299,14 @@ export function createMenuTreeResolver(
         node,
         contributesDefinitionPath(def) ? node.definitionPath : basePath,
       )
+      register(node, scopeOf(node))
       return node
     })
   }
 
   return {
     getResolvedId,
+    idScope,
     get rootNodes() {
       return rootNodes
     },

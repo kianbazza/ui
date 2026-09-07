@@ -254,6 +254,7 @@ export type {
   ItemRenderParams,
   ItemRenderProps,
   NodeDef,
+  PopupMenuIdScope,
   PopupMenuNode,
   PopupMenuRadioGroupValueProps as ContextMenuRadioGroupValueProps,
   RadioGroupDef,

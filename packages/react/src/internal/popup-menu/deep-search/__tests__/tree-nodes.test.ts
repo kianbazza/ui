@@ -6,10 +6,38 @@ import type {
   TreeItemDef,
 } from '../types.js'
 import {
+  computeDefPath,
   filterNodes,
   getBrowseNodesFlatten,
   getBrowseNodesPreserve,
 } from '../utils.js'
+
+describe('computeDefPath', () => {
+  it('keeps only submenu/subpage breadcrumbs and retains an empty leaf key', () => {
+    expect(
+      computeDefPath(
+        ['root'],
+        [
+          {
+            node: tree('Inline', []) as TreeItemDef,
+            value: 'Inline',
+          },
+          {
+            node: {
+              kind: 'submenu',
+              value: 'Submenu',
+              nodes: [],
+              render: () => null,
+            },
+            value: 'Submenu',
+          },
+        ],
+        '',
+        'Leaf',
+      ),
+    ).toEqual(['root', 'submenu', ''])
+  })
+})
 
 const item = (value: string): ItemDef => ({
   kind: 'item',
@@ -170,7 +198,9 @@ describe('tree nodes', () => {
 
   it('skips unsupported tree children and warns in development', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
-    const withSeparator = [tree('Root', [{ kind: 'separator' as const }])]
+    const withSeparator = [
+      tree('Root', [{ kind: 'separator' as const, id: 'separator' }]),
+    ]
     expect(
       filterNodes({ query: '', nodes: withSeparator, highlightedId: null })
         .displayNodes,

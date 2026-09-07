@@ -9,6 +9,9 @@ const item = (value: string, id?: string): NodeDef =>
 const submenu = (value: string, nodes: NodeDef[], id?: string): NodeDef =>
   ({ kind: 'submenu', value, id, nodes, render: () => null }) as NodeDef
 
+const subpage = (value: string, nodes: NodeDef[], id?: string): NodeDef =>
+  ({ kind: 'subpage', value, id, nodes, render: () => null }) as NodeDef
+
 describe('resolveNodeDefs', () => {
   it('resolves flat items', () => {
     const [node] = resolveNodeDefs(
@@ -39,7 +42,7 @@ describe('resolveNodeDefs', () => {
     expect(node).toMatchObject({
       definitionKey: 'Custom ID!',
       definitionPath: ['Custom ID!'],
-      id: 'Custom ID!',
+      id: 'Custom%0020ID%0021',
     })
   })
 
@@ -54,7 +57,7 @@ describe('resolveNodeDefs', () => {
 
     expect(child).toMatchObject({
       definitionPath: ['status', 'backlog'],
-      id: 'status.backlog',
+      id: 'status/backlog',
       parent: node,
       depth: 1,
     })
@@ -100,7 +103,7 @@ describe('resolveNodeDefs', () => {
     expect(child).toMatchObject({ definitionPath: ['backlog'], id: 'backlog' })
   })
 
-  it('includes tree-item Definition Keys in descendant paths', () => {
+  it('keeps tree-item Definition Keys out of descendant paths', () => {
     const treeItem = {
       kind: 'tree-item',
       value: 'Fruits',
@@ -110,12 +113,12 @@ describe('resolveNodeDefs', () => {
     const [node] = resolveNodeDefs([treeItem], null, [], defaultGetResolvedId)
 
     expect(node.children[0]).toMatchObject({
-      definitionPath: ['fruits', 'apple'],
-      id: 'fruits.apple',
+      definitionPath: ['apple'],
+      id: 'apple',
     })
   })
 
-  it('drops empty Definition Keys from paths', () => {
+  it('keeps empty Definition Keys in paths for diagnostics', () => {
     const [node] = resolveNodeDefs(
       [submenu('⚙️', [item('Backlog')])],
       null,
@@ -125,24 +128,32 @@ describe('resolveNodeDefs', () => {
 
     expect(node).toMatchObject({
       definitionKey: '',
-      definitionPath: [],
+      definitionPath: [''],
       id: '',
     })
     expect(node.children[0]).toMatchObject({
-      definitionPath: ['backlog'],
-      id: 'backlog',
+      definitionPath: ['', 'backlog'],
+      id: '/backlog',
     })
   })
 
-  it('resolves id-less separators', () => {
+  it('resolves identified separators', () => {
     const nodes = resolveNodeDefs(
-      [item('a'), { kind: 'separator' }, item('b')] as NodeDef[],
+      [
+        item('a'),
+        { kind: 'separator', id: 'separator' },
+        item('b'),
+      ] as NodeDef[],
       null,
       [],
       defaultGetResolvedId,
     )
 
-    expect(nodes[1]).toMatchObject({ definitionKey: '', id: '', index: 1 })
+    expect(nodes[1]).toMatchObject({
+      definitionKey: 'separator',
+      id: 'separator',
+      index: 1,
+    })
   })
 
   it('matches computeDefPath for nested contributing ancestors', () => {
@@ -156,5 +167,38 @@ describe('resolveNodeDefs', () => {
     expect(leaf.definitionPath).toEqual(
       computeDefPath(ancestorDefinitionKeys, [], undefined, 'Backlog'),
     )
+  })
+
+  it('encodes every UTF-16 code unit in surface IDs', () => {
+    const ids = ['literal%slash/', '😀', '\ud800', '\udc00', '�']
+    const nodes = resolveNodeDefs(
+      ids.map((id) => item(id, id)),
+      null,
+      [],
+      defaultGetResolvedId,
+    )
+
+    expect(nodes.map((node) => node.id)).toEqual([
+      'literal%0025slash%002f',
+      '%d83d%de00',
+      '%d800',
+      '%dc00',
+      '%fffd',
+    ])
+    expect(new Set(nodes.map((node) => node.id)).size).toBe(ids.length)
+  })
+
+  it('includes nested subpage ancestry in the Definition Path', () => {
+    const [node] = resolveNodeDefs(
+      [subpage('Details', [subpage('Nested', [item('Leaf')])])],
+      null,
+      [],
+      defaultGetResolvedId,
+    )
+
+    expect(node.children[0]!.children[0]).toMatchObject({
+      definitionPath: ['details', 'nested', 'leaf'],
+      id: 'details/nested/leaf',
+    })
   })
 })

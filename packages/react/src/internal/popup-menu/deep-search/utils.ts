@@ -34,10 +34,10 @@ const identityQuery = (query: string) => query
 // ============================================================================
 /**
  * Computes a row's canonical definition-tree path (`definitionPath`): the display
- * path of the computing surface, then breadcrumb components, then the node's
- * own Definition Key (`id`, or its slugified `value`), root-first. Empty keys
- * are skipped. Identical wherever the row renders — browse, deep search,
- * or recursion.
+ * path of the computing surface, then submenu/subpage breadcrumb components,
+ * then the node's own Definition Key (`id`, or its slugified `value`),
+ * root-first. Tree-item breadcrumbs are transparent and empty keys are kept.
+ * Identical wherever the row renders — browse, deep search, or recursion.
  */
 export function computeDefPath(
   displayPath: string[],
@@ -47,9 +47,15 @@ export function computeDefPath(
 ): string[] {
   return [
     ...displayPath,
-    ...breadcrumbs.map((b) => b.id ?? slugify(b.value)),
+    ...breadcrumbs
+      .filter(
+        (breadcrumb) =>
+          breadcrumb.node.kind === 'submenu' ||
+          breadcrumb.node.kind === 'subpage',
+      )
+      .map((b) => b.id ?? slugify(b.value)),
     id ?? slugify(value),
-  ].filter(Boolean)
+  ]
 }
 
 /**
@@ -131,7 +137,7 @@ export function isRadioGroupDef(node: NodeDef): node is RadioGroupDef {
 
 export function isSeparatorDef(
   node: NodeDef,
-): node is { kind: 'separator'; id?: string } {
+): node is { kind: 'separator'; id: string } {
   return node.kind === 'separator'
 }
 

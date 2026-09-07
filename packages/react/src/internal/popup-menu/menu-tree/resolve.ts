@@ -2,6 +2,7 @@ import { slugify } from '../../listbox/utils/normalize.js'
 import type { NodeDef } from '../deep-search/types.js'
 import type {
   GetResolvedIdFn,
+  PopupMenuIdScope,
   PopupMenuNode,
   UnresolvedMenuNode,
 } from './types.js'
@@ -44,9 +45,32 @@ export function resolveDetachedNode<D extends NodeDef>(
   return node as PopupMenuNode<D>
 }
 
-/** Default Resolved ID: explicit `def.id` verbatim, else the joined definition path. */
-export function defaultGetResolvedId(node: UnresolvedMenuNode): string {
-  return node.def.id ?? node.definitionPath.join('.')
+function encodeDefinitionPathEntry(entry: string): string {
+  let encoded = ''
+  for (let index = 0; index < entry.length; index += 1) {
+    const codeUnit = entry.charCodeAt(index)
+    const isSafe =
+      (codeUnit >= 0x41 && codeUnit <= 0x5a) ||
+      (codeUnit >= 0x61 && codeUnit <= 0x7a) ||
+      (codeUnit >= 0x30 && codeUnit <= 0x39) ||
+      codeUnit === 0x2e ||
+      codeUnit === 0x5f ||
+      codeUnit === 0x7e ||
+      codeUnit === 0x2d
+    encoded += isSafe
+      ? String.fromCharCode(codeUnit)
+      : `%${codeUnit.toString(16).padStart(4, '0')}`
+  }
+  return encoded
+}
+
+/** Default Resolved ID, using surface-scoped encoded paths unless menu scope is selected. */
+export function defaultGetResolvedId(
+  node: UnresolvedMenuNode,
+  idScope: PopupMenuIdScope = 'surface',
+): string {
+  if (idScope === 'menu') return node.definitionKey
+  return node.definitionPath.map(encodeDefinitionPathEntry).join('/')
 }
 
 /** Definition Key for a def: explicit `id` verbatim, else slugified `value`. */
@@ -56,7 +80,7 @@ export function definitionKeyForDef(def: NodeDef): string {
     case 'radio-group':
       return def.id
     case 'separator':
-      return def.id ?? ''
+      return def.id
     default:
       return def.id ?? slugify(def.value)
   }
@@ -79,9 +103,7 @@ export function childDefsOf(def: NodeDef): readonly NodeDef[] {
 
 /** Kinds whose Definition Key is part of their descendants' definition paths. */
 export function contributesDefinitionPath(def: NodeDef): boolean {
-  return (
-    def.kind === 'submenu' || def.kind === 'subpage' || def.kind === 'tree-item'
-  )
+  return def.kind === 'submenu' || def.kind === 'subpage'
 }
 
 /**
@@ -98,9 +120,7 @@ export function resolveNodeDefs(
 ): PopupMenuNode[] {
   return defs.map((def, index) => {
     const definitionKey = definitionKeyForDef(def)
-    const definitionPath = definitionKey
-      ? [...basePath, definitionKey]
-      : [...basePath]
+    const definitionPath = [...basePath, definitionKey]
     const unresolved: UnresolvedMenuNode = {
       def,
       kind: def.kind,

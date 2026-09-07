@@ -362,6 +362,7 @@ export { defaultGetResolvedId, isPopupMenuNode } from './menu-tree/resolve.js'
 export type { MenuTreeResolver } from './menu-tree/resolver.js'
 export type {
   GetResolvedIdFn,
+  PopupMenuIdScope,
   PopupMenuNode,
   UnresolvedMenuNode,
 } from './menu-tree/types.js'
