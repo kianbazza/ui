@@ -3,7 +3,7 @@
 import * as React from 'react'
 import { useMenuTreeResolver } from '../contexts/menu-tree-resolver-context.js'
 import {
-  defaultGetRowId,
+  defaultGetResolvedId,
   isPopupMenuNode,
   resolveDetachedNode,
 } from '../menu-tree/resolve.js'
@@ -230,8 +230,8 @@ export function DataSubpagesContent(props: DataSubpagesContentProps) {
       const resolved = resolver?.getNodeForDef(def)
       if (resolved) return resolved
       warnOutOfTreeDef(def)
-      const getRowId = resolver?.getRowId ?? defaultGetRowId
-      return resolveDetachedNode(def, getRowId)
+      const getResolvedId = resolver?.getResolvedId ?? defaultGetResolvedId
+      return resolveDetachedNode(def, getResolvedId)
     },
     [resolver],
   )

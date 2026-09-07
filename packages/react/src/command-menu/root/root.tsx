@@ -4,7 +4,7 @@ import { Dialog } from '@base-ui/react/dialog'
 import * as React from 'react'
 import type { PopupMenuOpenChangeReason } from '../../internal/popup-menu/events.js'
 import {
-  type GetRowIdFn,
+  type GetResolvedIdFn,
   PopupMenuProviders,
   type UsePopupMenuRootParams,
   usePopupMenuRoot,
@@ -22,13 +22,13 @@ export interface CommandMenuRootProps {
   modal?: boolean
   disabled?: boolean
   /**
-   * Computes canonical row ids for data-first content from the unidentified resolved node (definitional facts only).
+   * Computes canonical Resolved IDs for data-first content from the Unresolved Menu Node (definitional facts only).
    * @default explicit `def.id` verbatim, else the joined definition path
    * Read once when the menu root mounts — later changes have no effect.
    * @example
-   * <CommandMenu.Root getRowId={(node) => node.def.id ?? node.defPath.join('.')} />
+   * <CommandMenu.Root getResolvedId={(node) => node.def.id ?? node.definitionPath.join('.')} />
    */
-  getRowId?: GetRowIdFn
+  getResolvedId?: GetResolvedIdFn
 }
 
 /**
@@ -46,7 +46,7 @@ export function CommandMenuRoot(props: CommandMenuRoot.Props) {
     hotkey,
     modal = true,
     disabled,
-    getRowId,
+    getResolvedId,
   } = props
 
   const {
@@ -64,7 +64,7 @@ export function CommandMenuRoot(props: CommandMenuRoot.Props) {
     defaultOpen,
     disabled,
     closeOnOutsidePress: 'pointerdown',
-    getRowId,
+    getResolvedId,
   })
 
   store.useControlledProp('openProp', openProp)

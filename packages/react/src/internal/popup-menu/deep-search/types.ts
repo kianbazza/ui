@@ -366,7 +366,7 @@ export interface RowRenderContext {
  */
 export type ItemRenderProps = {
   /**
-   * Canonical resolved row id for the item (explicit `id` verbatim, else the
+   * Canonical Resolved ID for the item (explicit `id` verbatim, else the
    * definition path — identical in browse and deep search).
    * Must be passed to the rendered component for navigation to work.
    */
@@ -756,9 +756,9 @@ export interface RadioGroupLabelRenderParams {
 interface BaseNodeDef {
   /**
    * Unique identifier for this node.
-   * If provided, it is used verbatim as the resolved row id. If omitted, the
+   * If provided, it is used verbatim as the Resolved ID. If omitted, the
    * canonical id is the node's definition path (ancestor segments plus the
-   * slugified `value`), or whatever the root `getRowId` seam computes.
+   * slugified `value`), or whatever the root `getResolvedId` seam computes.
    */
   id?: string
   /** Whether this node is hidden */

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { NodeDef } from '../../deep-search/types.js'
 import { computeDefPath } from '../../deep-search/utils.js'
-import { defaultGetRowId, resolveNodeDefs } from '../resolve.js'
+import { defaultGetResolvedId, resolveNodeDefs } from '../resolve.js'
 
 const item = (value: string, id?: string): NodeDef =>
   ({ kind: 'item', value, id, render: () => null }) as NodeDef
@@ -11,11 +11,16 @@ const submenu = (value: string, nodes: NodeDef[], id?: string): NodeDef =>
 
 describe('resolveNodeDefs', () => {
   it('resolves flat items', () => {
-    const [node] = resolveNodeDefs([item('Apple')], null, [], defaultGetRowId)
+    const [node] = resolveNodeDefs(
+      [item('Apple')],
+      null,
+      [],
+      defaultGetResolvedId,
+    )
 
     expect(node).toMatchObject({
-      pathSegment: 'apple',
-      defPath: ['apple'],
+      definitionKey: 'apple',
+      definitionPath: ['apple'],
       id: 'apple',
       depth: 0,
       index: 0,
@@ -28,12 +33,12 @@ describe('resolveNodeDefs', () => {
       [item('Apple', 'Custom ID!')],
       null,
       [],
-      defaultGetRowId,
+      defaultGetResolvedId,
     )
 
     expect(node).toMatchObject({
-      pathSegment: 'Custom ID!',
-      defPath: ['Custom ID!'],
+      definitionKey: 'Custom ID!',
+      definitionPath: ['Custom ID!'],
       id: 'Custom ID!',
     })
   })
@@ -43,12 +48,12 @@ describe('resolveNodeDefs', () => {
       [submenu('Status', [item('Backlog')])],
       null,
       [],
-      defaultGetRowId,
+      defaultGetResolvedId,
     )
     const child = node.children[0]
 
     expect(child).toMatchObject({
-      defPath: ['status', 'backlog'],
+      definitionPath: ['status', 'backlog'],
       id: 'status.backlog',
       parent: node,
       depth: 1,
@@ -61,62 +66,70 @@ describe('resolveNodeDefs', () => {
       id: 'g1',
       nodes: [item('Backlog')],
     } as NodeDef
-    const [node] = resolveNodeDefs([group], null, [], defaultGetRowId)
+    const [node] = resolveNodeDefs([group], null, [], defaultGetResolvedId)
     const child = node.children[0]
 
-    expect(node).toMatchObject({ id: 'g1', pathSegment: 'g1', defPath: ['g1'] })
+    expect(node).toMatchObject({
+      id: 'g1',
+      definitionKey: 'g1',
+      definitionPath: ['g1'],
+    })
     expect(child).toMatchObject({
-      defPath: ['backlog'],
+      definitionPath: ['backlog'],
       id: 'backlog',
       depth: 1,
       parent: node,
     })
   })
 
-  it('keeps radio-groups path-transparent and uses their id as segment', () => {
+  it('keeps radio-groups path-transparent and uses their id as Definition Key', () => {
     const radioGroup = {
       kind: 'radio-group',
       id: 'rg1',
       value: 'selected-value',
       nodes: [{ kind: 'radio-item', value: 'Backlog', render: () => null }],
     } as NodeDef
-    const [node] = resolveNodeDefs([radioGroup], null, [], defaultGetRowId)
+    const [node] = resolveNodeDefs([radioGroup], null, [], defaultGetResolvedId)
     const child = node.children[0]
 
     expect(node).toMatchObject({
-      pathSegment: 'rg1',
+      definitionKey: 'rg1',
       id: 'rg1',
-      defPath: ['rg1'],
+      definitionPath: ['rg1'],
     })
-    expect(child).toMatchObject({ defPath: ['backlog'], id: 'backlog' })
+    expect(child).toMatchObject({ definitionPath: ['backlog'], id: 'backlog' })
   })
 
-  it('includes tree-item segments in descendant paths', () => {
+  it('includes tree-item Definition Keys in descendant paths', () => {
     const treeItem = {
       kind: 'tree-item',
       value: 'Fruits',
       nodes: [item('Apple')],
       render: () => null,
     } as NodeDef
-    const [node] = resolveNodeDefs([treeItem], null, [], defaultGetRowId)
+    const [node] = resolveNodeDefs([treeItem], null, [], defaultGetResolvedId)
 
     expect(node.children[0]).toMatchObject({
-      defPath: ['fruits', 'apple'],
+      definitionPath: ['fruits', 'apple'],
       id: 'fruits.apple',
     })
   })
 
-  it('drops empty segments from paths', () => {
+  it('drops empty Definition Keys from paths', () => {
     const [node] = resolveNodeDefs(
       [submenu('⚙️', [item('Backlog')])],
       null,
       [],
-      defaultGetRowId,
+      defaultGetResolvedId,
     )
 
-    expect(node).toMatchObject({ pathSegment: '', defPath: [], id: '' })
+    expect(node).toMatchObject({
+      definitionKey: '',
+      definitionPath: [],
+      id: '',
+    })
     expect(node.children[0]).toMatchObject({
-      defPath: ['backlog'],
+      definitionPath: ['backlog'],
       id: 'backlog',
     })
   })
@@ -126,22 +139,22 @@ describe('resolveNodeDefs', () => {
       [item('a'), { kind: 'separator' }, item('b')] as NodeDef[],
       null,
       [],
-      defaultGetRowId,
+      defaultGetResolvedId,
     )
 
-    expect(nodes[1]).toMatchObject({ pathSegment: '', id: '', index: 1 })
+    expect(nodes[1]).toMatchObject({ definitionKey: '', id: '', index: 1 })
   })
 
   it('matches computeDefPath for nested contributing ancestors', () => {
     const root = submenu('Status', [
       submenu('Open Items', [item('Backlog')], 'open-items-id'),
     ])
-    const leaf = resolveNodeDefs([root], null, [], defaultGetRowId)[0]
+    const leaf = resolveNodeDefs([root], null, [], defaultGetResolvedId)[0]
       .children[0].children[0]
-    const ancestorSegments = ['status', 'open-items-id']
+    const ancestorDefinitionKeys = ['status', 'open-items-id']
 
-    expect(leaf.defPath).toEqual(
-      computeDefPath(ancestorSegments, [], undefined, 'Backlog'),
+    expect(leaf.definitionPath).toEqual(
+      computeDefPath(ancestorDefinitionKeys, [], undefined, 'Backlog'),
     )
   })
 })

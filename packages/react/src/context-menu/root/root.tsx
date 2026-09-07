@@ -12,7 +12,7 @@ import {
   usePopupMenuRoot,
   type VirtualAnchor,
 } from '../../internal/popup-menu/index.js'
-import type { GetRowIdFn } from '../../internal/popup-menu/menu-tree/types.js'
+import type { GetResolvedIdFn } from '../../internal/popup-menu/menu-tree/types.js'
 import type {
   ContextMenuHighlightChangeEventDetails,
   ContextMenuOpenChangeEventDetails,
@@ -59,7 +59,7 @@ export interface ContextMenuRootProps {
   /**
    * Callback when the highlighted item changes.
    * Useful for synchronizing with a virtualizer (e.g., scrollToIndex) or other UI state.
-   * `id` is first. `node` is the resolved menu node carrying the highlighted id, looked up in the menu's data-first tree — `null` when the highlight clears or when no data-first node carries that id (e.g. JSX-defined rows). A JSX row that shares an id with a data-first node yields that node; row ids are expected to be unique per menu.
+   * `id` is first. `node` is the resolved menu node carrying the highlighted ID, looked up in the menu's data-first tree — `null` when the highlight clears or when no data-first node carries that ID (e.g. JSX-defined rows). A JSX row that shares an ID with a data-first node yields that node; Resolved IDs are expected to be unique per menu.
    * The fourth parameter contains event details including the reason for the change.
    */
   onHighlightChange?: PopupMenuHighlightChangeHandler<ContextMenuHighlightChangeEventDetails>
@@ -105,18 +105,18 @@ export interface ContextMenuRootProps {
   actionsRef?: React.RefObject<ContextMenuRoot.Actions | null>
 
   /**
-   * - Otherwise, use the row's full definition path (`defPath`) — identical in
+   * - Otherwise, use the row's full definition path (`definitionPath`) — identical in
    *   browse and deep-search contexts
    */
 
   /**
-   * Computes canonical row ids for data-first content from the unidentified resolved node (definitional facts only).
+   * Computes canonical Resolved IDs for data-first content from the Unresolved Menu Node (definitional facts only).
    * @default explicit `def.id` verbatim, else the joined definition path
    * Read once when the menu root mounts — later changes have no effect.
    * @example
-   * <ContextMenu.Root getRowId={(node) => node.def.id ?? node.defPath.join('.')} />
+   * <ContextMenu.Root getResolvedId={(node) => node.def.id ?? node.definitionPath.join('.')} />
    */
-  getRowId?: GetRowIdFn
+  getResolvedId?: GetResolvedIdFn
 
   /**
    * Debug visualization options for submenu interaction heuristics.
@@ -196,7 +196,7 @@ export function ContextMenuRoot(props: ContextMenuRoot.Props) {
     closeOnOutsidePress = 'pointerdown',
     onOpenChangeComplete: onOpenChangeCompleteProp,
     actionsRef,
-    getRowId,
+    getResolvedId,
     debug,
     children,
   } = props
@@ -224,7 +224,7 @@ export function ContextMenuRoot(props: ContextMenuRoot.Props) {
       onHighlightChange as unknown as UsePopupMenuRootParams['onHighlightChange'],
     closeOnOutsidePress,
     disabled: disabledProp,
-    getRowId,
+    getResolvedId,
   })
 
   const popoverActionsRef = React.useRef<Popover.Root.Actions | null>(null)

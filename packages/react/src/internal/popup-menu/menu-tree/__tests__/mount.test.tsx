@@ -5,7 +5,7 @@ import { DropdownMenu } from '../../../../dropdown-menu/index.js'
 import { useMenuTreeResolver } from '../../contexts/menu-tree-resolver-context.js'
 import type { ItemDef, NodeDef, SubmenuDef } from '../../deep-search/types.js'
 import type { MenuTreeResolver } from '../resolver.js'
-import type { GetRowIdFn } from '../types.js'
+import type { GetResolvedIdFn } from '../types.js'
 
 function item(value: string): ItemDef {
   return {
@@ -36,15 +36,15 @@ function Menu({
   content,
   onResolver,
   search = false,
-  getRowId,
+  getResolvedId,
 }: {
   content: NodeDef[]
   onResolver: (value: MenuTreeResolver) => void
   search?: boolean
-  getRowId?: GetRowIdFn
+  getResolvedId?: GetResolvedIdFn
 }) {
   return (
-    <DropdownMenu.Root defaultOpen getRowId={getRowId}>
+    <DropdownMenu.Root defaultOpen getResolvedId={getResolvedId}>
       <DropdownMenu.Trigger>Open</DropdownMenu.Trigger>
       <Probe onResolver={onResolver} />
       <DropdownMenu.Portal>
@@ -103,15 +103,15 @@ function submenu(
 }
 
 describe('mounted menu-tree resolution', () => {
-  describe('public getRowId prop', () => {
-    it('uses the custom row-id seam for resolver node ids', async () => {
+  describe('public getResolvedId prop', () => {
+    it('uses the custom Resolved ID seam for resolver node IDs', async () => {
       let resolver!: MenuTreeResolver
       render(
         <Menu
           onResolver={(value) => {
             resolver = value
           }}
-          getRowId={(node) => `x-${node.def.id ?? node.pathSegment}`}
+          getResolvedId={(node) => `x-${node.def.id ?? node.definitionKey}`}
           content={[item('Settings'), submenu('Status', [item('Backlog')], [])]}
         />,
       )
@@ -143,7 +143,7 @@ describe('mounted menu-tree resolution', () => {
       expect(resolver.getNodeById('status.backlog')).toBeDefined(),
     )
     const node = resolver.getNodeById('status.backlog')!
-    expect(node.defPath).toEqual(['status', 'backlog'])
+    expect(node.definitionPath).toEqual(['status', 'backlog'])
     expect(node.parent?.id).toBe('status')
     expect(resolver.rootNodes).toHaveLength(2)
   })
@@ -196,7 +196,10 @@ describe('mounted menu-tree resolution', () => {
     await waitFor(() => expect(resolver.getNodeById('a.extra')).toBeDefined())
     const parent = resolver.getNodeById('a')!
     expect(resolver.getNodeById('a.extra')?.parent).toBe(parent)
-    expect(resolver.getNodeById('a.extra')?.defPath).toEqual(['a', 'extra'])
+    expect(resolver.getNodeById('a.extra')?.definitionPath).toEqual([
+      'a',
+      'extra',
+    ])
     expect(parent.children.filter((node) => node.id === 'a.leaf')).toHaveLength(
       1,
     )
@@ -234,7 +237,7 @@ describe('mounted menu-tree resolution', () => {
     expect(resolver.getNodeById('a.leaf')).toBe(before)
   })
 
-  it('asserts browse pipeline wiring: the DOM reads the row ids computed by the resolver', async () => {
+  it('asserts browse pipeline wiring: the DOM reads the Resolved IDs computed by the resolver', async () => {
     render(
       <Menu
         onResolver={() => {}}
@@ -253,7 +256,7 @@ describe('mounted menu-tree resolution', () => {
     )
   })
 
-  it('asserts deep-search pipeline wiring: the DOM reads the row ids computed by the resolver', async () => {
+  it('asserts deep-search pipeline wiring: the DOM reads the Resolved IDs computed by the resolver', async () => {
     const user = userEvent.setup()
     render(
       <Menu

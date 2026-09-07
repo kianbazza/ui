@@ -1,13 +1,13 @@
 import { slugify } from '../../listbox/utils/normalize.js'
 import type { NodeDef } from '../deep-search/types.js'
 import type {
-  GetRowIdFn,
+  GetResolvedIdFn,
   PopupMenuNode,
-  UnidentifiedMenuNode,
+  UnresolvedMenuNode,
 } from './types.js'
 
 const detachedNodeCache = new WeakMap<
-  GetRowIdFn,
+  GetResolvedIdFn,
   WeakMap<NodeDef, PopupMenuNode>
 >()
 
@@ -17,8 +17,8 @@ export function isPopupMenuNode(value: unknown): value is PopupMenuNode {
     value !== null &&
     'def' in value &&
     typeof (value as PopupMenuNode).id === 'string' &&
-    typeof (value as PopupMenuNode).pathSegment === 'string' &&
-    Array.isArray((value as PopupMenuNode).defPath) &&
+    typeof (value as PopupMenuNode).definitionKey === 'string' &&
+    Array.isArray((value as PopupMenuNode).definitionPath) &&
     Array.isArray((value as PopupMenuNode).children) &&
     typeof (value as PopupMenuNode).depth === 'number' &&
     'parent' in value
@@ -28,29 +28,29 @@ export function isPopupMenuNode(value: unknown): value is PopupMenuNode {
 /** Resolve a single out-of-tree def to a stable detached node (per seam, per def). */
 export function resolveDetachedNode<D extends NodeDef>(
   def: D,
-  getRowId: GetRowIdFn,
+  getResolvedId: GetResolvedIdFn,
 ): PopupMenuNode<D> {
-  let perSeam = detachedNodeCache.get(getRowId)
+  let perSeam = detachedNodeCache.get(getResolvedId)
   if (!perSeam) {
     perSeam = new WeakMap()
-    detachedNodeCache.set(getRowId, perSeam)
+    detachedNodeCache.set(getResolvedId, perSeam)
   }
   let node = perSeam.get(def)
   if (!node) {
-    node = resolveNodeDefs([def], null, [], getRowId)[0]!
+    node = resolveNodeDefs([def], null, [], getResolvedId)[0]!
     perSeam.set(def, node)
   }
   // node was built from (or cached under) this exact def; def === node.def
   return node as PopupMenuNode<D>
 }
 
-/** Default row id: explicit `def.id` verbatim, else the joined definition path. */
-export function defaultGetRowId(node: UnidentifiedMenuNode): string {
-  return node.def.id ?? node.defPath.join('.')
+/** Default Resolved ID: explicit `def.id` verbatim, else the joined definition path. */
+export function defaultGetResolvedId(node: UnresolvedMenuNode): string {
+  return node.def.id ?? node.definitionPath.join('.')
 }
 
-/** Segment for a def: explicit `id` verbatim, else slugified `value`. */
-export function segmentForDef(def: NodeDef): string {
+/** Definition Key for a def: explicit `id` verbatim, else slugified `value`. */
+export function definitionKeyForDef(def: NodeDef): string {
   switch (def.kind) {
     case 'group':
     case 'radio-group':
@@ -77,8 +77,8 @@ export function childDefsOf(def: NodeDef): readonly NodeDef[] {
   }
 }
 
-/** Kinds whose segment is part of their descendants' definition paths. */
-export function contributesPathSegment(def: NodeDef): boolean {
+/** Kinds whose Definition Key is part of their descendants' definition paths. */
+export function contributesDefinitionPath(def: NodeDef): boolean {
   return (
     def.kind === 'submenu' || def.kind === 'subpage' || def.kind === 'tree-item'
   )
@@ -87,23 +87,25 @@ export function contributesPathSegment(def: NodeDef): boolean {
 /**
  * Resolve a def list into node instances under `parent`.
  * `basePath` is the path segments contributed by ancestors (the parent's
- * `defPath` when the parent contributes a segment, otherwise the parent's
+ * `definitionPath` when the parent contributes a segment, otherwise the parent's
  * own base path); pass `[]` for roots.
  */
 export function resolveNodeDefs(
   defs: readonly NodeDef[],
   parent: PopupMenuNode | null,
   basePath: readonly string[],
-  getRowId: GetRowIdFn,
+  getResolvedId: GetResolvedIdFn,
 ): PopupMenuNode[] {
   return defs.map((def, index) => {
-    const segment = segmentForDef(def)
-    const defPath = segment ? [...basePath, segment] : [...basePath]
-    const unidentified: UnidentifiedMenuNode = {
+    const definitionKey = definitionKeyForDef(def)
+    const definitionPath = definitionKey
+      ? [...basePath, definitionKey]
+      : [...basePath]
+    const unresolved: UnresolvedMenuNode = {
       def,
       kind: def.kind,
-      pathSegment: segment,
-      defPath,
+      definitionKey,
+      definitionPath,
       parent,
       children: [],
       depth: parent ? parent.depth + 1 : 0,
@@ -112,13 +114,13 @@ export function resolveNodeDefs(
     // Call the seam before spreading so the node reflects any reads the seam
     // performs on the final definitional facts (spread-then-call would copy
     // the fields before the seam runs).
-    const id = getRowId(unidentified)
-    const node: PopupMenuNode = { ...unidentified, id }
+    const id = getResolvedId(unresolved)
+    const node: PopupMenuNode = { ...unresolved, id }
     node.children = resolveNodeDefs(
       childDefsOf(def),
       node,
-      contributesPathSegment(def) ? node.defPath : basePath,
-      getRowId,
+      contributesDefinitionPath(def) ? node.definitionPath : basePath,
+      getResolvedId,
     )
     return node
   })
