@@ -137,6 +137,13 @@ export interface PopupMenuSubmenuTriggerProps
   closeDelay?: number
 
   /**
+   * Whether the submenu closes when the pointer leaves the trigger without aiming at the submenu popup.
+   * When `false`, the submenu stays open until closed by another path (sibling highlight, keyboard, outside click, etc.).
+   * @default true
+   */
+  closeOnPointerLeave?: boolean
+
+  /**
    * Forces this row's relative order during score-based sorting.
    * Lower values appear earlier.
    * @default 0
@@ -176,6 +183,7 @@ export const PopupMenuSubmenuTrigger = React.forwardRef<
     openOnHighlight = true,
     delay: delayProp,
     closeDelay = 0,
+    closeOnPointerLeave = true,
     forceOrder,
     forceScore,
     render,
@@ -242,6 +250,10 @@ export const PopupMenuSubmenuTrigger = React.forwardRef<
   }, [])
 
   const scheduleClose = React.useCallback(() => {
+    if (!closeOnPointerLeave) {
+      return
+    }
+
     clearCloseTimer()
 
     if (closeDelay <= 0) {
@@ -253,7 +265,7 @@ export const PopupMenuSubmenuTrigger = React.forwardRef<
       closeTimerRef.current = null
       setOpen(false)
     }, closeDelay)
-  }, [clearCloseTimer, closeDelay, setOpen])
+  }, [clearCloseTimer, closeDelay, closeOnPointerLeave, setOpen])
 
   const clearLeaveMonitor = React.useCallback(() => {
     if (leaveMonitorCleanupRef.current) {
@@ -520,7 +532,7 @@ export const PopupMenuSubmenuTrigger = React.forwardRef<
           clearAimGuard()
           scheduleClose()
 
-          if (closeDelay <= 0) {
+          if (closeDelay <= 0 || !closeOnPointerLeave) {
             clearLeaveMonitor()
           }
 
@@ -590,7 +602,7 @@ export const PopupMenuSubmenuTrigger = React.forwardRef<
         clearAimGuard()
         scheduleClose()
 
-        if (closeDelay <= 0) {
+        if (closeDelay <= 0 || !closeOnPointerLeave) {
           clearLeaveMonitor()
         }
       }
@@ -628,6 +640,7 @@ export const PopupMenuSubmenuTrigger = React.forwardRef<
       clearAimGuard,
       scheduleClose,
       closeDelay,
+      closeOnPointerLeave,
     ],
   )
 
@@ -1206,7 +1219,9 @@ export const PopupMenuSubmenuTrigger = React.forwardRef<
         showMissedSafeTriangle(debugSnapshot)
         clearAimGuard()
         scheduleClose()
-        if (closeDelay > 0) {
+        if (!closeOnPointerLeave) {
+          clearLeaveMonitor()
+        } else if (closeDelay > 0) {
           startLeaveMonitor(anchor, tRect, false, closeDelay, clientX, clientY)
         } else {
           clearLeaveMonitor()
@@ -1223,6 +1238,7 @@ export const PopupMenuSubmenuTrigger = React.forwardRef<
       item.id,
       item.storeId,
       closeDelay,
+      closeOnPointerLeave,
       contentRef,
       clearLeaveMonitor,
       clearMissSafeTriangleTimer,
