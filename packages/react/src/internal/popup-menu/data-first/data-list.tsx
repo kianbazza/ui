@@ -20,10 +20,7 @@ import { useMaybeSubpageStack } from '../contexts/subpage-stack-context.js'
 import { useResolution } from '../hooks/use-resolution.js'
 import { staticChildrenOf } from '../menu-tree/resolve.js'
 import type { PopupMenuNode } from '../menu-tree/types.js'
-import {
-  type AsyncMenuState,
-  useAsyncMenuCoordinator,
-} from './async-coordinator.js'
+import { useAsyncMenuCoordinator } from './async-coordinator.js'
 import {
   DataListContext,
   type RenderNodeFn,
@@ -56,9 +53,7 @@ import {
 } from './types.js'
 import {
   type AsyncSubmenuInfo,
-  collectAsyncSubmenus,
   filterNodes,
-  getAsyncLoaderIdForBranch,
   shouldLoadEagerly,
 } from './utils.js'
 
@@ -272,7 +267,7 @@ function AsyncLoaderRenderer({
   enabled,
 }: AsyncLoaderRendererProps) {
   const coordinator = useAsyncMenuCoordinator()
-  const { config, id, breadcrumbs } = info
+  const { config, id } = info
   const Loader = config.Loader
 
   const queryExecution = React.useMemo(() => {
@@ -297,8 +292,8 @@ function AsyncLoaderRenderer({
     <Loader query={effectiveQuery} enabled={shouldFetch}>
       {(result) => (
         <AsyncLoaderResultHandler
+          kind="branch"
           id={id}
-          breadcrumbs={breadcrumbs}
           config={config}
           result={result}
           coordinator={coordinator}
@@ -308,9 +303,10 @@ function AsyncLoaderRenderer({
   )
 }
 
-interface AsyncLoaderResultHandlerProps {
-  id: string
-  breadcrumbs: string[]
+type AsyncLoaderResultHandlerProps = (
+  | { kind: 'root'; id?: undefined }
+  | { kind: 'branch'; id: string }
+) & {
   config: AsyncNodesConfig
   result: AsyncLoaderResult<NodeDef[]>
   coordinator: ReturnType<typeof useAsyncMenuCoordinator>
@@ -321,15 +317,14 @@ interface AsyncLoaderResultHandlerProps {
  * This is a separate component to avoid re-rendering the Loader on every result change.
  */
 function AsyncLoaderResultHandler({
+  kind,
   id,
-  breadcrumbs,
   config,
   result,
   coordinator,
 }: AsyncLoaderResultHandlerProps) {
   // Use refs to hold the latest values without causing re-renders
   // This is critical because coordinator changes on every state update (new Map)
-  const breadcrumbsRef = React.useRef(breadcrumbs)
   const configRef = React.useRef(config)
   const coordinatorRef = React.useRef(coordinator)
   const resultRef = React.useRef(result)
@@ -355,7 +350,6 @@ function AsyncLoaderResultHandler({
   } | null>(null)
 
   // Keep refs up to date
-  breadcrumbsRef.current = breadcrumbs
   configRef.current = config
   coordinatorRef.current = coordinator
   resultRef.current = result
@@ -367,19 +361,24 @@ function AsyncLoaderResultHandler({
     const coord = coordinatorRef.current
     if (!coord) return
 
-    const state: AsyncMenuState = {
-      id,
-      breadcrumbs: breadcrumbsRef.current,
-      config: configRef.current,
-      result: resultRef.current,
+    if (kind === 'root') {
+      coord.registerRootLoader({
+        config: configRef.current,
+        result: resultRef.current,
+      })
+    } else {
+      coord.registerLoader({
+        id,
+        config: configRef.current,
+        result: resultRef.current,
+      })
     }
-
-    coord.registerLoader(state)
 
     return () => {
-      coord.unregisterLoader(id)
+      if (kind === 'root') coord.unregisterRootLoader()
+      else coord.unregisterLoader(id)
     }
-  }, [id]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [kind, id]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Update result when meaningful values change
   // IMPORTANT: Depend on individual result values, not the result object reference.
@@ -429,9 +428,11 @@ function AsyncLoaderResultHandler({
         hasFetched: result.hasFetched,
         error: result.error,
       }
-      coord.updateLoaderResult(id, result)
+      if (kind === 'root') coord.updateRootLoaderResult(result)
+      else coord.updateLoaderResult(id, result)
     }
   }, [
+    kind,
     id,
     result.data,
     result.status,
@@ -490,8 +491,7 @@ function RootAsyncLoader({ query }: RootAsyncLoaderProps) {
     <Loader query={effectiveQuery} enabled={shouldFetch}>
       {(result) => (
         <AsyncLoaderResultHandler
-          id="__root__"
-          breadcrumbs={[]}
+          kind="root"
           config={asyncContent as AsyncNodesConfig}
           result={result}
           coordinator={coordinator}
@@ -552,24 +552,16 @@ export const DataListInner = React.forwardRef<
   // Get coordinator for async state
   const coordinator = useAsyncMenuCoordinator()
 
-  // Collect async submenus from content
-  const asyncSubmenus = React.useMemo(
-    () => collectAsyncSubmenus(content, [], includeInDeepSearch),
-    [content, includeInDeepSearch],
-  )
-
   // Determine if deep search is active
   const minLength = deepSearchConfig.minLength ?? 0
   const isDeepSearchActive =
     deepSearchConfig.enabled !== false && normalizedSearch.length >= minLength
 
-  // Determine which async loaders should be rendered
-  const shouldRenderAsyncLoaders =
-    isDeepSearchActive ||
-    asyncSubmenus.some((s) => shouldLoadEagerly(s.config)) ||
-    (asyncContent && asyncContent.loadStrategy === 'eager')
-
-  const { nodes: resolvedNodes, graftVersion } = useResolution({
+  const {
+    nodes: resolvedNodes,
+    graftVersion,
+    asyncSubmenus,
+  } = useResolution({
     resolver,
     content,
     asyncContent,
@@ -577,8 +569,14 @@ export const DataListInner = React.forwardRef<
     graftParent,
     isSubpageSurface,
     isResolutionRoot,
-    asyncSubmenus,
+    includeInDeepSearch,
   })
+
+  // Determine which async loaders should be rendered
+  const shouldRenderAsyncLoaders =
+    isDeepSearchActive ||
+    asyncSubmenus.some((s) => shouldLoadEagerly(s.config)) ||
+    (asyncContent && asyncContent.loadStrategy === 'eager')
 
   // Publish the resolved-nodes slot for sibling subpages. Not withdrawn on
   // unmount: the root list unmounts while a subpage is active, and the
@@ -634,7 +632,8 @@ export const DataListInner = React.forwardRef<
       result.isDeepSearching &&
       hasAsyncSources &&
       coordinator !== null &&
-      (coordinator.loaders.size < expectedAsyncLoaderCount ||
+      (coordinator.loaders.size + (coordinator.root ? 1 : 0) <
+        expectedAsyncLoaderCount ||
         coordinator.isAnyLoading)
 
     let displayNodesToRender = result.displayNodes
@@ -753,25 +752,23 @@ export const DataListInner = React.forwardRef<
 
       const id = resolved.id
 
-      const getBranchAsyncState = (branchNode: SubmenuDef | SubpageDef) => {
-        if (!branchNode.asyncNodes || !coordinator) {
+      const getBranchAsyncState = (
+        branchNode: PopupMenuNode<SubmenuDef | SubpageDef>,
+      ) => {
+        if (!branchNode.def.asyncNodes || !coordinator) {
           return undefined
         }
 
-        const asyncLoaderId = getAsyncLoaderIdForBranch(
-          branchNode,
-          context.breadcrumbs,
-        )
-        const asyncResult = coordinator.loaders.get(asyncLoaderId)
+        const asyncResult = coordinator.loaders.get(branchNode.id)
 
         if (!asyncResult) {
           return undefined
         }
 
         const isBelowMinLength =
-          branchNode.asyncNodes.type === 'query'
+          branchNode.def.asyncNodes.type === 'query'
             ? resolveQueryExecutionState(
-                branchNode.asyncNodes,
+                branchNode.def.asyncNodes,
                 normalizedSearch,
               ).isBelowMinLength
             : false
@@ -895,7 +892,9 @@ export const DataListInner = React.forwardRef<
         // For submenus, provide the nodes and a recursive renderNode function
         // Note: We pass the resolved id to the submenu trigger so it registers with the
         // correct ID for keyboard navigation during deep search
-        const submenuAsyncState = getBranchAsyncState(node)
+        const submenuAsyncState = getBranchAsyncState(
+          resolved as PopupMenuNode<SubmenuDef | SubpageDef>,
+        )
 
         // Static nodes only - async content is handled by the submenu's own DataSurface
         const staticChildren = staticChildrenOf(resolved)
@@ -1054,7 +1053,9 @@ export const DataListInner = React.forwardRef<
       }
 
       if (node.kind === 'subpage') {
-        const subpageAsyncState = getBranchAsyncState(node)
+        const subpageAsyncState = getBranchAsyncState(
+          resolved as PopupMenuNode<SubmenuDef | SubpageDef>,
+        )
         const pageId = resolved.id
 
         return (
@@ -1316,14 +1317,16 @@ export const DataListInner = React.forwardRef<
         isQueryLoading: false,
         isQueryInitialLoading: false,
         isQueryRefetching: false,
-        skippedMenus: [] as Array<{
-          id: string
-          reason: 'error'
-        }>,
+        skippedMenus: [],
       }
     }
     return coordinator.getAsyncState()
-  }, [coordinator, coordinator?.loaders, coordinator?.erroredLoaders])
+  }, [
+    coordinator,
+    coordinator?.loaders,
+    coordinator?.erroredLoaders,
+    coordinator?.root,
+  ])
 
   // Build children state
   const childrenState: DataListChildrenState = React.useMemo(

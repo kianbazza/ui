@@ -737,4 +737,172 @@ describe('CommandMenu async data-first API', () => {
     }
     expect(seenNodes.at(-1)).toEqual([])
   })
+
+  it('same-value branches with distinct authored IDs receive distinct loader results', async () => {
+    const user = userEvent.setup()
+    const loaderA = createControllableLoader()
+    const loaderB = createControllableLoader()
+    const nodes: NodeDef[] = [
+      createSubpageDef({
+        id: 'a',
+        value: 'Status',
+        asyncNodes: {
+          type: 'static',
+          Loader: loaderA.Loader,
+          loadStrategy: 'eager',
+        },
+      }),
+      createSubpageDef({
+        id: 'b',
+        value: 'Status',
+        asyncNodes: {
+          type: 'static',
+          Loader: loaderB.Loader,
+          loadStrategy: 'eager',
+        },
+      }),
+    ]
+
+    render(
+      <DataCommandMenu
+        deepSearch={{ enabled: true, minLength: 1 }}
+        nodes={nodes}
+      />,
+    )
+    await waitForRootInputFocus()
+    await user.type(screen.getByTestId('input-root'), 'result')
+
+    await resolveLoader(loaderA, [createItemDef('a-result', 'A result')])
+    await resolveLoader(loaderB, [createItemDef('b-result', 'B result')])
+
+    await waitFor(() => {
+      expect(screen.getByTestId('item-a-result')).toBeInTheDocument()
+      expect(screen.getByTestId('item-b-result')).toBeInTheDocument()
+    })
+    // Each result is grafted under its own branch: the deep-search row IDs are
+    // qualified by the authored branch id, not the shared value.
+    expect(screen.getByTestId('item-a-result').id).toBe('a/a-result')
+    expect(screen.getByTestId('item-b-result').id).toBe('b/b-result')
+    expect(screen.getAllByTestId('item-a-result')).toHaveLength(1)
+    expect(screen.getAllByTestId('item-b-result')).toHaveLength(1)
+  })
+
+  it('a branch with Resolved ID "__root__" and a root loader coexist', async () => {
+    const user = userEvent.setup()
+    const rootLoader = createControllableLoader()
+    const branchLoader = createControllableLoader()
+    const rootBranch = createSubpageDef({
+      id: '__root__',
+      value: 'Root-ish',
+      asyncNodes: {
+        type: 'static',
+        Loader: branchLoader.Loader,
+        loadStrategy: 'eager',
+      },
+    })
+
+    render(
+      <CommandMenu.Root defaultOpen>
+        <CommandMenu.Trigger data-testid="trigger">
+          Open commands
+        </CommandMenu.Trigger>
+        <CommandMenu.Portal>
+          <CommandMenu.Popup data-testid="dialog">
+            <CommandMenu.Surface
+              asyncContent={{
+                type: 'static',
+                Loader: rootLoader.Loader,
+                loadStrategy: 'eager',
+              }}
+              content={[rootBranch]}
+              data-testid="surface-root"
+              deepSearch={{ enabled: true, minLength: 1 }}
+            >
+              <CommandMenu.Input
+                aria-label="Search commands"
+                data-testid="input-root"
+              />
+              <CommandMenu.List data-testid="list-root">
+                <DataRows />
+              </CommandMenu.List>
+            </CommandMenu.Surface>
+          </CommandMenu.Popup>
+        </CommandMenu.Portal>
+      </CommandMenu.Root>,
+    )
+    await waitForRootInputFocus()
+    await user.type(screen.getByTestId('input-root'), 'result')
+
+    // The root result keeps the branch so the branch loader has a target.
+    await act(async () => {
+      rootLoader.resolve([
+        createItemDef('root-result', 'Root result'),
+        rootBranch,
+      ])
+      branchLoader.resolve([createItemDef('branch-result', 'Branch result')])
+    })
+
+    await waitFor(() => {
+      expect(screen.getByTestId('item-root-result')).toBeInTheDocument()
+      expect(screen.getByTestId('item-branch-result')).toBeInTheDocument()
+    })
+  })
+
+  it('block mode unblocks when a root-only loader resolves', async () => {
+    const user = userEvent.setup()
+    const rootLoader = createControllableLoader()
+
+    render(
+      <CommandMenu.Root defaultOpen>
+        <CommandMenu.Trigger data-testid="trigger">
+          Open commands
+        </CommandMenu.Trigger>
+        <CommandMenu.Portal>
+          <CommandMenu.Popup data-testid="dialog">
+            <CommandMenu.Surface
+              asyncContent={{
+                type: 'static',
+                Loader: rootLoader.Loader,
+                loadStrategy: 'eager',
+              }}
+              content={[]}
+              data-testid="surface-root"
+              deepSearch={{
+                enabled: true,
+                minLength: 1,
+                asyncResultBehavior: 'block',
+              }}
+            >
+              <CommandMenu.Input
+                aria-label="Search commands"
+                data-testid="input-root"
+              />
+              <CommandMenu.List data-testid="list-root">
+                <DataRows />
+              </CommandMenu.List>
+              <CommandMenu.Loading data-testid="loading-root">
+                Loading commands
+              </CommandMenu.Loading>
+            </CommandMenu.Surface>
+          </CommandMenu.Popup>
+        </CommandMenu.Portal>
+      </CommandMenu.Root>,
+    )
+    await waitForRootInputFocus()
+    await user.type(screen.getByTestId('input-root'), 'result')
+
+    await waitFor(() => {
+      expect(screen.getByTestId('loading-root')).toBeInTheDocument()
+    })
+    expect(screen.queryByTestId('item-root-result')).not.toBeInTheDocument()
+
+    await resolveLoader(rootLoader, [
+      createItemDef('root-result', 'Root result'),
+    ])
+
+    await waitFor(() => {
+      expect(screen.queryByTestId('loading-root')).not.toBeInTheDocument()
+      expect(screen.getByTestId('item-root-result')).toBeInTheDocument()
+    })
+  })
 })

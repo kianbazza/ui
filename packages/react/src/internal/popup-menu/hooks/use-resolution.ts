@@ -2,6 +2,7 @@
 
 import * as React from 'react'
 import type { AsyncSubmenuInfo } from '../data-first/async.js'
+import { collectAsyncSubmenus } from '../data-first/async.js'
 import type { AsyncMenuCoordinatorValue } from '../data-first/async-coordinator.js'
 import type {
   AsyncLoaderConfig,
@@ -20,7 +21,7 @@ export interface UseResolutionOptions {
   graftParent: PopupMenuNode | null
   isSubpageSurface: boolean
   isResolutionRoot: boolean
-  asyncSubmenus: readonly AsyncSubmenuInfo[]
+  includeInDeepSearch: boolean | 'trigger-only'
 }
 
 export interface ResolutionResult {
@@ -33,6 +34,7 @@ export interface ResolutionResult {
   nodes: readonly PopupMenuNode[]
   /** Increments once per loader-effect run that grafted anything anywhere in this list's subtree. */
   graftVersion: number
+  asyncSubmenus: readonly AsyncSubmenuInfo[]
 }
 
 export function useResolution({
@@ -43,7 +45,7 @@ export function useResolution({
   graftParent,
   isSubpageSurface,
   isResolutionRoot,
-  asyncSubmenus,
+  includeInDeepSearch,
 }: UseResolutionOptions): ResolutionResult {
   React.useMemo(() => {
     if (!resolver || isSubpageSurface) return
@@ -70,10 +72,36 @@ export function useResolution({
     ? (graftParent ?? subpageStaticNodes[0]?.parent ?? null)
     : null
 
+  // Read after the static phase so a `content` change is visible in the
+  // same render (the static phase can replace `rootNodes` / `children`).
   const [graftVersion, setGraftVersion] = React.useState(0)
-  const previousBranchesRef = React.useRef<Set<SubmenuDef | SubpageDef>>(
-    new Set(),
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on `content` and `graftVersion` (the resolution inputs), not on resolver fields
+  const staticNodes = React.useMemo(
+    () =>
+      isSubpageSurface
+        ? (subpageBranch?.children ?? subpageStaticNodes)
+        : graftParent
+          ? graftParent.children
+          : isResolutionRoot && resolver
+            ? resolver.rootNodes
+            : [],
+    [
+      isSubpageSurface,
+      subpageBranch,
+      subpageStaticNodes,
+      graftParent,
+      resolver,
+      isResolutionRoot,
+      content,
+      graftVersion,
+    ],
   )
+  const asyncSubmenus = React.useMemo(
+    () => collectAsyncSubmenus(staticNodes, includeInDeepSearch),
+    [staticNodes, includeInDeepSearch],
+  )
+
+  const previousBranchesRef = React.useRef<Set<PopupMenuNode>>(new Set())
   // biome-ignore lint/correctness/useExhaustiveDependencies: ADR-0002 — the loader phase is keyed on the coordinator's loader map (the true input), not the coordinator object or its stable callbacks
   React.useEffect(() => {
     if (!resolver || !coordinator) return
@@ -84,7 +112,13 @@ export function useResolution({
     // Menu Tree. The resolver's reference fast path and structural
     // short-circuit make the unchanged cases free.
     const results = new Map(
-      coordinator.getAsyncNodes().map((entry) => [entry.id, entry.nodes]),
+      coordinator
+        .getAsyncNodes()
+        .filter(
+          (entry): entry is { kind: 'branch'; id: string; nodes: NodeDef[] } =>
+            entry.kind === 'branch',
+        )
+        .map((entry) => [entry.id, entry.nodes]),
     )
     let changed = false
     const graft = (parent: PopupMenuNode | null, defs: readonly NodeDef[]) => {
@@ -94,7 +128,9 @@ export function useResolution({
       changed ||= before !== parent.children
     }
 
-    const rootResult = results.get('__root__')
+    const rootResult = coordinator
+      .getAsyncNodes()
+      .find((entry) => entry.kind === 'root')?.nodes
     if (isSubpageSurface && subpageBranch) {
       // The subpage's own loader (`asyncContent`) grafts under its branch with
       // the same replace/append rule as a root list.
@@ -124,26 +160,26 @@ export function useResolution({
 
     // Branches that left the async set since the last run are restored to
     // their static children so an unregistered loader's result is withdrawn.
-    const current = new Set(asyncSubmenus.map((info) => info.node))
+    const current = new Set<PopupMenuNode>(
+      asyncSubmenus.map((info) => info.node as PopupMenuNode),
+    )
     for (const node of previousBranchesRef.current) {
       if (current.has(node)) continue
-      const branch = resolver.getNodeForDef(node)
-      if (branch) graft(branch, node.nodes ?? [])
+      graft(node, (node.def as SubmenuDef | SubpageDef).nodes ?? [])
     }
     previousBranchesRef.current = current
 
     for (const info of asyncSubmenus) {
-      const branch = resolver.getNodeForDef(info.node)
-      if (!branch) continue
       const loaded = results.get(info.id)
-      const staticChildren = info.node.nodes ?? []
-      graft(branch, loaded ? [...staticChildren, ...loaded] : staticChildren)
+      const staticChildren = info.node.def.nodes ?? []
+      graft(info.node, loaded ? [...staticChildren, ...loaded] : staticChildren)
     }
     if (changed) setGraftVersion((version) => version + 1)
   }, [
     resolver,
     coordinator?.loaders,
     coordinator?.erroredLoaders,
+    coordinator?.root,
     content,
     asyncContent,
     asyncSubmenus,
@@ -177,5 +213,5 @@ export function useResolution({
       graftVersion,
     ],
   )
-  return { nodes, graftVersion }
+  return { nodes, graftVersion, asyncSubmenus }
 }
