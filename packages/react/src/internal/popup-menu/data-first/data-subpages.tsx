@@ -24,7 +24,7 @@ import type {
   SubmenuDef,
   SubpageDef,
 } from './types.js'
-import { getAsyncLoaderIdForBranch, getSubpagePageId } from './utils.js'
+import { getAsyncLoaderIdForBranch } from './utils.js'
 
 interface QueryExecutionState {
   effectiveQuery: string
@@ -159,7 +159,7 @@ function collectDisplaySubpages(
       if (def.kind === 'subpage') {
         result.push({
           node: node as PopupMenuNode<SubpageDef>,
-          pageId: getSubpagePageId(def, breadcrumbs),
+          pageId: node.id,
           context: {
             search: null,
             breadcrumbs,
@@ -471,7 +471,7 @@ export function DataSubpagesContent(props: DataSubpagesContentProps) {
           searchQuery,
           coordinator,
         )
-        const targetPageId = getSubpagePageId(rowNode, rowContext.breadcrumbs)
+        const targetPageId = rowMenuNode.id
 
         return (
           <React.Fragment key={targetPageId}>

@@ -86,7 +86,6 @@ export {
   flattenNodes,
   getBrowseNodesFlatten,
   getBrowseNodesPreserve,
-  getSubpagePageId,
   isCheckboxItemDef,
   isGroupDef,
   isItemDef,

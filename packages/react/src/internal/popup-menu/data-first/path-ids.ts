@@ -33,31 +33,6 @@ export function computeDefPath(
 }
 
 /**
- * Computes a deterministic page ID for a subpage node.
- *
- * Priority:
- * - explicit `node.pageId`
- * - derived from breadcrumb and node segments following the canonical rule:
- *   explicit `id` verbatim, otherwise slugified `value`
- */
-export function getSubpagePageId(
-  node: SubpageDef,
-  breadcrumbs: BreadcrumbNode[],
-): string {
-  if (node.pageId) {
-    return node.pageId
-  }
-
-  const breadcrumbSegments = breadcrumbs
-    .map((breadcrumb) => breadcrumb.id ?? slugify(breadcrumb.value))
-    .filter(Boolean)
-  const leafSegment = node.id ?? slugify(node.value)
-  const path = [...breadcrumbSegments, leafSegment].filter(Boolean).join('.')
-
-  return path ? `subpage.${path}` : 'subpage'
-}
-
-/**
  * Path key for a branch's async loader. **Value-only by design** — breadcrumb
  * and leaf `value`s, normalized and dot-joined; explicit `id`s are deliberately
  * ignored. Must stay consistent with the key computations inside

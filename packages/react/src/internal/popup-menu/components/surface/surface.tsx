@@ -25,10 +25,7 @@ import { usePopupMenuContext } from '../../contexts/popup-menu-context.js'
 import { usePopupSurfaceId } from '../../contexts/popup-surface-id-context.js'
 import { useMaybeSubmenuContext } from '../../contexts/submenu-context.js'
 import { useMaybeSubpageContext } from '../../contexts/subpage-context.js'
-import {
-  ROOT_SUBPAGE_ID,
-  useMaybeSubpageStack,
-} from '../../contexts/subpage-stack-context.js'
+import { useMaybeSubpageStack } from '../../contexts/subpage-stack-context.js'
 import { AsyncMenuCoordinatorProvider } from '../../data-first/async-coordinator.js'
 import {
   DataSurfaceContext,
@@ -229,7 +226,7 @@ export const PopupMenuSurface = React.forwardRef<
 
     if (subpageContext) {
       // If this page is registered in the current popup stack, use it.
-      // Otherwise (e.g., nested submenu popup), treat this surface as root page.
+      // Otherwise (e.g., nested submenu popup), treat this surface as root surface.
       const registeredSurfaceId = subpageStack.getSurfaceId(
         subpageContext.pageId,
       )
@@ -238,7 +235,7 @@ export const PopupMenuSurface = React.forwardRef<
       }
     }
 
-    return subpageStack.activePageId === ROOT_SUBPAGE_ID
+    return subpageStack.activePageId === null
   }, [subpageStack, subpageContext])
 
   // Subscribe to focus ownership

@@ -59,7 +59,6 @@ import {
   collectAsyncSubmenus,
   filterNodes,
   getAsyncLoaderIdForBranch,
-  getSubpagePageId,
   shouldLoadEagerly,
 } from './utils.js'
 
@@ -1056,7 +1055,7 @@ export const DataListInner = React.forwardRef<
 
       if (node.kind === 'subpage') {
         const subpageAsyncState = getBranchAsyncState(node)
-        const pageId = getSubpagePageId(node, context.breadcrumbs)
+        const pageId = resolved.id
 
         return (
           <React.Fragment key={id}>

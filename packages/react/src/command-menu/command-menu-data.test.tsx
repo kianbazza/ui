@@ -237,6 +237,112 @@ describe('CommandMenu data-first API', () => {
     })
   })
 
+  it('a data-first subpage with Resolved ID "__root__" opens and closes normally', async () => {
+    const user = userEvent.setup()
+    const subpage = createSubpageDef('__root__', 'Root ID', [
+      createItemDef('root-id-item', 'Root ID item'),
+    ])
+    const seenPageIds: string[] = []
+    const baseRenderContent = subpage.renderContent
+    subpage.renderContent = (params) => {
+      seenPageIds.push(params.pageId)
+      return baseRenderContent(params)
+    }
+    const nodes: NodeDef[] = [subpage]
+
+    render(<DataCommandMenu nodes={nodes} />)
+
+    await waitForRootInputFocus()
+    await user.click(screen.getByTestId('subpage-trigger-__root__'))
+
+    await waitForSubpageInputFocus('__root__')
+    expect(screen.getByTestId('item-root-id-item')).toBeInTheDocument()
+    // The page is addressed by the branch's Resolved ID — the literal string
+    // `__root__` — which is no longer a reserved sentinel.
+    expect(new Set(seenPageIds)).toEqual(new Set(['__root__']))
+
+    await user.click(screen.getByTestId('subpage-back-__root__'))
+
+    await waitForRootInputFocus()
+    expect(screen.getByTestId('list-root')).toBeInTheDocument()
+  })
+
+  it('warns once and keeps the first registration when two pages share an ID', async () => {
+    const user = userEvent.setup()
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    function DuplicatePages({ showFirst }: { showFirst: boolean }) {
+      return (
+        <CommandMenu.Root defaultOpen>
+          <CommandMenu.Trigger data-testid="trigger">
+            Open commands
+          </CommandMenu.Trigger>
+          <CommandMenu.Portal>
+            <CommandMenu.Popup data-testid="dialog">
+              <CommandMenu.Surface data-testid="surface-root">
+                <CommandMenu.List>
+                  <CommandMenu.SubpageTrigger
+                    targetPageId="dup"
+                    value="open-dup"
+                    data-testid="open-dup"
+                  >
+                    Open duplicate
+                  </CommandMenu.SubpageTrigger>
+                </CommandMenu.List>
+              </CommandMenu.Surface>
+              {showFirst ? (
+                <CommandMenu.Subpage pageId="dup">
+                  <CommandMenu.Surface>
+                    <CommandMenu.List>
+                      <CommandMenu.SubpageBackItem
+                        value="first-back"
+                        data-testid="first-back"
+                      >
+                        Back
+                      </CommandMenu.SubpageBackItem>
+                      <CommandMenu.Item value="first" data-testid="first-page">
+                        First page
+                      </CommandMenu.Item>
+                    </CommandMenu.List>
+                  </CommandMenu.Surface>
+                </CommandMenu.Subpage>
+              ) : null}
+              <CommandMenu.Subpage pageId="dup">
+                <CommandMenu.Surface>
+                  <CommandMenu.List>
+                    <CommandMenu.Item value="second" data-testid="second-page">
+                      Second page
+                    </CommandMenu.Item>
+                  </CommandMenu.List>
+                </CommandMenu.Surface>
+              </CommandMenu.Subpage>
+            </CommandMenu.Popup>
+          </CommandMenu.Portal>
+        </CommandMenu.Root>
+      )
+    }
+
+    const { rerender } = render(<DuplicatePages showFirst />)
+
+    await user.click(screen.getByTestId('open-dup'))
+
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn.mock.calls[0]?.[0]).toContain('dup')
+    expect(screen.getByTestId('first-page')).toBeInTheDocument()
+    expect(screen.queryByTestId('second-page')).not.toBeInTheDocument()
+
+    // When the owner unmounts, a surviving duplicate takes over the ID so the
+    // page stays reachable.
+    await user.click(screen.getByTestId('first-back'))
+    rerender(<DuplicatePages showFirst={false} />)
+    await user.click(screen.getByTestId('open-dup'))
+    await waitFor(() => {
+      expect(screen.getByTestId('second-page')).toBeInTheDocument()
+    })
+
+    warn.mockRestore()
+  })
+
   it('surfaces subpage descendants as deep-search results with breadcrumbs', async () => {
     const user = userEvent.setup()
     const onSelect = vi.fn()

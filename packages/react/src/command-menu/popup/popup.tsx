@@ -21,7 +21,7 @@ export interface CommandMenuPopupState extends Dialog.Popup.State {
   hasOpenSubpage: boolean
 
   /**
-   * Active subpage ID, or null when only the root page is open.
+   * Active subpage ID, or null when the root surface is active.
    */
   subpageId: string | null
 }

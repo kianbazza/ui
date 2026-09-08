@@ -15,7 +15,6 @@ export { flattenNodes, getSupportedTreeChildren } from './flatten.js'
 export {
   computeDefPath,
   getAsyncLoaderIdForBranch,
-  getSubpagePageId,
 } from './path-ids.js'
 export type { FilterNodesOptions } from './pipeline.js'
 export { filterNodes } from './pipeline.js'
