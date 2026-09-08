@@ -248,6 +248,9 @@ const nodes: NodeDef[] = [
 />
 ```
 
+For data-first subpages, `pageId` is the subpage's Resolved ID (`node.id`); pass it straight to `<…Subpage pageId>`. Imperative subpages choose their own `pageId` string.
+
+
 ## Keyboard interactions
 
 | Key | Behavior |
@@ -255,7 +258,7 @@ const nodes: NodeDef[] = [
 | `ArrowDown` / `ArrowUp` | Moves highlight to the next or previous enabled row. |
 | `Home` / `End` | Moves highlight to the first or last enabled row. |
 | `Enter` | Selects the highlighted row. Items close the menu unless `closeOnClick={false}`; checkbox items stay open. |
-| `Escape` | Closes the command menu from the root page or a subpage. |
+| `Escape` | Closes the command menu from the root surface or a subpage. |
 | `Backspace` | From an empty input on a subpage, goes back one page when `backspaceGoesBack` is enabled. |
 | Single-key `shortcut` | Selects the matching item accelerator while the command menu is active. |
 | Root `hotkey` | Toggles the dialog globally, including while focus is inside `CommandMenu.Input`. |

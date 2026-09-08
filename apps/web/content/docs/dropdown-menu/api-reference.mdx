@@ -17,7 +17,7 @@ Groups all parts of the dropdown menu. Manages open state and provides context t
 
 ### onHighlightChange
 
-Called as `(node, id, index, eventDetails)` when the highlighted row changes. `node` is the resolved menu node looked up by `id` in the data-first tree, or `null` for JSX-defined rows and when the highlight clears.
+Called as `(id, node, index, eventDetails)` when the highlighted row changes. `id` is the highlighted row's Resolved ID (or `null` when the highlight clears); `node` is the menu node with that Resolved ID in the data-first tree, or `null` for JSX-defined rows and when the highlight clears.
 
 ## Trigger
 
@@ -324,7 +324,7 @@ These types are used to define menu content when using the Data-First API.
 
 ### NodeDef
 
-Union type of all possible node definitions. `DropdownMenu.NodeDef` is the namespaced alias. `DropdownMenu.Node` is the corresponding resolved-node alias. Import and use `NodeDef` to type your menu content arrays.
+Union type of all possible node definitions. `DropdownMenu.NodeDef` is the namespaced alias. `DropdownMenu.Node` is the corresponding menu node alias. Import and use `NodeDef` to type your menu content arrays.
 
 ```tsx
 import type { NodeDef, PopupMenuNode } from '@bazza-ui/react/dropdown-menu'
@@ -333,10 +333,10 @@ import type { NodeDef, PopupMenuNode } from '@bazza-ui/react/dropdown-menu'
 const content: NodeDef[] = [
   { kind: 'item', value: 'Copy', render: ... },
   { kind: 'submenu', value: 'More', nodes: [...], render: ... },
-  { kind: 'separator' },
+  { kind: 'separator', id: 'separator' },
 ]
 
-// Resolved nodes are available in render parameters as Node.
+// Menu nodes are available in render parameters as Node.
 ```
 
 <TypeTableAuto type="NodeDef" pkg="@bazza-ui/react" />
@@ -391,7 +391,7 @@ These types are passed to the `render` function of each node definition.
 
 ### ItemRenderParams
 
-Parameters passed to `ItemDef.render()`. The `node` member is the resolved menu node, including its canonical `id`, `defPath`, and `parent`/`children` relationships.
+Parameters passed to `ItemDef.render()`. The `node` member is the menu node: its Resolved ID (`id`), Definition Key and Definition Path, and `parent`/`children` links; the authored def is `node.def`.
 
 ```tsx
 {
@@ -409,7 +409,7 @@ Parameters passed to `ItemDef.render()`. The `node` member is the resolved menu 
 
 ### SubmenuRenderParams
 
-Parameters passed to `SubmenuDef.render()`. The `node` member is the resolved menu node, including its canonical `id`, `defPath`, and `parent`/`children` relationships.
+Parameters passed to `SubmenuDef.render()`. The `node` member is the menu node: its Resolved ID (`id`), Definition Key and Definition Path, and `parent`/`children` links; the authored def is `node.def`.
 
 ```tsx
 {
@@ -419,9 +419,9 @@ Parameters passed to `SubmenuDef.render()`. The `node` member is the resolved me
   render: ({ props, node, context, nodes, renderNode }) => {
     // props: { id, value, disabled }
     // context: { highlighted, disabled, search, breadcrumbs, isDeepSearchResult, async? }
-    // node: Node - the resolved submenu node
-    // nodes: NodeDef[] - child nodes to render
-    // renderNode: (node: NodeDef | Node) => ReactNode - function to render a child node
+    // node: Node - the menu node
+    // nodes: Node[] - the branch's resolved static children; authored fields on child.def
+    // renderNode: (node: Node) => ReactNode - render one child menu node from `nodes`
     return (
       <DropdownMenu.Submenu>
         <DropdownMenu.SubmenuTrigger {...props}>...</DropdownMenu.SubmenuTrigger>
@@ -436,25 +436,25 @@ Parameters passed to `SubmenuDef.render()`. The `node` member is the resolved me
 
 ### CheckboxItemRenderParams
 
-Parameters passed to `CheckboxItemDef.render()`. The `node` member is the resolved menu node, including its canonical `id`, `defPath`, and `parent`/`children` relationships.
+Parameters passed to `CheckboxItemDef.render()`. The `node` member is the menu node: its Resolved ID (`id`), Definition Key and Definition Path, and `parent`/`children` links; the authored def is `node.def`.
 
 <TypeTableAuto type="CheckboxItemRenderParams" pkg="@bazza-ui/react" />
 
 ### RadioItemRenderParams
 
-Parameters passed to `RadioItemDef.render()`. The `node` member is the resolved menu node, including its canonical `id`, `defPath`, and `parent`/`children` relationships.
+Parameters passed to `RadioItemDef.render()`. The `node` member is the menu node: its Resolved ID (`id`), Definition Key and Definition Path, and `parent`/`children` links; the authored def is `node.def`.
 
 <TypeTableAuto type="RadioItemRenderParams" pkg="@bazza-ui/react" />
 
 ### GroupRenderParams
 
-Parameters passed to `GroupDef.render()`. The `node` member is the resolved menu node, including its canonical `id`, `defPath`, and `parent`/`children` relationships.
+Parameters passed to `GroupDef.render()`. The `node` member is the menu node: its Resolved ID (`id`), Definition Key and Definition Path, and `parent`/`children` links; the authored def is `node.def`.
 
 <TypeTableAuto type="GroupRenderParams" pkg="@bazza-ui/react" />
 
 ### RadioGroupRenderParams
 
-Parameters passed to `RadioGroupDef.render()`. The `node` member is the resolved menu node, including its canonical `id`, `defPath`, and `parent`/`children` relationships.
+Parameters passed to `RadioGroupDef.render()`. The `node` member is the menu node: its Resolved ID (`id`), Definition Key and Definition Path, and `parent`/`children` links; the authored def is `node.def`.
 
 <TypeTableAuto type="RadioGroupRenderParams" pkg="@bazza-ui/react" />
 
@@ -464,13 +464,14 @@ Parameters passed to `RadioGroupDef.render()`. The `node` member is the resolved
 
 ### BreadcrumbNode
 
-Represents a submenu in the breadcrumb path. Used in render context to show where a deep search result came from.
+One branch (submenu, subpage, or tree item) on the path from the root to a row. Used in render context to show where a deep search result came from.
 
 ```tsx
 interface BreadcrumbNode {
-  node: SubmenuDef | SubpageDef | TreeItemDef  // The full submenu definition
-  value: string     // The submenu's value
-  id?: string       // The submenu's explicit id (if provided)
+  menuNode: Node    // The branch's menu node; its Resolved ID is menuNode.id
+  node: SubmenuDef | SubpageDef | TreeItemDef  // The branch's def (menuNode.def)
+  value: string     // The branch's value
+  id?: string       // The branch's explicit id (if provided)
 }
 ```
 
@@ -493,16 +494,18 @@ Configuration options for deep search behavior.
 - `stream` (default): show available rows immediately and append later async batches without reordering earlier rows.
 - `block`: show loading-only state until all participating async loaders resolve, then render the full sorted result set.
 
-### GetRowIdFn
+### Identity
 
-Function type for `getRowId` on `Root`. It receives the unidentified resolved node (`UnidentifiedMenuNode` — the resolved node without its `id`) and is read once at mount. The node carries only definitional facts: `def`, `kind`, `pathSegment`, `defPath`, `parent`, `depth`, `index`, and `children` (empty at id-computation time). Render-context facts (search state, display position) are excluded by construction.
+Definition Key is `def.id` verbatim, or the slugified `value`; separators, groups and radio groups require `id`. Definition Path is the node's own Definition Key, prefixed by the keys of its submenu/subpage ancestors from the root; groups, radio groups and tree items are transparent. Resolved ID is `node.id`, the only identity the menu uses for highlight, persistence, subpages and async loaders.
+
+`idScope` — `'surface'` (default): Definition Keys must be unique within each surface, and the default Resolved ID is the encoded Definition Path joined with `/` (opaque; no cross-version format guarantee); `'menu'`: Definition Keys must be unique across the whole menu and become the Resolved ID.
+
+`getResolvedId` receives an `UnresolvedMenuNode` (definitional facts only) and returns the Resolved ID; it is read once when the root mounts. Uniqueness is the consumer's responsibility; duplicates warn in development.
 
 ```tsx
-<DropdownMenu.Root getRowId={(node) => node.def.id ?? node.defPath.join('.')}>
-  {/* ... */}
-</DropdownMenu.Root>
+<DropdownMenu.Root idScope="menu" getResolvedId={(node) => node.def.id ?? node.definitionKey}>
 ```
 
-By default, `getRowId` returns explicit `def.id` values verbatim, or `defPath.join('.')` when no explicit id is provided. The former `'qualified'` behavior is now the default behavior of `getRowId`. `'explicit'` is a consumer-authored seam that requires `node.def.id`; `'hybrid'` has no successor because ids no longer depend on render context.
+<TypeTableAuto type="GetResolvedIdFn" pkg="@bazza-ui/react" />
 
-<TypeTableAuto type="GetRowIdFn" pkg="@bazza-ui/react" />
+<TypeTableAuto type="UnresolvedMenuNode" pkg="@bazza-ui/react" />
