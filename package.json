@@ -23,8 +23,8 @@
     "prepare": "husky",
     "changeset": "changeset add",
     "ci:version": "changeset version && bun install",
-    "ci:publish": "(cd packages/react && bun publish || true) && (cd packages/filters && bun publish || true) && changeset tag",
-    "ci:publish:canary": "(cd packages/react && bun publish --tag canary || true) && (cd packages/filters && bun publish --tag canary || true) && changeset tag"
+    "ci:publish": "(cd packages/react && bun publish || true) && (cd packages/filters && bun publish || true) && (cd packages/colors && bun publish || true) && changeset tag",
+    "ci:publish:canary": "(cd packages/react && bun publish --tag canary || true) && (cd packages/filters && bun publish --tag canary || true) && (cd packages/colors && bun publish --tag canary || true) && changeset tag"
   },
   "devDependencies": {
     "@biomejs/biome": "2.5.1",
