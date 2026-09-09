@@ -5,10 +5,11 @@
   "scripts": {
     "devx": "next dev --port 3001",
     "build": "next build",
+    "type-check": "tsc --noEmit",
     "start": "next start"
   },
   "dependencies": {
-    "next": "16.2.10",
+    "next": "16.3.0",
     "react": "19.2.7",
     "react-dom": "19.2.7"
   },

@@ -45,3 +45,7 @@ repomix-output.txt
 .osgrep
 
 base-ui/
+
+# Next.js 16.3+ auto-written agent docs
+apps/web/AGENTS.md
+apps/playground-nextjs/AGENTS.md
