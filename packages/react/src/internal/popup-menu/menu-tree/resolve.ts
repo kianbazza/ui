@@ -121,3 +121,16 @@ export function resolveNodeDefs(
     return node
   })
 }
+
+/**
+ * The branch's resolved static children: the Menu Nodes whose def is one of
+ * the branch def's authored `nodes`, in `children` order. Loader results are
+ * grafted as children too but are never in `def.nodes`, so they are excluded
+ * whether the graft appended to or replaced the static children.
+ */
+export function staticChildrenOf(branch: PopupMenuNode): PopupMenuNode[] {
+  const authored = (branch.def as { nodes?: readonly NodeDef[] }).nodes
+  if (!authored || authored.length === 0) return []
+  const authoredSet = new Set<NodeDef>(authored)
+  return branch.children.filter((child) => authoredSet.has(child.def))
+}

@@ -492,23 +492,16 @@ export interface SubmenuRenderParams {
     /** Async loading state (if asyncNodes configured) */
     async?: AsyncRenderState
   }
-  /**
-   * The submenu's static child node definitions.
-   * Does NOT include async results - use `asyncContent` for that.
-   */
-  nodes: NodeDef[]
+  /** The branch's resolved static child Menu Nodes, in def order. Loader results are grafted as children of `node` but are not included here — use `asyncContent` to load them. Authored fields are on `child.def`. */
+  nodes: PopupMenuNode[]
   /**
    * Async content configuration for this submenu.
    * Pass this to the submenu's DataSurface to enable async loading
    * with the submenu's own search query (independent of parent search).
    */
   asyncContent?: AsyncNodesConfig
-  /**
-   * Function to render a child node.
-   * Call this for each node in the submenu's list.
-   */
-  /** Resolved nodes are unwrapped to their defs. */
-  renderNode: (node: NodeDef | PopupMenuNode) => React.ReactNode
+  /** Render one child Menu Node from `nodes`. */
+  renderNode: (node: PopupMenuNode) => React.ReactNode
 }
 
 // ============================================================================
@@ -571,23 +564,16 @@ export interface SubpageContentRenderParams {
     /** Async loading state (if asyncNodes configured) */
     async?: AsyncRenderState
   }
-  /**
-   * The subpage's static child node definitions.
-   * Does NOT include async results - use `asyncContent` for that.
-   */
-  nodes: NodeDef[]
+  /** The branch's resolved static child Menu Nodes, in def order. Loader results are grafted as children of `node` but are not included here — use `asyncContent` to load them. Authored fields are on `child.def`. */
+  nodes: PopupMenuNode[]
   /**
    * Async content configuration for this subpage.
    * Pass this to the subpage's DataSurface to enable async loading
    * with the subpage's own search query (independent of parent search).
    */
   asyncContent?: AsyncNodesConfig
-  /**
-   * Function to render a child node.
-   * Call this for each node in the subpage's list.
-   */
-  /** Resolved nodes are unwrapped to their defs. */
-  renderNode: (node: NodeDef | PopupMenuNode) => React.ReactNode
+  /** Render one child Menu Node from `nodes`. */
+  renderNode: (node: PopupMenuNode) => React.ReactNode
 }
 
 // ============================================================================
