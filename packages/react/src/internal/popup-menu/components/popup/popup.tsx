@@ -18,9 +18,9 @@ import { SubpageStackContext } from '../../contexts/subpage-stack-context.js'
 import {
   DataPopupContext,
   type DataSurfaceContextValue,
-} from '../../deep-search/context.js'
-import { DataSubpagesContent } from '../../deep-search/data-subpages.js'
-import type { NodeDef } from '../../deep-search/types.js'
+} from '../../data-first/context.js'
+import { DataSubpagesContent } from '../../data-first/data-subpages.js'
+import type { NodeDef } from '../../data-first/types.js'
 import { useAimGuard } from '../../hooks/use-aim-guard.js'
 import { useSubpageStackState } from '../../hooks/use-subpage-stack-state.js'
 import { PopupMenuPopupDataAttributes } from './popup.data-attrs.js'

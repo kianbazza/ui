@@ -1,5 +1,5 @@
 import { slugify } from '../../listbox/utils/normalize.js'
-import type { NodeDef } from '../deep-search/types.js'
+import type { NodeDef } from '../data-first/types.js'
 import type {
   GetResolvedIdFn,
   PopupMenuIdScope,

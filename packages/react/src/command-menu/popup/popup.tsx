@@ -7,9 +7,9 @@ import { SubpageStackContext } from '../../internal/popup-menu/contexts/subpage-
 import {
   DataPopupContext,
   type DataSurfaceContextValue,
-} from '../../internal/popup-menu/deep-search/context.js'
-import { DataSubpagesContent } from '../../internal/popup-menu/deep-search/data-subpages.js'
-import type { NodeDef } from '../../internal/popup-menu/deep-search/types.js'
+} from '../../internal/popup-menu/data-first/context.js'
+import { DataSubpagesContent } from '../../internal/popup-menu/data-first/data-subpages.js'
+import type { NodeDef } from '../../internal/popup-menu/data-first/types.js'
 import { useSubpageStackState } from '../../internal/popup-menu/hooks/use-subpage-stack-state.js'
 import { usePopupMenuContext } from '../../internal/popup-menu/index.js'
 import type { ComponentRenderFn } from '../../utils/types.js'

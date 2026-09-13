@@ -12,7 +12,7 @@ import type {
   ItemDef,
   NodeDef,
   SubmenuDef,
-} from '../../deep-search/types.js'
+} from '../../data-first/types.js'
 
 // ============================================================================
 // Test Helpers

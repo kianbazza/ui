@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it } from 'vitest'
 import { DropdownMenu } from '../../../../dropdown-menu/index.js'
 import { useMenuTreeResolver } from '../../contexts/menu-tree-resolver-context.js'
-import type { ItemDef, NodeDef, SubmenuDef } from '../../deep-search/types.js'
+import type { ItemDef, NodeDef, SubmenuDef } from '../../data-first/types.js'
 import type { MenuTreeResolver } from '../resolver.js'
 import type { GetResolvedIdFn, PopupMenuIdScope } from '../types.js'
 

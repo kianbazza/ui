@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { NodeDef } from '../../deep-search/types.js'
+import type { NodeDef } from '../../data-first/types.js'
 import { defaultGetResolvedId, resolveNodeDefs } from '../resolve.js'
 import { createMenuTreeResolver } from '../resolver.js'
 

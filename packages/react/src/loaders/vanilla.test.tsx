@@ -6,7 +6,7 @@ import type {
   ItemDef,
   LoaderComponentProps,
   NodeDef,
-} from '../internal/popup-menu/deep-search/types.js'
+} from '../internal/popup-menu/data-first/types.js'
 import {
   createVanillaQueryLoader,
   createVanillaStaticLoader,
