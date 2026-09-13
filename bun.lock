@@ -161,7 +161,7 @@
     },
     "packages/react": {
       "name": "@bazza-ui/react",
-      "version": "0.1.0-canary.9",
+      "version": "0.1.0-canary.10",
       "dependencies": {
         "@base-ui/react": "1.5.0",
         "@base-ui/utils": "0.2.9",
