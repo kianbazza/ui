@@ -127,68 +127,65 @@ function getBranchAsyncState(
 }
 
 function collectDisplaySubpages(
-  nodes: NodeDef[],
-  getNodeForDef: <D extends NodeDef>(def: D) => PopupMenuNode<D>,
+  nodes: readonly PopupMenuNode[],
   breadcrumbs: BreadcrumbNode[] = [],
   group: { id: string; label?: string } | null = null,
 ): DisplaySubpageNode[] {
   const result: DisplaySubpageNode[] = []
 
   for (const node of nodes) {
-    if (node.kind === 'separator') {
+    const def = node.def
+    if (def.kind === 'separator') {
       continue
     }
 
-    if (node.kind === 'group') {
+    if (def.kind === 'group') {
       result.push(
-        ...collectDisplaySubpages(node.nodes, getNodeForDef, breadcrumbs, {
-          id: node.id,
-          label: node.label,
+        ...collectDisplaySubpages(node.children, breadcrumbs, {
+          id: def.id,
+          label: def.label,
         }),
       )
       continue
     }
 
-    if (node.kind === 'radio-group') {
-      if (node.hidden) continue
-      result.push(
-        ...collectDisplaySubpages(node.nodes, getNodeForDef, breadcrumbs, null),
-      )
+    if (def.kind === 'radio-group') {
+      if (def.hidden) continue
+      result.push(...collectDisplaySubpages(node.children, breadcrumbs, null))
       continue
     }
 
-    if (node.hidden) {
+    if (def.hidden) {
       continue
     }
 
-    if (node.kind === 'submenu' || node.kind === 'subpage') {
-      if (node.kind === 'subpage') {
+    if (def.kind === 'submenu' || def.kind === 'subpage') {
+      if (def.kind === 'subpage') {
         result.push({
-          node: getNodeForDef(node),
-          pageId: getSubpagePageId(node, breadcrumbs),
+          node: node as PopupMenuNode<SubpageDef>,
+          pageId: getSubpagePageId(def, breadcrumbs),
           context: {
             search: null,
             breadcrumbs,
             isDeepSearchResult: false,
             highlighted: false,
-            disabled: node.disabled ?? false,
+            disabled: def.disabled ?? false,
             group,
             tree: null,
           },
         })
       }
 
-      if (node.nodes) {
+      if (node.children.length) {
         const breadcrumb: BreadcrumbNode = {
-          node,
-          value: node.value,
-          id: node.id,
+          node: def,
+          value: def.value,
+          id: def.id,
         }
 
         result.push(
           ...collectDisplaySubpages(
-            node.nodes,
-            getNodeForDef,
+            node.children,
             [...breadcrumbs, breadcrumb],
             null,
           ),
@@ -222,8 +219,7 @@ export function DataSubpagesContent(props: DataSubpagesContentProps) {
   const coordinator = useAsyncMenuCoordinator()
   const searchQuery = coordinator?.searchQuery ?? ''
 
-  const { dataSurfaceContext } = useDataPopupContext()
-  const { resolvedContent } = useDataPopupContext()
+  const { dataSurfaceContext, resolvedNodes } = useDataPopupContext()
   const resolver = useMenuTreeResolver()
   const getNodeForDefOrDetached = React.useCallback(
     <D extends NodeDef>(def: D): PopupMenuNode<D> => {
@@ -240,13 +236,21 @@ export function DataSubpagesContent(props: DataSubpagesContentProps) {
     [getNodeForDefOrDetached],
   )
 
-  const content = dataSurfaceContext?.content ?? []
-
-  const mergedContent = resolvedContent ?? content
-
+  // A retained slot is only valid while the root surface still supplies the
+  // content it was published for (the root list unmounts while a subpage is
+  // active, so it cannot republish on its own).
+  const slot =
+    resolvedNodes &&
+    (!dataSurfaceContext ||
+      resolvedNodes.content === dataSurfaceContext.content)
+      ? resolvedNodes
+      : null
+  const roots = slot?.nodes ?? []
+  const graftVersion = slot?.graftVersion ?? 0
+  // biome-ignore lint/correctness/useExhaustiveDependencies: graftVersion signals grafts under branch nodes, which do not change `roots` identity
   const subpages = React.useMemo(
-    () => collectDisplaySubpages(mergedContent, getNodeForDefOrDetached),
-    [mergedContent, getNodeForDefOrDetached],
+    () => collectDisplaySubpages(roots),
+    [roots, graftVersion],
   )
 
   const renderSubpageContent = React.useCallback(

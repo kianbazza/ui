@@ -17,6 +17,7 @@ import {
 import { useMenuTreeResolver } from '../contexts/menu-tree-resolver-context.js'
 import { useMaybeSubpageContext } from '../contexts/subpage-context.js'
 import { useMaybeSubpageStack } from '../contexts/subpage-stack-context.js'
+import { useResolution } from '../hooks/use-resolution.js'
 import {
   defaultGetResolvedId,
   isPopupMenuNode,
@@ -33,6 +34,7 @@ import {
   useDataPopupContext,
   useDataSurfaceContext,
 } from './context.js'
+import { defsOf, ownerOfDef } from './defs-of.js'
 import type {
   AsyncLoaderResult,
   AsyncNodesConfig,
@@ -61,11 +63,75 @@ import {
   filterNodes,
   getAsyncLoaderIdForBranch,
   getSubpagePageId,
-  mergeAsyncNodesIntoTree,
   shouldLoadEagerly,
 } from './utils.js'
 
 const warnedOutOfTreeDefs = new WeakSet<NodeDef>()
+
+/**
+ * Render-scoped def merge for subpage surfaces, which never feed resolution
+ * and so have no Menu Nodes of their own in this slice. Reproduces the
+ * pre-resolution-phase merge: every branch with a loader result (at any
+ * depth) is shallow-copied with its loaded defs appended after its static
+ * ones; the surface's own root loader replaces `content` when `asyncContent`
+ * is set and is appended otherwise. Errored loaders are skipped, matching
+ * `getAsyncNodes`. Deleted by the next slice.
+ */
+function mergeLocal(
+  content: NodeDef[],
+  asyncContent: AsyncNodesConfig | undefined,
+  coordinator: ReturnType<typeof useAsyncMenuCoordinator>,
+  asyncSubmenus: readonly AsyncSubmenuInfo[],
+): NodeDef[] {
+  if (!coordinator) return content
+  const results = new Map(
+    coordinator.getAsyncNodes().map((entry) => [entry.id, entry.nodes]),
+  )
+  if (results.size === 0) return content
+  const loadedFor = new Map<NodeDef, NodeDef[]>()
+  for (const info of asyncSubmenus) {
+    const loaded = results.get(info.id)
+    if (loaded) loadedFor.set(info.node, loaded)
+  }
+
+  const mergeRecursive = (nodes: NodeDef[]): NodeDef[] => {
+    let changed = false
+    const next = nodes.map((def) => {
+      if (
+        def.kind !== 'submenu' &&
+        def.kind !== 'subpage' &&
+        def.kind !== 'group' &&
+        def.kind !== 'radio-group' &&
+        def.kind !== 'tree-item'
+      ) {
+        return def
+      }
+      const branchDef = def as NodeDef & { nodes?: NodeDef[] }
+      const staticChildren = branchDef.nodes
+        ? mergeRecursive(branchDef.nodes)
+        : undefined
+      const loaded = loadedFor.get(def)
+      if (loaded) {
+        changed = true
+        return {
+          ...def,
+          nodes: [...(staticChildren ?? []), ...loaded],
+        } as NodeDef
+      }
+      if (staticChildren !== branchDef.nodes) {
+        changed = true
+        return { ...def, nodes: staticChildren } as NodeDef
+      }
+      return def
+    })
+    return changed ? next : nodes
+  }
+
+  const merged = mergeRecursive(content)
+  const root = results.get('__root__')
+  if (!root) return merged
+  return asyncContent ? root : [...merged, ...root]
+}
 
 export function warnOutOfTreeDef(def: NodeDef): void {
   if (process.env.NODE_ENV !== 'production' && !warnedOutOfTreeDefs.has(def)) {
@@ -550,9 +616,11 @@ export const DataListInner = React.forwardRef<
   } = props
 
   const resolver = useMenuTreeResolver()
-  const { setResolvedContent } = useDataPopupContext()
+  const { setResolvedNodes } = useDataPopupContext()
   const getNodeForDefOrDetached = React.useCallback(
     <D extends NodeDef>(def: D): PopupMenuNode<D> => {
+      const owner = ownerOfDef(def)
+      if (owner) return owner as PopupMenuNode<D>
       const resolved = resolver?.getNodeForDef(def)
       if (resolved) return resolved
       warnOutOfTreeDef(def)
@@ -593,61 +661,42 @@ export const DataListInner = React.forwardRef<
     asyncSubmenus.some((s) => shouldLoadEagerly(s.config)) ||
     (asyncContent && asyncContent.loadStrategy === 'eager')
 
-  // Get async nodes from coordinator
-  const asyncNodes = React.useMemo(() => {
-    if (!coordinator) return []
-    return coordinator.getAsyncNodes()
-  }, [coordinator, coordinator?.loaders])
-
-  // Merge async nodes into content tree
-  const mergedContent = React.useMemo(() => {
-    if (asyncNodes.length === 0) return content
-    return mergeAsyncNodesIntoTree(content, asyncNodes)
-  }, [content, asyncNodes])
-
-  // Handle root async content if available
-  const contentWithRootAsync = React.useMemo(() => {
-    const rootAsyncData = asyncNodes.find((n) => n.id === '__root__')
-    if (!rootAsyncData) return mergedContent
-
-    // When asyncContent is provided, it's the sole data source - use only its results
-    if (asyncContent) {
-      return rootAsyncData.nodes
-    }
-
-    // For root-level DataSurface without asyncContent, append to static content
-    return [...mergedContent, ...rootAsyncData.nodes]
-  }, [mergedContent, asyncNodes, asyncContent])
-
-  // Feed root-owned resolution. Resolution is load-bearing: render paths read
-  // resolved ids. setContent/graft are idempotent with reference
-  // fast paths, so render-time calls (incl. StrictMode re-invocations) are
-  // safe and cheap when content is unchanged. Subpage surfaces never feed:
-  // their rows already belong to the root surface's def tree.
-  React.useMemo(() => {
-    if (!resolver || isSubpageSurface) return
-    if (graftParent) {
-      resolver.graft(graftParent, contentWithRootAsync)
-    } else if (isResolutionRoot) {
-      resolver.setContent(contentWithRootAsync)
-    }
-  }, [
+  const { nodes: resolvedNodes, graftVersion } = useResolution({
     resolver,
+    content,
+    asyncContent,
+    coordinator,
     graftParent,
     isSubpageSurface,
     isResolutionRoot,
-    contentWithRootAsync,
-  ])
+    asyncSubmenus,
+  })
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the loader map and graftVersion (the inputs that change the Menu Tree), not the coordinator object
+  const resolvedDefs = React.useMemo(
+    () =>
+      isSubpageSurface
+        ? mergeLocal(content, asyncContent, coordinator, asyncSubmenus)
+        : defsOf(resolvedNodes),
+    [
+      isSubpageSurface,
+      content,
+      asyncContent,
+      coordinator?.loaders,
+      coordinator?.erroredLoaders,
+      asyncSubmenus,
+      resolvedNodes,
+      graftVersion,
+    ],
+  )
+
+  // Publish the resolved-nodes slot for sibling subpages. Not withdrawn on
+  // unmount: the root list unmounts while a subpage is active, and the
+  // subpages must keep rendering from the tree that opened them.
   React.useEffect(() => {
     if (isSubpageSurface) return
-    setResolvedContent(contentWithRootAsync)
-    return () => {
-      setResolvedContent((current) =>
-        current === contentWithRootAsync ? null : current,
-      )
-    }
-  }, [isSubpageSurface, setResolvedContent, contentWithRootAsync])
+    setResolvedNodes({ nodes: resolvedNodes, graftVersion, content })
+  }, [isSubpageSurface, setResolvedNodes, resolvedNodes, graftVersion, content])
 
   const streamOrderRef = React.useRef<{
     query: string
@@ -659,7 +708,7 @@ export const DataListInner = React.forwardRef<
     const result = filterNodes({
       query: normalizedSearch,
       normalizeQuery: identityQuery,
-      nodes: contentWithRootAsync,
+      nodes: resolvedDefs,
       highlightedId: null, // Primitives handle highlighting via store
       deepSearch: deepSearchConfig.enabled,
       includeInDeepSearch,
@@ -721,7 +770,7 @@ export const DataListInner = React.forwardRef<
     }
   }, [
     normalizedSearch,
-    contentWithRootAsync,
+    resolvedDefs,
     deepSearchConfig,
     includeInDeepSearch,
     getNodeForDefOrDetached,

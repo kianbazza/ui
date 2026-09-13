@@ -5,8 +5,6 @@
 export type { AsyncSubmenuInfo } from './async.js'
 export {
   collectAsyncSubmenus,
-  mergeAsyncNodesIntoTree,
-  mergeSubmenuNodes,
   shouldIncludeInDeepSearch,
   shouldIncludeSubmenuRowsInDeepSearch,
   shouldLoadEagerly,

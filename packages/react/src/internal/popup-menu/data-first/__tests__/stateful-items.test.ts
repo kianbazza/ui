@@ -22,7 +22,6 @@ import {
   isCheckboxItemDef,
   isRadioGroupDef,
   isSubpageDef,
-  mergeAsyncNodesIntoTree,
   scoreNodes,
 } from '../utils.js'
 
@@ -1343,33 +1342,6 @@ describe('Value Normalization', () => {
       const collected = collectAsyncSubmenus(nodes)
 
       expect(collected.map((entry) => entry.id)).toEqual(['AI Filter'])
-    })
-
-    it('mergeAsyncNodesIntoTree merges async nodes into subpages', () => {
-      const nodes: NodeDef[] = [
-        createSubpageDef('ai-filter', 'AI Filter', [
-          createItemDef('static-item', 'Static item'),
-        ]),
-      ]
-
-      const merged = mergeAsyncNodesIntoTree(nodes, [
-        {
-          id: 'AI Filter',
-          breadcrumbs: [],
-          nodes: [createItemDef('async-item', 'Async item')],
-        },
-      ])
-
-      const subpage = merged[0]
-      expect(subpage?.kind).toBe('subpage')
-      if (subpage?.kind !== 'subpage') {
-        throw new Error('expected merged node to be subpage')
-      }
-
-      expect(subpage.nodes?.map((node) => node.id)).toEqual([
-        'static-item',
-        'async-item',
-      ])
     })
 
     it('collectAsyncSubmenus respects ancestor trigger-only hard stop', () => {
