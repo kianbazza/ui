@@ -279,6 +279,71 @@ describe('createMenuTreeResolver', () => {
     expect(groupNode.children[1]!.definitionPath).toEqual(['status', 'late'])
     expect(groupNode.children[1]!.id).toBe('status/late')
   })
+
+  it('returns the same rootNodes array when re-supplied a fresh array of the same defs', () => {
+    const a = item('A')
+    const b = item('B')
+    const resolver = createMenuTreeResolver()
+    resolver.setContent([a, b])
+    const first = resolver.rootNodes
+
+    resolver.setContent([a, b])
+
+    expect(resolver.rootNodes).toBe(first)
+  })
+
+  it('returns the same children array on graft when nothing changed', () => {
+    const child = item('Child')
+    const resolver = createMenuTreeResolver()
+    resolver.setContent([submenu('Parent', [child])])
+    const node = resolver.rootNodes[0]!
+    resolver.graft(node, [child])
+    const kids = node.children
+
+    resolver.graft(node, [child])
+
+    expect(node.children).toBe(kids)
+  })
+
+  it('returns a new array when order changes', () => {
+    const a = item('A')
+    const b = item('B')
+    const resolver = createMenuTreeResolver()
+    resolver.setContent([a, b])
+    const first = resolver.rootNodes
+
+    resolver.setContent([b, a])
+
+    expect(resolver.rootNodes).not.toBe(first)
+    expect(resolver.rootNodes.map((node) => node.def)).toEqual([b, a])
+  })
+
+  it('returns a new array when a def is swapped for an equivalent one', () => {
+    const resolver = createMenuTreeResolver()
+    resolver.setContent([item('A')])
+    const first = resolver.rootNodes
+    const node = first[0]
+
+    resolver.setContent([item('A')])
+
+    expect(resolver.rootNodes).not.toBe(first)
+    expect(resolver.rootNodes[0]).toBe(node)
+  })
+
+  it('returns a new array when a node is added or removed', () => {
+    const a = item('A')
+    const b = item('B')
+    const resolver = createMenuTreeResolver()
+    resolver.setContent([a])
+    const first = resolver.rootNodes
+
+    resolver.setContent([a, b])
+    const second = resolver.rootNodes
+    resolver.setContent([a])
+
+    expect(second).not.toBe(first)
+    expect(resolver.rootNodes).not.toBe(second)
+  })
 })
 
 describe('duplicate detection', () => {

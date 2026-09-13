@@ -231,11 +231,15 @@ export function createMenuTreeResolver(
       } else matches.push(undefined)
     }
 
+    let unchanged = existing.length === defs.length
     for (const node of existing) {
-      if (!matched.has(node)) retire(node)
+      if (!matched.has(node)) {
+        unchanged = false
+        retire(node)
+      }
     }
 
-    return defs.map((def, index) => {
+    const result = defs.map((def, index) => {
       const node = matches[index]
       const { definitionKey, definitionPath, id } = prospectiveIdentity(
         def,
@@ -246,6 +250,7 @@ export function createMenuTreeResolver(
       )
 
       if (!node) {
+        unchanged = false
         const created = resolveNodeDefs(
           [def],
           parent,
@@ -265,10 +270,12 @@ export function createMenuTreeResolver(
       }
 
       if (node.def === def && samePath(node.definitionPath, definitionPath)) {
+        if (existing[index] !== node || node.index !== index) unchanged = false
         node.index = index
         return node
       }
 
+      unchanged = false
       if (defToNode.get(node.def) === node) defToNode.delete(node.def)
       const oldScope = scopeOf(node)
       const oldHoldersByKey = keyHolders.get(oldScope)
@@ -302,6 +309,7 @@ export function createMenuTreeResolver(
       register(node, scopeOf(node))
       return node
     })
+    return unchanged ? existing : result
   }
 
   return {
