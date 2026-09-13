@@ -31,8 +31,8 @@ A node's single definition-path component: its explicit id verbatim when present
 _Avoid_: segment, slug, part
 
 **Definition Path** (`definitionPath`):
-The segments from the menu root to a node in the definition tree, including the node's own segment. Only submenu and subpage ancestors contribute segments; groups, radio groups, and tree items are surface-transparent. Identical wherever the node renders — browse, deep search, or recursion.
-_Avoid_: absolute path, tree path, full path, ancestor path
+The Definition Keys from the menu root to a node in the definition tree, including the node's own key. Only submenu and subpage ancestors contribute keys; groups, radio groups, and tree items are surface-transparent. Identical wherever the node renders — browse, deep search, or recursion.
+_Avoid_: absolute path, tree path, full path, ancestor path, segments
 
 **Breadcrumbs**:
 The branch nodes walked by the displaying surface to reach a row within its own render pass. Carries rich node references, not just segments.
@@ -49,12 +49,20 @@ _Avoid_: composite id, qualified id
 The definitional menu-node facts passed to `getResolvedId` before the resolved ID is assigned.
 
 **Graft**:
-Resolving node defs that arrive after mount (async loader results; render-time content) and attaching the resulting nodes under an already-resolved parent — the graft point — so they join the single resolved tree with correct lineage (definition path, Resolved ID).
+Resolution of node defs that arrive after mount (async loader results; render-time content) and attaching the resulting nodes under an already-resolved parent — the graft point — so they join the single resolved tree with correct lineage (definition path, Resolved ID).
 _Avoid_: merge, inject, append
 
-**Detached Node**:
-The stable placeholder node produced for a def that is rendered but is not part of the resolved tree (a consumer passing an arbitrary def to `renderNode`). Dev-warned once per def; its id is root-relative rather than path-qualified. Not a supported authoring pattern — memoize defs and prefer explicit ids.
-_Avoid_: orphan node, temp node
+**Root**:
+The menu's top-level surface — the one a popup opens with. Owns the Menu Tree but is not a Menu Node: its children are the tree's top-level nodes. Consequently it has no Resolved ID, no subpage identity, and no branch loader; the root surface's own async content is represented separately from branch loaders.
+_Avoid_: root node, root page, `__root__`
+
+**Branch**:
+A submenu or subpage Menu Node — a node that opens a child surface. Only branches can own a branch loader or a subpage. Groups, radio groups, and tree items contain nodes but are not branches; they open no surface.
+_Avoid_: container, parent (as a category), async submenu (a branch may be static)
+
+**Resolution**:
+The phase that turns node defs into Menu Nodes in the Menu Tree: static content synchronously when the content is supplied; loader results by grafting after they arrive. The only phase permitted to mutate the Menu Tree.
+_Avoid_: resolving (as a noun), reconciliation (reconcile is one operation inside resolution)
 
 **Listbox**:
 The state layer beneath the engine: rows register into a `ListboxStore`, which owns highlight state and keyboard navigation. Implements the WAI-ARIA listbox pattern; shared by every menu family.
@@ -68,3 +76,6 @@ These terms described the string-based identity model and no longer exist in the
 - **Row ID** / `getRowId` — replaced by Resolved ID / `getResolvedId`.
 - **Segment** / `pathSegment` — replaced by Definition Key / `definitionKey`.
 - **Display Path** (`displayPath`) — the segments of the submenus enclosing the surface a row was displayed in. Contextual by nature; deleted along with the strategy machinery that consumed it.
+- **Identity Scheme** — any derivation of a row, page, loader, or deduplication key that bypasses the Menu Tree and recomputes identity from defs, values, or paths. Every scheme is replaced by the Resolved ID. Removed schemes: the subpage page ID (`getSubpagePageId`, `SubpageDef.pageId`), the async loader key (`getAsyncLoaderIdForBranch`), the deep-search dedup composite key, and the `__root__` sentinel (`ROOT_SUBPAGE_ID`).
+- **Detached Node** — the placeholder produced when an out-of-tree def was passed to `renderNode`. Render callbacks now receive only Menu Nodes; the case is inexpressible.
+- **Publication** — a token/withdrawal handoff of resolved nodes between a root list and sibling subpages, prototyped in an abandoned branch. Never entered the glossary; recorded so the name is not reused.
