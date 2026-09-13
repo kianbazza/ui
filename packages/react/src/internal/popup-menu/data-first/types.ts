@@ -554,7 +554,7 @@ export interface SubpageTriggerRenderParams {
 export interface SubpageContentRenderParams {
   /** The resolved menu node for this row — canonical identity (`node.id`), definition path, and tree links */
   node: PopupMenuNode
-  /** Computed page ID for this subpage */
+  /** The subpage's Resolved ID (`node.id`); pass it to `<Subpage pageId>`. */
   pageId: string
   /** Context for conditional rendering */
   context: RowRenderContext & {
@@ -919,12 +919,6 @@ export interface SubpageDef
       'keywords' | 'disabled' | 'forceOrder' | 'forceScore'
     > {
   kind: 'subpage'
-
-  /**
-   * Optional explicit page ID for this subpage.
-   * If omitted, a deterministic page ID is generated from id/value + breadcrumbs.
-   */
-  pageId?: string
 
   /** Static child nodes */
   nodes?: NodeDef[]

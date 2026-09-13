@@ -12,10 +12,7 @@ import {
 } from '../../contexts/popup-menu-context.js'
 import { PopupSurfaceIdContext } from '../../contexts/popup-surface-id-context.js'
 import { SubpageContext } from '../../contexts/subpage-context.js'
-import {
-  ROOT_SUBPAGE_ID,
-  useSubpageStack,
-} from '../../contexts/subpage-stack-context.js'
+import { useSubpageStack } from '../../contexts/subpage-stack-context.js'
 
 export interface PopupMenuSubpageProps {
   /** Unique page ID for stack navigation. */
@@ -46,12 +43,6 @@ export function PopupMenuSubpage(props: PopupMenuSubpageProps) {
     throw new Error('PopupMenu.Subpage must be used within PopupMenu.Popup')
   }
 
-  if (pageId === ROOT_SUBPAGE_ID) {
-    throw new Error(
-      `PopupMenu.Subpage pageId "${ROOT_SUBPAGE_ID}" is reserved for the root page`,
-    )
-  }
-
   // Create an isolated store for this page.
   const store = ListboxStore.useStore(undefined, { open: false })
 
@@ -66,10 +57,13 @@ export function PopupMenuSubpage(props: PopupMenuSubpageProps) {
   const registerPage = subpageStack.registerPage
   const goBack = subpageStack.goBack
   const getSurfaceId = subpageStack.getSurfaceId
+  const rootSurfaceId = subpageStack.rootSurfaceId
 
-  const isActive = activePageId === pageId
+  const isActive = activePageId === pageId && getSurfaceId(pageId) === surfaceId
 
-  // Register this page in the popup's page registry.
+  // Register this page in the popup's page registry. Duplicate IDs: the
+  // first registration wins (warned once in development); if it unmounts a
+  // surviving duplicate is promoted by the registry.
   React.useEffect(() => {
     return registerPage({
       pageId,
@@ -95,12 +89,13 @@ export function PopupMenuSubpage(props: PopupMenuSubpageProps) {
     const currentIndex = stack.lastIndexOf(pageId)
 
     if (currentIndex <= 0) {
-      return getSurfaceId(ROOT_SUBPAGE_ID)
+      return rootSurfaceId
     }
 
+    // Every string is a valid page ID, including the empty string.
     const previousPageId = stack[currentIndex - 1]
-    return previousPageId ? getSurfaceId(previousPageId) : null
-  }, [stack, pageId, getSurfaceId])
+    return previousPageId === undefined ? null : getSurfaceId(previousPageId)
+  }, [stack, pageId, getSurfaceId, rootSurfaceId])
 
   const subpageContextValue = React.useMemo(
     () => ({

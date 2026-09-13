@@ -2,15 +2,12 @@
 
 import * as React from 'react'
 import type { ListboxStore } from '../../listbox/index.js'
-import {
-  ROOT_SUBPAGE_ID,
-  type SubpageStackContextValue,
-} from '../contexts/subpage-stack-context.js'
+import type { SubpageStackContextValue } from '../contexts/subpage-stack-context.js'
 
 const SUBPAGE_NAVIGATING_MS = 140
 
 export interface UseSubpageStackStateParams {
-  /** Surface ID of the root page (the popup's own surface). */
+  /** Surface ID of the root surface (the popup's own surface). */
   surfaceId: string
   /** Listbox store; used to chain onPopupCloseComplete reset. Null-safe. */
   store: ListboxStore | null
@@ -21,11 +18,11 @@ export interface UseSubpageStackStateReturn {
   subpageStackContextValue: SubpageStackContextValue
   /** Whether subpage navigation is in its transient animation window. */
   isSubpageNavigating: boolean
-  /** Whether any non-root subpage is currently open. */
+  /** Whether any subpage is currently open. */
   hasOpenSubpage: boolean
-  /** Active subpage ID, or null when only the root page is open. */
+  /** Active subpage ID, or null when the root surface is active. */
   subpageId: string | null
-  /** Ordered stack of open non-root subpage IDs. */
+  /** Ordered stack of open subpage IDs. */
   openSubpageIds: string[]
 }
 
@@ -38,9 +35,7 @@ export function useSubpageStackState(
   const { surfaceId, store } = params
 
   // Subpage stack state (per popup instance)
-  const [subpageStack, setSubpageStack] = React.useState<string[]>([
-    ROOT_SUBPAGE_ID,
-  ])
+  const [subpageStack, setSubpageStack] = React.useState<string[]>([])
   const subpageStackRef = React.useRef(subpageStack)
   React.useEffect(() => {
     subpageStackRef.current = subpageStack
@@ -49,6 +44,10 @@ export function useSubpageStackState(
   const subpagesRef = React.useRef<
     Map<string, { surfaceId: string; closeRootOnEsc: boolean }>
   >(new Map())
+  const warnedDuplicatePageIdsRef = React.useRef(new Set<string>())
+  const pageRegistrantsRef = React.useRef(
+    new Map<string, Array<{ surfaceId: string; closeRootOnEsc: boolean }>>(),
+  )
   const [, setSubpageRegistryVersion] = React.useState(0)
   const [isSubpageNavigating, setIsSubpageNavigating] = React.useState(false)
   const subpageNavigatingTimerRef = React.useRef<ReturnType<
@@ -76,31 +75,53 @@ export function useSubpageStackState(
     [clearSubpageNavigatingTimer],
   )
 
-  React.useEffect(() => {
-    subpagesRef.current.set(ROOT_SUBPAGE_ID, {
-      surfaceId,
-      closeRootOnEsc: true,
-    })
-    setSubpageRegistryVersion((v) => v + 1)
-    return () => {
-      subpagesRef.current.delete(ROOT_SUBPAGE_ID)
-      setSubpageRegistryVersion((v) => v + 1)
-    }
-  }, [surfaceId])
-
   const registerPage = React.useCallback(
     (registration: {
       pageId: string
       surfaceId: string
       closeRootOnEsc: boolean
     }) => {
-      subpagesRef.current.set(registration.pageId, {
+      const entry = {
         surfaceId: registration.surfaceId,
         closeRootOnEsc: registration.closeRootOnEsc,
-      })
-      setSubpageRegistryVersion((v) => v + 1)
+      }
+      const queue = pageRegistrantsRef.current.get(registration.pageId)
+      if (queue) {
+        // Duplicate page ID: the first registration wins; later registrants
+        // queue so one of them is promoted if the owner unmounts.
+        if (
+          process.env.NODE_ENV !== 'production' &&
+          !warnedDuplicatePageIdsRef.current.has(registration.pageId)
+        ) {
+          warnedDuplicatePageIdsRef.current.add(registration.pageId)
+          console.warn(
+            `PopupMenu: page ID "${registration.pageId}" is registered more than once in this popup. The first registration wins. Give each Subpage a unique pageId; data-first subpages use the node's Resolved ID.`,
+          )
+        }
+        queue.push(entry)
+      } else {
+        pageRegistrantsRef.current.set(registration.pageId, [entry])
+        subpagesRef.current.set(registration.pageId, entry)
+        setSubpageRegistryVersion((v) => v + 1)
+      }
 
       return () => {
+        const registrants = pageRegistrantsRef.current.get(registration.pageId)
+        if (!registrants) return
+        const index = registrants.indexOf(entry)
+        if (index === -1) return
+        const wasOwner = index === 0
+        registrants.splice(index, 1)
+        if (!wasOwner) return
+
+        const promoted = registrants[0]
+        if (promoted) {
+          subpagesRef.current.set(registration.pageId, promoted)
+          setSubpageRegistryVersion((v) => v + 1)
+          return
+        }
+
+        pageRegistrantsRef.current.delete(registration.pageId)
         subpagesRef.current.delete(registration.pageId)
         setSubpageRegistryVersion((v) => v + 1)
 
@@ -109,7 +130,7 @@ export function useSubpageStackState(
             return prev
           }
           const next = prev.filter((id) => id !== registration.pageId)
-          return next.length > 0 ? next : [ROOT_SUBPAGE_ID]
+          return next
         })
       }
     },
@@ -137,7 +158,7 @@ export function useSubpageStackState(
 
   const goBack = React.useCallback(() => {
     const currentStack = subpageStackRef.current
-    if (currentStack.length <= 1) {
+    if (currentStack.length === 0) {
       return false
     }
 
@@ -152,7 +173,7 @@ export function useSubpageStackState(
   )
 
   const resetSubpageNavigationState = React.useCallback(() => {
-    setSubpageStack([ROOT_SUBPAGE_ID])
+    setSubpageStack([])
     setIsSubpageNavigating(false)
     clearSubpageNavigatingTimer()
   }, [clearSubpageNavigatingTimer])
@@ -178,21 +199,26 @@ export function useSubpageStackState(
     }
   }, [store, resetSubpageNavigationState, clearSubpageNavigatingTimer])
 
-  const activePageId = subpageStack[subpageStack.length - 1] ?? ROOT_SUBPAGE_ID
-  const activePageRegistration = subpagesRef.current.get(activePageId)
-  const activeSurfaceId = activePageRegistration?.surfaceId ?? surfaceId
-  const shouldCloseRootOnEsc = activePageRegistration?.closeRootOnEsc ?? true
-  const canGoBack = subpageStack.length > 1
-  const openSubpageIds = React.useMemo(
-    () => subpageStack.filter((pageId) => pageId !== ROOT_SUBPAGE_ID),
-    [subpageStack],
-  )
+  const activePageId = subpageStack[subpageStack.length - 1] ?? null
+  const activePageRegistration =
+    activePageId === null ? undefined : subpagesRef.current.get(activePageId)
+  const activeSurfaceId =
+    activePageId === null
+      ? surfaceId
+      : (activePageRegistration?.surfaceId ?? surfaceId)
+  const shouldCloseRootOnEsc =
+    activePageId === null
+      ? true
+      : (activePageRegistration?.closeRootOnEsc ?? true)
+  const canGoBack = subpageStack.length > 0
+  const openSubpageIds = subpageStack
   const subpageId = openSubpageIds[openSubpageIds.length - 1] ?? null
   const hasOpenSubpage = subpageId !== null
 
   const subpageStackContextValue = React.useMemo(
     () => ({
       activePageId,
+      rootSurfaceId: surfaceId,
       activeSurfaceId,
       canGoBack,
       shouldCloseRootOnEsc,
@@ -204,6 +230,7 @@ export function useSubpageStackState(
     }),
     [
       activePageId,
+      surfaceId,
       activeSurfaceId,
       canGoBack,
       shouldCloseRootOnEsc,
