@@ -3883,7 +3883,7 @@
             "type": "PopupMenuHighlightChangeHandler<ContextMenuHighlightChangeEventDetails> | undefined",
             "formattedType": "PopupMenuHighlightChangeHandler<ContextMenuHighlightChangeEventDetails>",
             "required": false,
-            "description": "Callback when the highlighted item changes.\nUseful for synchronizing with a virtualizer (e.g., scrollToIndex) or other UI state.\n`id` is first. `node` is the resolved menu node carrying the highlighted id, looked up in the menu's data-first tree — `null` when the highlight clears or when no data-first node carries that id (e.g. JSX-defined rows). A JSX row that shares an id with a data-first node yields that node; row ids are expected to be unique per menu.\nThe fourth parameter contains event details including the reason for the change."
+            "description": "Callback when the highlighted item changes.\nUseful for synchronizing with a virtualizer (e.g., scrollToIndex) or other UI state.\n`id` is first. `node` is the resolved menu node carrying the highlighted ID, looked up in the menu's data-first tree — `null` when the highlight clears or when no data-first node carries that ID (e.g. JSX-defined rows). A JSX row that shares an ID with a data-first node yields that node; Resolved IDs are expected to be unique per menu.\nThe fourth parameter contains event details including the reason for the change."
           },
           {
             "name": "disabled",
@@ -3924,12 +3924,20 @@
             "description": "A ref to imperative actions.\n- `close`: closes the menu imperatively.\n- `unmount`: unmounts the popup imperatively (when keep-mounted mode is enabled).\n- `setDisabled`: enables/disables the menu imperatively."
           },
           {
-            "name": "getRowId",
-            "type": "GetRowIdFn | undefined",
-            "formattedType": "GetRowIdFn",
+            "name": "getResolvedId",
+            "type": "GetResolvedIdFn | undefined",
+            "formattedType": "GetResolvedIdFn",
             "required": false,
-            "description": "Computes canonical row ids for data-first content from the unidentified resolved node (definitional facts only).",
-            "default": "explicit `def.id` verbatim, else the joined definition path\nRead once when the menu root mounts — later changes have no effect."
+            "description": "Computes canonical Resolved IDs for data-first content from the Unresolved Menu Node (definitional facts only).",
+            "default": "encoded surface Definition Path joined with `/`; `idScope=\"menu\"` uses the Definition Key\nRead once when the menu root mounts — later changes have no effect. To retain the old dot-path default, use `node => node.def.id ?? node.definitionPath.join('.')`. This does not recreate former tree-item ancestry; exact compatibility requires walking `node.parent` and reproducing the old slug/key lineage."
+          },
+          {
+            "name": "idScope",
+            "type": "PopupMenuIdScope | undefined",
+            "formattedType": "\"menu\" | \"surface\"",
+            "required": false,
+            "description": "Definition Key uniqueness scope. Read once when the menu root mounts.",
+            "default": "'surface'"
           },
           {
             "name": "debug",
@@ -7342,9 +7350,16 @@
         "props": [
           {
             "name": "activePageId",
+            "type": "string | null",
+            "formattedType": "null | string",
+            "required": true,
+            "description": "Active page ID; `null` when the root surface is active."
+          },
+          {
+            "name": "rootSurfaceId",
             "type": "string",
             "required": true,
-            "description": "Currently active page ID."
+            "description": "Surface ID of the root surface."
           },
           {
             "name": "activeSurfaceId",
@@ -7370,7 +7385,7 @@
             "name": "stack",
             "type": "readonly string[]",
             "required": true,
-            "description": "Current page stack from root to active page."
+            "description": "Open page IDs, bottom to top; empty at root."
           },
           {
             "name": "registerPage",
@@ -7997,6 +8012,22 @@
             "description": "Update loader result"
           },
           {
+            "name": "registerRootLoader",
+            "type": "(state: RootAsyncMenuState) => void",
+            "required": true
+          },
+          {
+            "name": "unregisterRootLoader",
+            "type": "() => void",
+            "required": true
+          },
+          {
+            "name": "updateRootLoaderResult",
+            "type": "(result: AsyncLoaderResult<NodeDef[], unknown>) => void",
+            "formattedType": "(\n  result: AsyncLoaderResult<NodeDef[], unknown>,\n) => void",
+            "required": true
+          },
+          {
             "name": "searchQuery",
             "type": "string",
             "required": true,
@@ -8007,6 +8038,13 @@
             "type": "Map<string, AsyncMenuState>",
             "required": true,
             "description": "All registered loaders"
+          },
+          {
+            "name": "root",
+            "type": "RootAsyncMenuState | null",
+            "formattedType": "null | RootAsyncMenuState",
+            "required": true,
+            "description": "The root surface's own `asyncContent` loader; `null` when none is registered. Never present in `loaders`."
           },
           {
             "name": "isAnyLoading",
@@ -8048,7 +8086,7 @@
             "type": "boolean",
             "formattedType": "false | true",
             "required": true,
-            "description": "The root (__root__) loader is currently in initial loading phase"
+            "description": "The root loader is currently in initial loading phase"
           },
           {
             "name": "isStaticLoading",
@@ -8115,16 +8153,22 @@
           },
           {
             "name": "getAsyncNodes",
-            "type": "() => { id: string; breadcrumbs: string[]; nodes: NodeDef[]; }[]",
-            "formattedType": "() => {\n  id: string\n  breadcrumbs: string[]\n  nodes: NodeDef[]\n}[]",
+            "type": "() => ({ kind: \"root\"; nodes: NodeDef[]; } | { kind: \"branch\"; id: string; nodes: NodeDef[]; })[]",
+            "formattedType": "() => (\n  | { kind: 'root'; nodes: NodeDef[] }\n  | { kind: 'branch'; id: string; nodes: NodeDef[] }\n)[]",
             "required": true,
-            "description": "Get all resolved async nodes with their breadcrumbs"
+            "description": "Every loader with a usable result: the root entry (if any) and one branch entry per Resolved ID."
           },
           {
             "name": "erroredLoaders",
             "type": "Map<string, Error>",
             "required": true,
             "description": "Loaders that errored"
+          },
+          {
+            "name": "rootError",
+            "type": "Error | null",
+            "formattedType": "null | Error",
+            "required": true
           },
           {
             "name": "getAsyncState",
@@ -8168,7 +8212,7 @@
             "type": "string | undefined",
             "formattedType": "string",
             "required": false,
-            "description": "Unique identifier for this node.\nIf provided, it is used verbatim as the resolved row id. If omitted, the\ncanonical id is the node's definition path (ancestor segments plus the\nslugified `value`), or whatever the root `getRowId` seam computes."
+            "description": "Unique identifier for this node.\nIf provided, it contributes the Definition Key and encoded surface path;\nResolved ID generation otherwise follows the root policy or its\n`getResolvedId` seam."
           },
           {
             "name": "hidden",
@@ -8643,11 +8687,11 @@
           }
         ]
       },
-      "GetRowIdFn": {
-        "name": "GetRowIdFn",
+      "GetResolvedIdFn": {
+        "name": "GetResolvedIdFn",
         "kind": "typealias",
-        "doc": "Computes a node's row id from definitional facts. The id must be unique\nper menu root; it is the identity persistent state, registration, and\nhighlight key off.\n\nContract: the id may read the node's own facts (including its own sibling\n`index`) and may walk `parent` for lineage (as the default definition-path\nrule does), but it must not depend on an *ancestor's* sibling `index` —\nreconciliation invalidates ids by def identity and definition path, not by\nancestor reordering, so ancestor-index-dependent ids would go stale. The\nseam must also not mutate its argument.",
-        "definition": "(node: UnidentifiedMenuNode) => string"
+        "doc": "Computes a node's Resolved ID from definitional facts. The ID must be unique\nper menu root; it is the identity persistent state, registration, and\nhighlight key off.\n\nContract: the id may read the node's own facts (including its own sibling\n`index`) and may walk `parent` for lineage (as the default definition-path\nrule does), but it must not depend on an *ancestor's* sibling `index` —\nreconciliation invalidates ids by def identity and definition path, not by\nancestor reordering, so ancestor-index-dependent ids would go stale. The\nseam must also not mutate its argument.",
+        "definition": "(node: UnresolvedMenuNode) => string"
       },
       "GroupBehavior": {
         "name": "GroupBehavior",
@@ -8843,7 +8887,7 @@
             "type": "string | undefined",
             "formattedType": "string",
             "required": false,
-            "description": "Unique identifier for this node.\nIf provided, it is used verbatim as the resolved row id. If omitted, the\ncanonical id is the node's definition path (ancestor segments plus the\nslugified `value`), or whatever the root `getRowId` seam computes."
+            "description": "Unique identifier for this node.\nIf provided, it contributes the Definition Key and encoded surface path;\nResolved ID generation otherwise follows the root policy or its\n`getResolvedId` seam."
           },
           {
             "name": "hidden",
@@ -8942,13 +8986,13 @@
         "name": "ItemRenderProps",
         "kind": "typealias",
         "doc": "Props to spread onto the Item component.\nDerived from PopupMenuItemProps.",
-        "definition": "{\n    /**\n     * Canonical resolved row id for the item (explicit `id` verbatim, else the\n     * definition path — identical in browse and deep search).\n     * Must be passed to the rendered component for navigation to work.\n     */\n    id: string;\n    /**\n     * The original value from the node definition.\n     * Use this for display, search matching, or any logic that needs the raw value.\n     */\n    value: string;\n} & Required<Pick<PopupMenuItemProps, 'disabled'>> & Pick<PopupMenuItemProps, 'closeOnClick' | 'onSelect' | 'shortcut' | 'forceOrder' | 'forceScore'>",
+        "definition": "{\n    /**\n     * Canonical Resolved ID for the item, generated by the root policy: the\n     * encoded surface Definition Path by default, or the Definition Key in\n     * menu scope.\n     * Must be passed to the rendered component for navigation to work.\n     */\n    id: string;\n    /**\n     * The original value from the node definition.\n     * Use this for display, search matching, or any logic that needs the raw value.\n     */\n    value: string;\n} & Required<Pick<PopupMenuItemProps, 'disabled'>> & Pick<PopupMenuItemProps, 'closeOnClick' | 'onSelect' | 'shortcut' | 'forceOrder' | 'forceScore'>",
         "props": [
           {
             "name": "id",
             "type": "string",
             "required": true,
-            "description": "Canonical resolved row id for the item (explicit `id` verbatim, else the\ndefinition path — identical in browse and deep search).\nMust be passed to the rendered component for navigation to work."
+            "description": "Canonical Resolved ID for the item, generated by the root policy: the\nencoded surface Definition Path by default, or the Definition Key in\nmenu scope.\nMust be passed to the rendered component for navigation to work."
           },
           {
             "name": "value",
@@ -9008,6 +9052,11 @@
         "doc": "Union of all node definition types.",
         "definition": "ItemDef | TreeItemDef | RadioItemDef | CheckboxItemDef | SubmenuDef | SubpageDef | SeparatorDef | GroupDef | RadioGroupDef"
       },
+      "PopupMenuIdScope": {
+        "name": "PopupMenuIdScope",
+        "kind": "typealias",
+        "definition": "'menu' | 'surface'"
+      },
       "PopupMenuNode": {
         "name": "PopupMenuNode",
         "kind": "interface",
@@ -9018,7 +9067,7 @@
             "default": "NodeDef"
           }
         ],
-        "doc": "A menu node: the library-created, resolved instance of a node def.\nExactly one per logical row per menu root, in every render context —\nobject identity is row identity, and `id` is its serialization.\nCreated by resolution at the root or by grafting; instances are stable\nacross content re-supplies (reconciliation swaps `def` in place).\nThe type parameter narrows `def`/`kind` for callers that know the def kind\nstatically. Narrowing is a lookup-time snapshot: reconcile may replace `def`\nin place with another def of the same resolved id, so a long-held narrowed\nreference sees the current def, not necessarily the exact object/type it was\nlooked up with.",
+        "doc": "A menu node: the library-created, resolved instance of a node def.\nExactly one per logical row per menu root, in every render context —\nobject identity is Resolved ID identity, and `id` is its serialization.\nCreated by resolution at the root or by grafting; instances are stable\nacross content re-supplies (reconciliation swaps `def` in place).\nThe type parameter narrows `def`/`kind` for callers that know the def kind\nstatically. Narrowing is a lookup-time snapshot: reconcile may replace `def`\nin place with another def of the same resolved id, so a long-held narrowed\nreference sees the current def, not necessarily the exact object/type it was\nlooked up with.",
         "props": [
           {
             "name": "def",
@@ -9034,22 +9083,22 @@
             "description": "Mirror of `def.kind`, stable for the node's lifetime."
           },
           {
-            "name": "pathSegment",
+            "name": "definitionKey",
             "type": "string",
             "required": true,
-            "description": "This node's path component: explicit `def.id` verbatim when present,\notherwise the slugified `value` (kinds without a display value use\ntheir required `id`; id-less separators have an empty path segment)."
+            "description": "This node's path component: explicit `def.id` verbatim when present,\notherwise the slugified `value` (kinds without a display value use\ntheir required `id`)."
           },
           {
-            "name": "defPath",
+            "name": "definitionPath",
             "type": "string[]",
             "required": true,
-            "description": "Definition path: segments from the menu root to this node, including\nits own segment, root-first. Only submenu, subpage, and tree-item\nancestors contribute segments (groups and radio-groups are\npath-transparent). Empty segments are dropped."
+            "description": "Definition Path: Definition Keys from the menu root to this node,\nincluding its own key, root-first. Only submenu and subpage ancestors\ncontribute keys (groups, radio-groups, and tree-items are path-transparent)."
           },
           {
             "name": "id",
             "type": "string",
             "required": true,
-            "description": "Row id: `def.id` verbatim when present, else `defPath.join('.')`."
+            "description": "Resolved ID selected by the root's identity policy."
           },
           {
             "name": "parent",
@@ -9345,11 +9394,10 @@
         "props": [
           {
             "name": "node",
-            "type": "ItemDef | TreeItemDef | RadioItemDef | CheckboxItemDef | SubmenuDef | SubpageDef",
-            "formattedType": "| ItemDef\n  | TreeItemDef\n  | RadioItemDef\n  | CheckboxItemDef\n  | SubmenuDef\n  | SubpageDef",
+            "type": "PopupMenuNode<RowNodeDef>",
             "required": true,
-            "description": "The original node definition",
-            "referencePath": "@bazza-ui/react.ItemDef"
+            "description": "The row's Menu Node; its authored definition is `node.def`.",
+            "referencePath": "@bazza-ui/react.PopupMenuNode"
           },
           {
             "name": "score",
@@ -9365,15 +9413,15 @@
           },
           {
             "name": "group",
-            "type": "{ id: string; label?: string | undefined; groupDef: GroupDef; } | null",
-            "formattedType": "null | {\n  id: string\n  label?: string | undefined\n  groupDef: GroupDef\n}",
+            "type": "{ id: string; label?: string | undefined; groupDef: GroupDef; menuNode: PopupMenuNode<GroupDef>; } | null",
+            "formattedType": "null | {\n  id: string\n  label?: string | undefined\n  groupDef: GroupDef\n  menuNode: PopupMenuNode<GroupDef>\n}",
             "required": true,
             "description": "The group this node belongs to, if any"
           },
           {
             "name": "radioGroup",
-            "type": "{ id: string; label?: string | undefined; radioGroupDef: RadioGroupDef; } | null",
-            "formattedType": "null | {\n  id: string\n  label?: string | undefined\n  radioGroupDef: RadioGroupDef\n}",
+            "type": "{ id: string; label?: string | undefined; radioGroupDef: RadioGroupDef; menuNode: PopupMenuNode<RadioGroupDef>; } | null",
+            "formattedType": "null | {\n  id: string\n  label?: string | undefined\n  radioGroupDef: RadioGroupDef\n  menuNode: PopupMenuNode<RadioGroupDef>\n}",
             "required": true,
             "description": "The radio group this node belongs to, if any"
           }
@@ -9391,10 +9439,9 @@
           },
           {
             "name": "id",
-            "type": "string | undefined",
-            "formattedType": "string",
-            "required": false,
-            "description": "Optional identifier"
+            "type": "string",
+            "required": true,
+            "description": "Unique identifier"
           },
           {
             "name": "render",
@@ -9459,7 +9506,7 @@
             "type": "string | undefined",
             "formattedType": "string",
             "required": false,
-            "description": "Unique identifier for this node.\nIf provided, it is used verbatim as the resolved row id. If omitted, the\ncanonical id is the node's definition path (ancestor segments plus the\nslugified `value`), or whatever the root `getRowId` seam computes."
+            "description": "Unique identifier for this node.\nIf provided, it contributes the Definition Key and encoded surface path;\nResolved ID generation otherwise follows the root policy or its\n`getResolvedId` seam."
           },
           {
             "name": "hidden",
@@ -9534,10 +9581,10 @@
           },
           {
             "name": "nodes",
-            "type": "NodeDef[]",
+            "type": "PopupMenuNode<NodeDef>[]",
             "required": true,
-            "description": "The submenu's static child node definitions.\nDoes NOT include async results - use `asyncContent` for that.",
-            "referencePath": "@bazza-ui/react.NodeDef"
+            "description": "The branch's resolved static child Menu Nodes, in def order. Loader results are grafted as children of `node` but are not included here — use `asyncContent` to load them. Authored fields are on `child.def`.",
+            "referencePath": "@bazza-ui/react.PopupMenuNode"
           },
           {
             "name": "asyncContent",
@@ -9548,10 +9595,10 @@
           },
           {
             "name": "renderNode",
-            "type": "(node: NodeDef | PopupMenuNode<NodeDef>) => ReactNode",
-            "formattedType": "(\n  node: NodeDef | PopupMenuNode<NodeDef>,\n) => ReactNode",
+            "type": "(node: PopupMenuNode<NodeDef>) => ReactNode",
+            "formattedType": "(\n  node: PopupMenuNode<NodeDef>,\n) => ReactNode",
             "required": true,
-            "description": "Resolved nodes are unwrapped to their defs."
+            "description": "Render one child Menu Node from `nodes`."
           }
         ]
       },
@@ -9613,7 +9660,7 @@
             "name": "pageId",
             "type": "string",
             "required": true,
-            "description": "Computed page ID for this subpage"
+            "description": "The subpage's Resolved ID (`node.id`); pass it to `<Subpage pageId>`."
           },
           {
             "name": "context",
@@ -9625,10 +9672,10 @@
           },
           {
             "name": "nodes",
-            "type": "NodeDef[]",
+            "type": "PopupMenuNode<NodeDef>[]",
             "required": true,
-            "description": "The subpage's static child node definitions.\nDoes NOT include async results - use `asyncContent` for that.",
-            "referencePath": "@bazza-ui/react.NodeDef"
+            "description": "The branch's resolved static child Menu Nodes, in def order. Loader results are grafted as children of `node` but are not included here — use `asyncContent` to load them. Authored fields are on `child.def`.",
+            "referencePath": "@bazza-ui/react.PopupMenuNode"
           },
           {
             "name": "asyncContent",
@@ -9639,10 +9686,10 @@
           },
           {
             "name": "renderNode",
-            "type": "(node: NodeDef | PopupMenuNode<NodeDef>) => ReactNode",
-            "formattedType": "(\n  node: NodeDef | PopupMenuNode<NodeDef>,\n) => ReactNode",
+            "type": "(node: PopupMenuNode<NodeDef>) => ReactNode",
+            "formattedType": "(\n  node: PopupMenuNode<NodeDef>,\n) => ReactNode",
             "required": true,
-            "description": "Resolved nodes are unwrapped to their defs."
+            "description": "Render one child Menu Node from `nodes`."
           }
         ]
       },
@@ -9655,13 +9702,6 @@
             "name": "kind",
             "type": "\"subpage\"",
             "required": true
-          },
-          {
-            "name": "pageId",
-            "type": "string | undefined",
-            "formattedType": "string",
-            "required": false,
-            "description": "Optional explicit page ID for this subpage.\nIf omitted, a deterministic page ID is generated from id/value + breadcrumbs."
           },
           {
             "name": "nodes",
@@ -9714,7 +9754,7 @@
             "type": "string | undefined",
             "formattedType": "string",
             "required": false,
-            "description": "Unique identifier for this node.\nIf provided, it is used verbatim as the resolved row id. If omitted, the\ncanonical id is the node's definition path (ancestor segments plus the\nslugified `value`), or whatever the root `getRowId` seam computes."
+            "description": "Unique identifier for this node.\nIf provided, it contributes the Definition Key and encoded surface path;\nResolved ID generation otherwise follows the root policy or its\n`getResolvedId` seam."
           },
           {
             "name": "hidden",
@@ -9866,7 +9906,7 @@
             "type": "string | undefined",
             "formattedType": "string",
             "required": false,
-            "description": "Unique identifier for this node.\nIf provided, it is used verbatim as the resolved row id. If omitted, the\ncanonical id is the node's definition path (ancestor segments plus the\nslugified `value`), or whatever the root `getRowId` seam computes."
+            "description": "Unique identifier for this node.\nIf provided, it contributes the Definition Key and encoded surface path;\nResolved ID generation otherwise follows the root policy or its\n`getResolvedId` seam."
           },
           {
             "name": "hidden",
@@ -9964,7 +10004,7 @@
             "name": "id",
             "type": "string",
             "required": true,
-            "description": "Canonical resolved row id for the item (explicit `id` verbatim, else the\ndefinition path — identical in browse and deep search).\nMust be passed to the rendered component for navigation to work."
+            "description": "Canonical Resolved ID for the item, generated by the root policy: the\nencoded surface Definition Path by default, or the Definition Key in\nmenu scope.\nMust be passed to the rendered component for navigation to work."
           },
           {
             "name": "value",
@@ -10018,10 +10058,10 @@
           }
         ]
       },
-      "UnidentifiedMenuNode": {
-        "name": "UnidentifiedMenuNode",
+      "UnresolvedMenuNode": {
+        "name": "UnresolvedMenuNode",
         "kind": "typealias",
-        "doc": "A menu node before its row id is assigned — the argument to `GetRowIdFn`.\nCarries definitional facts only (`def`, `pathSegment`, `defPath`, resolved\n`parent`, `depth`, def-tree sibling `index`). Contextual facts (search\nstate, deep-search flags, display position) are deliberately absent:\na context-dependent row id is inexpressible by construction.",
+        "doc": "A menu node before its resolved ID is assigned — the argument to `GetResolvedIdFn`.\nCarries definitional facts only (`def`, `definitionKey`, `definitionPath`, resolved\n`parent`, `depth`, def-tree sibling `index`). Contextual facts (search\nstate, deep-search flags, display position) are deliberately absent:\na context-dependent Resolved ID is inexpressible by construction.",
         "definition": "Omit<PopupMenuNode, 'id'>",
         "props": [
           {
@@ -10058,16 +10098,16 @@
             "referencePath": "@bazza-ui/react.NodeDef"
           },
           {
-            "name": "pathSegment",
+            "name": "definitionKey",
             "type": "string",
             "required": true,
-            "description": "This node's path component: explicit `def.id` verbatim when present,\notherwise the slugified `value` (kinds without a display value use\ntheir required `id`; id-less separators have an empty path segment)."
+            "description": "This node's path component: explicit `def.id` verbatim when present,\notherwise the slugified `value` (kinds without a display value use\ntheir required `id`)."
           },
           {
-            "name": "defPath",
+            "name": "definitionPath",
             "type": "string[]",
             "required": true,
-            "description": "Definition path: segments from the menu root to this node, including\nits own segment, root-first. Only submenu, subpage, and tree-item\nancestors contribute segments (groups and radio-groups are\npath-transparent). Empty segments are dropped."
+            "description": "Definition Path: Definition Keys from the menu root to this node,\nincluding its own key, root-first. Only submenu and subpage ancestors\ncontribute keys (groups, radio-groups, and tree-items are path-transparent)."
           },
           {
             "name": "parent",
@@ -10140,7 +10180,7 @@
             "type": "PopupMenuHighlightChangeHandler<DropdownMenuHighlightChangeEventDetails> | undefined",
             "formattedType": "PopupMenuHighlightChangeHandler<DropdownMenuHighlightChangeEventDetails>",
             "required": false,
-            "description": "Callback when the highlighted item changes.\nUseful for synchronizing with a virtualizer (e.g., scrollToIndex) or other UI state.\n`id` is first. `node` is the resolved menu node carrying the highlighted id, looked up in the menu's data-first tree — `null` when the highlight clears or when no data-first node carries that id (e.g. JSX-defined rows). A JSX row that shares an id with a data-first node yields that node; row ids are expected to be unique per menu.\nThe fourth parameter contains event details including the reason for the change."
+            "description": "Callback when the highlighted item changes.\nUseful for synchronizing with a virtualizer (e.g., scrollToIndex) or other UI state.\n`id` is first. `node` is the resolved menu node carrying the highlighted ID, looked up in the menu's data-first tree — `null` when the highlight clears or when no data-first node carries that ID (e.g. JSX-defined rows). A JSX row that shares an ID with a data-first node yields that node; Resolved IDs are expected to be unique per menu.\nThe fourth parameter contains event details including the reason for the change."
           },
           {
             "name": "closeOnOutsidePress",
@@ -10165,13 +10205,22 @@
             "description": "A ref to imperative actions.\n- `close`: closes the menu imperatively.\n- `unmount`: unmounts the popup imperatively (when keep-mounted mode is enabled).\n- `setDisabled`: enables/disables the menu imperatively."
           },
           {
-            "name": "getRowId",
-            "type": "GetRowIdFn | undefined",
-            "formattedType": "GetRowIdFn",
+            "name": "getResolvedId",
+            "type": "GetResolvedIdFn | undefined",
+            "formattedType": "GetResolvedIdFn",
             "required": false,
-            "description": "Computes canonical row ids for data-first content from the unidentified resolved node (definitional facts only).",
-            "default": "explicit `def.id` verbatim, else the joined definition path\nRead once when the menu root mounts — later changes have no effect.",
-            "referencePath": "@bazza-ui/react.GetRowIdFn"
+            "description": "Computes canonical Resolved IDs for data-first content from the Unresolved Menu Node (definitional facts only).",
+            "default": "encoded surface Definition Path joined with `/`; `idScope=\"menu\"` uses the Definition Key\nRead once when the menu root mounts — later changes have no effect. To retain the old dot-path default, use `node => node.def.id ?? node.definitionPath.join('.')`. This does not recreate former tree-item ancestry; exact compatibility requires walking `node.parent` and reproducing the old slug/key lineage.",
+            "referencePath": "@bazza-ui/react.GetResolvedIdFn"
+          },
+          {
+            "name": "idScope",
+            "type": "PopupMenuIdScope | undefined",
+            "formattedType": "\"menu\" | \"surface\"",
+            "required": false,
+            "description": "Definition Key uniqueness scope. Read once when the menu root mounts.",
+            "default": "'surface'",
+            "referencePath": "@bazza-ui/react.PopupMenuIdScope"
           },
           {
             "name": "debug",
@@ -14176,8 +14225,8 @@
           },
           {
             "name": "skippedMenus",
-            "type": "{ id: string; reason: \"error\"; }[]",
-            "formattedType": "{ id: string; reason: 'error' }[]",
+            "type": "({ kind: \"root\"; reason: \"error\"; } | { kind: \"branch\"; id: string; reason: \"error\"; })[]",
+            "formattedType": "(\n  | { kind: 'root'; reason: 'error' }\n  | { kind: 'branch'; id: string; reason: 'error' }\n)[]",
             "required": true,
             "description": "Menus that failed (skipped from results)"
           }
@@ -14194,6 +14243,14 @@
             "required": true,
             "description": "The branch node definition",
             "referencePath": "@bazza-ui/react.TreeItemDef"
+          },
+          {
+            "name": "menuNode",
+            "type": "PopupMenuNode<TreeItemDef | SubmenuDef | SubpageDef>",
+            "formattedType": "PopupMenuNode<\n  TreeItemDef | SubmenuDef | SubpageDef\n>",
+            "required": true,
+            "description": "The branch Menu Node. `node`, `value`, and `id` mirror its def for compatibility.",
+            "referencePath": "@bazza-ui/react.PopupMenuNode"
           },
           {
             "name": "value",
@@ -14449,7 +14506,7 @@
             "type": "string | undefined",
             "formattedType": "string",
             "required": false,
-            "description": "Unique identifier for this node.\nIf provided, it is used verbatim as the resolved row id. If omitted, the\ncanonical id is the node's definition path (ancestor segments plus the\nslugified `value`), or whatever the root `getRowId` seam computes."
+            "description": "Unique identifier for this node.\nIf provided, it contributes the Definition Key and encoded surface path;\nResolved ID generation otherwise follows the root policy or its\n`getResolvedId` seam."
           },
           {
             "name": "hidden",
@@ -15354,7 +15411,7 @@
             "type": "string | null",
             "formattedType": "null | string",
             "required": true,
-            "description": "Active subpage ID, or null when only the root page is open."
+            "description": "Active subpage ID, or null when the root surface is active."
           },
           {
             "name": "openSubpageIds",

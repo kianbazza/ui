@@ -280,6 +280,8 @@ Render a `<DropdownMenu.SubpageTrigger>` and wire it up using the `targetPageId`
 
 </ComponentOnly>
 
+For data-first subpages, `pageId` is the subpage's Resolved ID (`node.id`); pass it straight to `<…Subpage pageId>`. Imperative subpages choose their own `pageId` string.
+
 ### Virtualized
 
 Use virtualization to efficiently render large lists with thousands of items. This example uses TanStack Virtual to only render visible items.
