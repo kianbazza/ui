@@ -132,25 +132,9 @@ Each item accepts an `onSelect` callback that fires when the item is selected vi
 
 ### Close on click
 
-Use the `closeOnClick` prop to close the menu when an item is selected.
+Use the `closeOnClick` prop to control whether the menu closes when an item is selected.
 
-<ComponentOnly>
-
-<Example name="dropdown-menu-close-on-click">
-<Example.PreviewCode>
-
-```tsx
-// Override the default behaviour for each item
-<DropdownMenu.Item closeOnClick={false} />
-<DropdownMenu.CheckboxItem closeOnClick />
-<DropdownMenu.RadioItem closeOnClick />
-```
-
-</Example.PreviewCode>
-
-</Example>
-
-</ComponentOnly>
+`<DropdownMenu.Item>` closes the menu by default, while `<DropdownMenu.CheckboxItem>` and `<DropdownMenu.RadioItem>` keep the menu open by default.
 
 ### Search
 
@@ -159,42 +143,27 @@ Search works out-of-the-box and fully customizable; use the `<DropdownMenu.Input
 The `value` and `keywords` props are used to filter the items.
 
 <ComponentOnly>
-
-<Example name="dropdown-menu-search">
-
-<Example.PreviewCode>
-
-  ```tsx
-  <DropdownMenu.Item value="bug" keywords={['issue', 'fix']} />
-  ```
-
-</Example.PreviewCode>
-
-</Example>
-
+  <Example name="dropdown-menu-search">
+    <Example.PreviewCode>
+      ```tsx
+      <DropdownMenu.Item value="bug" keywords={['issue', 'fix']} />
+      ```
+    </Example.PreviewCode>
+  </Example>
 </ComponentOnly>
-
-### Hidden input
 
 We recommend **always** rendering the `<DropdownMenu.Input>` part.
 
-If you want a cleaner look, the `hideUntilActive` prop can be used to hide the input until the user starts typing.
-
+If you want a cleaner look, the `hideUntilActive` prop can be used to hide the input until the user starts typing. The rest of the examples on this page demonstrate this.
 
 <ComponentOnly>
-
-<Example name="dropdown-menu-hidden-input">
-
-<Example.PreviewCode>
-
-  ```tsx
-  <DropdownMenu.Input hideUntilActive />
-  ```
-
-</Example.PreviewCode>
-
-</Example>
-
+  <Example name="dropdown-menu-hidden-input">
+    <Example.PreviewCode>
+      ```tsx
+      <DropdownMenu.Input hideUntilActive />
+      ```
+    </Example.PreviewCode>
+  </Example>
 </ComponentOnly>
 
 ### Checkbox items
@@ -206,6 +175,8 @@ It can be used uncontrolled, or controlled via `checked` and `onCheckedChange` p
 <ComponentOnly>
 
 <Example name="dropdown-menu-checkbox" />
+
+<Example name="dropdown-menu-checkbox-indicator-variants" />
 
 </ComponentOnly>
 
