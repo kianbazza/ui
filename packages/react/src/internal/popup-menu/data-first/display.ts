@@ -2,14 +2,7 @@
 // Build Display Nodes
 // ============================================================================
 
-import type { PopupMenuNode } from '../menu-tree/types.js'
-import { resolveDetachedNodeForDef } from './detached.js'
-import type {
-  DisplayRowNode,
-  NodeDef,
-  RowRenderContext,
-  ScoredNode,
-} from './types.js'
+import type { DisplayRowNode, RowRenderContext, ScoredNode } from './types.js'
 
 // Build Display Nodes
 // ============================================================================
@@ -22,9 +15,6 @@ export function buildDisplayRowNodes(
   scoredNodes: ScoredNode[],
   query: string,
   highlightedId: string | null,
-  getNodeForDef: <D extends NodeDef>(
-    def: D,
-  ) => PopupMenuNode<D> = resolveDetachedNodeForDef,
 ): DisplayRowNode[] {
   return scoredNodes.map((scoredNode) => {
     const isDeepSearchResult = scoredNode.breadcrumbs.length > 0
@@ -39,8 +29,8 @@ export function buildDisplayRowNodes(
       breadcrumbs: scoredNode.breadcrumbs,
       // breadcrumbs already set above
       isDeepSearchResult,
-      highlighted: scoredNode.node.id === highlightedId,
-      disabled: scoredNode.node.disabled ?? false,
+      highlighted: scoredNode.node.def.id === highlightedId,
+      disabled: scoredNode.node.def.disabled ?? false,
       group: scoredNode.group
         ? { id: scoredNode.group.id, label: scoredNode.group.label }
         : null,
@@ -49,7 +39,7 @@ export function buildDisplayRowNodes(
 
     return {
       kind: 'row',
-      node: getNodeForDef(scoredNode.node),
+      node: scoredNode.node,
       context,
       radioGroup: scoredNode.radioGroup
         ? { id: scoredNode.radioGroup.id, label: scoredNode.radioGroup.label }
@@ -66,9 +56,6 @@ export function buildDisplayRowNode(
   scoredNode: ScoredNode,
   query: string,
   highlightedId: string | null,
-  getNodeForDef: <D extends NodeDef>(
-    def: D,
-  ) => PopupMenuNode<D> = resolveDetachedNodeForDef,
 ): DisplayRowNode {
   const isDeepSearchResult = scoredNode.breadcrumbs.length > 0
 
@@ -81,8 +68,8 @@ export function buildDisplayRowNode(
       : null,
     breadcrumbs: scoredNode.breadcrumbs,
     isDeepSearchResult,
-    highlighted: scoredNode.node.id === highlightedId,
-    disabled: scoredNode.node.disabled ?? false,
+    highlighted: scoredNode.node.def.id === highlightedId,
+    disabled: scoredNode.node.def.disabled ?? false,
     group: scoredNode.group
       ? { id: scoredNode.group.id, label: scoredNode.group.label }
       : null,
@@ -91,7 +78,7 @@ export function buildDisplayRowNode(
 
   return {
     kind: 'row',
-    node: getNodeForDef(scoredNode.node),
+    node: scoredNode.node,
     context,
     radioGroup: scoredNode.radioGroup
       ? { id: scoredNode.radioGroup.id, label: scoredNode.radioGroup.label }

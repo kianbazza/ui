@@ -3,14 +3,13 @@
 // ============================================================================
 
 import type { PopupMenuNode } from '../menu-tree/types.js'
-import { resolveDetachedNodeForDef } from './detached.js'
 import { getSupportedTreeChildren } from './flatten.js'
+import { isMenuNodeOfKind, isRowMenuNode } from './type-guards.js'
 import type {
   BreadcrumbNode,
   DisplayNode,
   DisplayRowNode,
   GroupRenderContext,
-  NodeDef,
   RowRenderContext,
   TreeItemDef,
 } from './types.js'
@@ -23,53 +22,41 @@ import type {
  * Returns only top-level items and submenu triggers, flattening groups.
  */
 export function getBrowseNodesFlatten(
-  nodes: NodeDef[],
+  nodes: readonly PopupMenuNode[],
   highlightedId: string | null,
   group: { id: string; label?: string } | null = null,
-  getNodeForDef: <D extends NodeDef>(
-    def: D,
-  ) => PopupMenuNode<D> = resolveDetachedNodeForDef,
 ): DisplayRowNode[] {
   const result: DisplayRowNode[] = []
   const visibleRowNodes = nodes.filter(
-    (node) =>
-      node.kind !== 'separator' &&
-      node.kind !== 'group' &&
-      node.kind !== 'radio-group' &&
-      !node.hidden,
+    (node) => isRowMenuNode(node) && !node.def.hidden,
   )
 
   for (const node of nodes) {
-    if (node.kind === 'separator') {
+    if (isMenuNodeOfKind(node, 'separator')) {
       // Skip separators - they're not focusable
       continue
     }
 
-    if (node.kind === 'group') {
+    if (isMenuNodeOfKind(node, 'group')) {
       // Recurse into groups, passing group context
-      const groupInfo = { id: node.id, label: node.label }
+      const groupInfo = { id: node.def.id, label: node.def.label }
       result.push(
-        ...getBrowseNodesFlatten(
-          node.nodes,
-          highlightedId,
-          groupInfo,
-          getNodeForDef,
-        ),
+        ...getBrowseNodesFlatten(node.children, highlightedId, groupInfo),
       )
       continue
     }
 
-    if (node.kind === 'radio-group') {
+    if (isMenuNodeOfKind(node, 'radio-group')) {
       // Radio groups should not be flattened - skip in flatten mode
       // They will be handled by getBrowseNodesPreserve
       continue
     }
 
-    if (node.hidden) {
+    if (!isRowMenuNode(node) || node.def.hidden) {
       continue
     }
 
-    if (node.kind === 'tree-item') {
+    if (isMenuNodeOfKind(node, 'tree-item')) {
       result.push(
         ...expandTreeNode(
           node,
@@ -79,7 +66,6 @@ export function getBrowseNodesFlatten(
           [],
           [],
           node === visibleRowNodes.at(-1),
-          getNodeForDef,
         ),
       )
       continue
@@ -89,48 +75,47 @@ export function getBrowseNodesFlatten(
       search: null,
       breadcrumbs: [],
       isDeepSearchResult: false,
-      highlighted: node.id === highlightedId,
-      disabled: node.disabled ?? false,
+      highlighted: node.def.id === highlightedId,
+      disabled: node.def.disabled ?? false,
       group,
       tree: null,
     }
 
-    result.push({ kind: 'row', node: getNodeForDef(node), context })
+    result.push({ kind: 'row', node, context })
   }
 
   return result
 }
 
 function expandTreeNode(
-  node: TreeItemDef,
+  node: PopupMenuNode<TreeItemDef>,
   highlightedId: string | null,
   group: { id: string; label?: string } | null,
   depth: number,
   ancestorsLast: boolean[],
   breadcrumbs: BreadcrumbNode[],
   isLastChild: boolean,
-  getNodeForDef: <D extends NodeDef>(def: D) => PopupMenuNode<D>,
 ): DisplayRowNode[] {
-  const supportedChildren = getSupportedTreeChildren(node.nodes ?? []).filter(
-    (child) => !child.hidden,
+  const supportedChildren = getSupportedTreeChildren(node.children).filter(
+    (child) => !child.def.hidden,
   )
   const tree = {
     depth,
     hasChildren: supportedChildren.length > 0,
     isLastChild,
     ancestorsLast,
-    header: node.selectable === false,
+    header: node.def.selectable === false,
   }
   const rows: DisplayRowNode[] = [
     {
       kind: 'row',
-      node: getNodeForDef(node),
+      node,
       context: {
         search: null,
         breadcrumbs,
         isDeepSearchResult: false,
-        highlighted: node.id === highlightedId,
-        disabled: node.disabled ?? false,
+        highlighted: node.def.id === highlightedId,
+        disabled: node.def.disabled ?? false,
         group,
         tree,
       },
@@ -138,14 +123,15 @@ function expandTreeNode(
   ]
 
   const childBreadcrumb: BreadcrumbNode = {
-    node,
-    value: node.value,
-    id: node.id,
+    node: node.def,
+    menuNode: node,
+    value: node.def.value,
+    id: node.def.id,
   }
   const childBreadcrumbs = [...breadcrumbs, childBreadcrumb]
   supportedChildren.forEach((child, index) => {
     const childIsLast = index === supportedChildren.length - 1
-    if (child.kind === 'tree-item') {
+    if (isMenuNodeOfKind(child, 'tree-item')) {
       rows.push(
         ...expandTreeNode(
           child,
@@ -155,7 +141,6 @@ function expandTreeNode(
           [...ancestorsLast, isLastChild],
           childBreadcrumbs,
           childIsLast,
-          getNodeForDef,
         ),
       )
       return
@@ -163,18 +148,18 @@ function expandTreeNode(
 
     rows.push({
       kind: 'row',
-      node: getNodeForDef(child),
+      node: child,
       context: {
         search: null,
         breadcrumbs: childBreadcrumbs,
         isDeepSearchResult: false,
-        highlighted: child.id === highlightedId,
-        disabled: child.disabled ?? false,
+        highlighted: child.def.id === highlightedId,
+        disabled: child.def.disabled ?? false,
         group,
         tree: {
           depth: depth + 1,
           hasChildren:
-            child.kind === 'submenu' && (child.nodes?.length ?? 0) > 0,
+            isMenuNodeOfKind(child, 'submenu') && child.children.length > 0,
           isLastChild: childIsLast,
           ancestorsLast: [...ancestorsLast, isLastChild],
           header: false,
@@ -190,53 +175,45 @@ function expandTreeNode(
  * Keeps group structure intact, showing group containers with their items.
  */
 export function getBrowseNodesPreserve(
-  nodes: NodeDef[],
+  nodes: readonly PopupMenuNode[],
   highlightedId: string | null,
-  getNodeForDef: <D extends NodeDef>(
-    def: D,
-  ) => PopupMenuNode<D> = resolveDetachedNodeForDef,
 ): DisplayNode[] {
   const result: DisplayNode[] = []
 
   for (const node of nodes) {
-    if (node.kind === 'separator') {
+    if (isMenuNodeOfKind(node, 'separator')) {
       // Include separators in browse mode for visual separation
-      result.push({ kind: 'separator', node: getNodeForDef(node) })
+      result.push({ kind: 'separator', node })
       continue
     }
 
-    if (node.kind === 'group') {
+    if (isMenuNodeOfKind(node, 'group')) {
       // Build group items
       const groupItems: DisplayRowNode[] = []
-      const visibleGroupChildren = node.nodes.filter(
-        (child) =>
-          child.kind !== 'separator' &&
-          child.kind !== 'group' &&
-          child.kind !== 'radio-group' &&
-          !child.hidden,
+      const visibleGroupChildren = node.children.filter(
+        (child) => isRowMenuNode(child) && !child.def.hidden,
       )
-      for (const child of node.nodes) {
+      for (const child of node.children) {
         // Skip non-row nodes
         if (
-          child.kind === 'separator' ||
-          child.kind === 'group' ||
-          child.kind === 'radio-group'
+          isMenuNodeOfKind(child, 'separator') ||
+          isMenuNodeOfKind(child, 'group') ||
+          isMenuNodeOfKind(child, 'radio-group')
         ) {
           continue
         }
-        if (child.hidden) continue
+        if (!isRowMenuNode(child) || child.def.hidden) continue
 
-        if (child.kind === 'tree-item') {
+        if (isMenuNodeOfKind(child, 'tree-item')) {
           groupItems.push(
             ...expandTreeNode(
               child,
               highlightedId,
-              { id: node.id, label: node.label },
+              { id: node.def.id, label: node.def.label },
               0,
               [],
               [],
               child === visibleGroupChildren.at(-1),
-              getNodeForDef,
             ),
           )
           continue
@@ -246,15 +223,15 @@ export function getBrowseNodesPreserve(
           search: null,
           breadcrumbs: [],
           isDeepSearchResult: false,
-          highlighted: child.id === highlightedId,
-          disabled: child.disabled ?? false,
-          group: { id: node.id, label: node.label },
+          highlighted: child.def.id === highlightedId,
+          disabled: child.def.disabled ?? false,
+          group: { id: node.def.id, label: node.def.label },
           tree: null,
         }
 
         groupItems.push({
           kind: 'row',
-          node: getNodeForDef(child),
+          node: child,
           context: itemContext,
         })
       }
@@ -270,7 +247,7 @@ export function getBrowseNodesPreserve(
 
         result.push({
           kind: 'group',
-          node: getNodeForDef(node),
+          node,
           context: groupContext,
           items: groupItems,
           bestScore: 1,
@@ -279,30 +256,30 @@ export function getBrowseNodesPreserve(
       continue
     }
 
-    if (node.kind === 'radio-group') {
-      if (node.hidden) continue
+    if (isMenuNodeOfKind(node, 'radio-group')) {
+      if (node.def.hidden) continue
 
       // Build radio group items
       const radioItems: DisplayRowNode[] = []
-      for (const child of node.nodes) {
+      for (const child of node.children) {
         // RadioGroupDef.nodes only contains ItemDef | SubmenuDef | CheckboxItemDef
-        if (child.hidden) continue
+        if (!isRowMenuNode(child) || child.def.hidden) continue
 
         const itemContext: RowRenderContext = {
           search: null,
           breadcrumbs: [],
           isDeepSearchResult: false,
-          highlighted: child.id === highlightedId,
-          disabled: child.disabled ?? false,
+          highlighted: child.def.id === highlightedId,
+          disabled: child.def.disabled ?? false,
           group: null, // Radio items don't belong to a regular group
           tree: null,
         }
 
         radioItems.push({
           kind: 'row',
-          node: getNodeForDef(child),
+          node: child,
           context: itemContext,
-          radioGroup: { id: node.id, label: node.label },
+          radioGroup: { id: node.def.id, label: node.def.label },
         })
       }
 
@@ -317,7 +294,7 @@ export function getBrowseNodesPreserve(
 
         result.push({
           kind: 'radio-group',
-          node: getNodeForDef(node),
+          node,
           context: groupContext,
           items: radioItems,
           bestScore: 1,
@@ -326,18 +303,14 @@ export function getBrowseNodesPreserve(
       continue
     }
 
-    if (node.hidden) {
+    if (!isRowMenuNode(node) || node.def.hidden) {
       continue
     }
 
     // Ungrouped item/submenu/subpage
-    if (node.kind === 'tree-item') {
+    if (isMenuNodeOfKind(node, 'tree-item')) {
       const visibleRowNodes = nodes.filter(
-        (sibling) =>
-          sibling.kind !== 'separator' &&
-          sibling.kind !== 'group' &&
-          sibling.kind !== 'radio-group' &&
-          !sibling.hidden,
+        (sibling) => isRowMenuNode(sibling) && !sibling.def.hidden,
       )
       result.push(
         ...expandTreeNode(
@@ -348,7 +321,6 @@ export function getBrowseNodesPreserve(
           [],
           [],
           node === visibleRowNodes.at(-1),
-          getNodeForDef,
         ),
       )
       continue
@@ -358,12 +330,12 @@ export function getBrowseNodesPreserve(
       search: null,
       breadcrumbs: [],
       isDeepSearchResult: false,
-      highlighted: node.id === highlightedId,
-      disabled: node.disabled ?? false,
+      highlighted: node.def.id === highlightedId,
+      disabled: node.def.disabled ?? false,
       group: null,
       tree: null,
     }
-    result.push({ kind: 'row', node: getNodeForDef(node), context })
+    result.push({ kind: 'row', node, context })
   }
 
   return result

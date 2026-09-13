@@ -18,11 +18,7 @@ import { useMenuTreeResolver } from '../contexts/menu-tree-resolver-context.js'
 import { useMaybeSubpageContext } from '../contexts/subpage-context.js'
 import { useMaybeSubpageStack } from '../contexts/subpage-stack-context.js'
 import { useResolution } from '../hooks/use-resolution.js'
-import {
-  defaultGetResolvedId,
-  isPopupMenuNode,
-  resolveDetachedNode,
-} from '../menu-tree/resolve.js'
+import { isPopupMenuNode } from '../menu-tree/resolve.js'
 import type { PopupMenuNode } from '../menu-tree/types.js'
 import {
   type AsyncMenuState,
@@ -34,7 +30,7 @@ import {
   useDataPopupContext,
   useDataSurfaceContext,
 } from './context.js'
-import { defsOf, ownerOfDef } from './defs-of.js'
+import { isRowMenuNode } from './type-guards.js'
 import type {
   AsyncLoaderResult,
   AsyncNodesConfig,
@@ -43,6 +39,7 @@ import type {
   DataListChildrenState,
   DisplayNode,
   DisplayRowNode,
+  GroupDef,
   GroupRenderContext,
   ItemDef,
   NodeDef,
@@ -65,82 +62,6 @@ import {
   getSubpagePageId,
   shouldLoadEagerly,
 } from './utils.js'
-
-const warnedOutOfTreeDefs = new WeakSet<NodeDef>()
-
-/**
- * Render-scoped def merge for subpage surfaces, which never feed resolution
- * and so have no Menu Nodes of their own in this slice. Reproduces the
- * pre-resolution-phase merge: every branch with a loader result (at any
- * depth) is shallow-copied with its loaded defs appended after its static
- * ones; the surface's own root loader replaces `content` when `asyncContent`
- * is set and is appended otherwise. Errored loaders are skipped, matching
- * `getAsyncNodes`. Deleted by the next slice.
- */
-function mergeLocal(
-  content: NodeDef[],
-  asyncContent: AsyncNodesConfig | undefined,
-  coordinator: ReturnType<typeof useAsyncMenuCoordinator>,
-  asyncSubmenus: readonly AsyncSubmenuInfo[],
-): NodeDef[] {
-  if (!coordinator) return content
-  const results = new Map(
-    coordinator.getAsyncNodes().map((entry) => [entry.id, entry.nodes]),
-  )
-  if (results.size === 0) return content
-  const loadedFor = new Map<NodeDef, NodeDef[]>()
-  for (const info of asyncSubmenus) {
-    const loaded = results.get(info.id)
-    if (loaded) loadedFor.set(info.node, loaded)
-  }
-
-  const mergeRecursive = (nodes: NodeDef[]): NodeDef[] => {
-    let changed = false
-    const next = nodes.map((def) => {
-      if (
-        def.kind !== 'submenu' &&
-        def.kind !== 'subpage' &&
-        def.kind !== 'group' &&
-        def.kind !== 'radio-group' &&
-        def.kind !== 'tree-item'
-      ) {
-        return def
-      }
-      const branchDef = def as NodeDef & { nodes?: NodeDef[] }
-      const staticChildren = branchDef.nodes
-        ? mergeRecursive(branchDef.nodes)
-        : undefined
-      const loaded = loadedFor.get(def)
-      if (loaded) {
-        changed = true
-        return {
-          ...def,
-          nodes: [...(staticChildren ?? []), ...loaded],
-        } as NodeDef
-      }
-      if (staticChildren !== branchDef.nodes) {
-        changed = true
-        return { ...def, nodes: staticChildren } as NodeDef
-      }
-      return def
-    })
-    return changed ? next : nodes
-  }
-
-  const merged = mergeRecursive(content)
-  const root = results.get('__root__')
-  if (!root) return merged
-  return asyncContent ? root : [...merged, ...root]
-}
-
-export function warnOutOfTreeDef(def: NodeDef): void {
-  if (process.env.NODE_ENV !== 'production' && !warnedOutOfTreeDefs.has(def)) {
-    warnedOutOfTreeDefs.add(def)
-    console.warn(
-      "[PopupMenu] Computed a Resolved ID for a definition outside the resolved menu tree. The ID falls back to a root-relative resolution. Supply the definition through the menu's content/async pipeline, or memoize definitions passed to renderNode.",
-    )
-  }
-}
 
 function renderGroupLabelElement<
   C extends GroupRenderContext & { label?: string },
@@ -617,18 +538,6 @@ export const DataListInner = React.forwardRef<
 
   const resolver = useMenuTreeResolver()
   const { setResolvedNodes } = useDataPopupContext()
-  const getNodeForDefOrDetached = React.useCallback(
-    <D extends NodeDef>(def: D): PopupMenuNode<D> => {
-      const owner = ownerOfDef(def)
-      if (owner) return owner as PopupMenuNode<D>
-      const resolved = resolver?.getNodeForDef(def)
-      if (resolved) return resolved
-      warnOutOfTreeDef(def)
-      const getResolvedId = resolver?.getResolvedId ?? defaultGetResolvedId
-      return resolveDetachedNode(def, getResolvedId)
-    },
-    [resolver],
-  )
   const graftParent = useGraftPoint()
   const { depth: surfaceDepth } = useListboxContext()
   const resolverSubpageContext = useMaybeSubpageContext()
@@ -672,24 +581,6 @@ export const DataListInner = React.forwardRef<
     asyncSubmenus,
   })
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: keyed on the loader map and graftVersion (the inputs that change the Menu Tree), not the coordinator object
-  const resolvedDefs = React.useMemo(
-    () =>
-      isSubpageSurface
-        ? mergeLocal(content, asyncContent, coordinator, asyncSubmenus)
-        : defsOf(resolvedNodes),
-    [
-      isSubpageSurface,
-      content,
-      asyncContent,
-      coordinator?.loaders,
-      coordinator?.erroredLoaders,
-      asyncSubmenus,
-      resolvedNodes,
-      graftVersion,
-    ],
-  )
-
   // Publish the resolved-nodes slot for sibling subpages. Not withdrawn on
   // unmount: the root list unmounts while a subpage is active, and the
   // subpages must keep rendering from the tree that opened them.
@@ -698,17 +589,33 @@ export const DataListInner = React.forwardRef<
     setResolvedNodes({ nodes: resolvedNodes, graftVersion, content })
   }, [isSubpageSurface, setResolvedNodes, resolvedNodes, graftVersion, content])
 
+  // A subpage surface grafts into the same Menu Tree (its own loader results
+  // under its branch). Bump the slot's version so sibling subpage collection
+  // sees nested subpages those grafts introduced.
+  const lastPublishedSubpageGraftRef = React.useRef(0)
+  React.useEffect(() => {
+    if (!isSubpageSurface || graftVersion === 0) return
+    if (lastPublishedSubpageGraftRef.current === graftVersion) return
+    lastPublishedSubpageGraftRef.current = graftVersion
+    setResolvedNodes((current) =>
+      current
+        ? { ...current, graftVersion: current.graftVersion + 1 }
+        : current,
+    )
+  }, [isSubpageSurface, setResolvedNodes, graftVersion])
+
   const streamOrderRef = React.useRef<{
     query: string
     order: string[]
   } | null>(null)
 
   // Compute filtered display nodes
+  // biome-ignore lint/correctness/useExhaustiveDependencies: graftVersion signals grafts under branch nodes, which mutate `children` without changing `resolvedNodes` identity
   const { displayNodes, isDeepSearching } = React.useMemo(() => {
     const result = filterNodes({
       query: normalizedSearch,
       normalizeQuery: identityQuery,
-      nodes: resolvedDefs,
+      nodes: resolvedNodes,
       highlightedId: null, // Primitives handle highlighting via store
       deepSearch: deepSearchConfig.enabled,
       includeInDeepSearch,
@@ -716,7 +623,6 @@ export const DataListInner = React.forwardRef<
       groupSearchBehavior: deepSearchConfig.groupSearchBehavior,
       radioGroupSearchBehavior: deepSearchConfig.radioGroupSearchBehavior,
       sortGroups: deepSearchConfig.sortGroups,
-      getNodeForDef: getNodeForDefOrDetached,
     })
 
     const asyncResultBehavior = deepSearchConfig.asyncResultBehavior ?? 'stream'
@@ -770,10 +676,10 @@ export const DataListInner = React.forwardRef<
     }
   }, [
     normalizedSearch,
-    resolvedDefs,
+    resolvedNodes,
+    graftVersion,
     deepSearchConfig,
     includeInDeepSearch,
-    getNodeForDefOrDetached,
     asyncSubmenus.length,
     asyncContent,
     coordinator,
@@ -998,14 +904,28 @@ export const DataListInner = React.forwardRef<
         // Create breadcrumb node for current submenu (used in child contexts)
         const submenuBreadcrumb: BreadcrumbNode = {
           node,
+          menuNode: resolved as PopupMenuNode<SubmenuDef>,
           value: node.value,
           id: node.id,
         }
 
+        // Children of this submenu are Menu Nodes under `resolved`; a def
+        // handed to `renderNode` is matched back to its Menu Node there.
+        const childMenuNodeFor = <D extends NodeDef>(
+          def: D,
+        ): PopupMenuNode<D> | undefined =>
+          resolved.children.find((child) => child.def === def) as
+            | PopupMenuNode<D>
+            | undefined
+
         const submenuRenderNode = (
           arg: NodeDef | PopupMenuNode,
         ): React.ReactNode => {
-          const childNode = isPopupMenuNode(arg) ? arg.def : arg
+          const childMenuNode = isPopupMenuNode(arg)
+            ? arg
+            : childMenuNodeFor(arg)
+          if (!childMenuNode) return null
+          const childNode = childMenuNode.def
           // Skip separators
           if (childNode.kind === 'separator') {
             return null
@@ -1013,13 +933,18 @@ export const DataListInner = React.forwardRef<
 
           // Handle groups - render the group with its children
           if (childNode.kind === 'group') {
-            const groupItems = childNode.nodes.filter(
-              (n): n is ItemDef | CheckboxItemDef | SubmenuDef | SubpageDef =>
+            const groupItems = childMenuNode.children.filter(
+              (
+                n,
+              ): n is PopupMenuNode<
+                ItemDef | CheckboxItemDef | SubmenuDef | SubpageDef
+              > =>
+                isRowMenuNode(n) &&
                 (n.kind === 'item' ||
                   n.kind === 'checkbox-item' ||
                   n.kind === 'submenu' ||
                   n.kind === 'subpage') &&
-                !n.hidden,
+                !n.def.hidden,
             )
 
             if (groupItems.length === 0) {
@@ -1033,14 +958,14 @@ export const DataListInner = React.forwardRef<
                 breadcrumbs: [...context.breadcrumbs, submenuBreadcrumb],
                 isDeepSearchResult: false,
                 highlighted: false,
-                disabled: item.disabled ?? false,
+                disabled: item.def.disabled ?? false,
                 group: { id: childNode.id, label: childNode.label },
                 tree: null,
               }
 
               return renderRowNode({
                 kind: 'row',
-                node: getNodeForDefOrDetached(item),
+                node: item,
                 context: itemContext,
               })
             })
@@ -1056,7 +981,7 @@ export const DataListInner = React.forwardRef<
               return (
                 <React.Fragment key={childNode.id}>
                   {childNode.render({
-                    node: getNodeForDefOrDetached(childNode),
+                    node: childMenuNode as PopupMenuNode<GroupDef>,
                     props: {},
                     context: {
                       ...groupContext,
@@ -1079,10 +1004,10 @@ export const DataListInner = React.forwardRef<
 
           // Handle radio groups inside submenus
           if (childNode.kind === 'radio-group') {
-            return renderRadioGroup(childNode, [
-              ...context.breadcrumbs,
-              submenuBreadcrumb,
-            ])
+            return renderRadioGroup(
+              childMenuNode as PopupMenuNode<RadioGroupDef>,
+              [...context.breadcrumbs, submenuBreadcrumb],
+            )
           }
 
           // Handle items, checkbox items, submenus, and subpages
@@ -1109,7 +1034,9 @@ export const DataListInner = React.forwardRef<
           // renderRowNode already wraps in a keyed Fragment
           return renderRowNode({
             kind: 'row',
-            node: getNodeForDefOrDetached(childNode),
+            node: childMenuNode as PopupMenuNode<
+              ItemDef | CheckboxItemDef | SubmenuDef | SubpageDef
+            >,
             context: childContext,
           })
         }
@@ -1168,15 +1095,16 @@ export const DataListInner = React.forwardRef<
 
       return null
     },
-    [coordinator, normalizedSearch, getNodeForDefOrDetached, isDeepSearching],
+    [coordinator, normalizedSearch, isDeepSearching],
   )
 
   // Helper to render a radio group
   const renderRadioGroup = React.useCallback(
     (
-      radioGroup: RadioGroupDef,
+      radioGroupNode: PopupMenuNode<RadioGroupDef>,
       breadcrumbs: BreadcrumbNode[] = [],
     ): React.ReactNode => {
+      const radioGroup = radioGroupNode.def
       const isDeepSearchResult = breadcrumbs.length > 0
 
       // Build group context
@@ -1188,22 +1116,22 @@ export const DataListInner = React.forwardRef<
       }
 
       // Render children - renderRowNode already wraps in keyed Fragment
-      const childElements = radioGroup.nodes.map((item) => {
-        if (item.hidden) return null
+      const childElements = radioGroupNode.children.map((item) => {
+        if (!isRowMenuNode(item) || item.def.hidden) return null
 
         const itemContext: RowRenderContext = {
           search: null,
           breadcrumbs,
           isDeepSearchResult,
           highlighted: false,
-          disabled: item.disabled ?? false,
+          disabled: item.def.disabled ?? false,
           group: null,
           tree: null,
         }
 
         return renderRowNode({
           kind: 'row',
-          node: getNodeForDefOrDetached(item),
+          node: item,
           context: itemContext,
           radioGroup: { id: radioGroup.id, label: radioGroup.label },
         })
@@ -1214,7 +1142,7 @@ export const DataListInner = React.forwardRef<
         return (
           <React.Fragment key={radioGroup.id}>
             {radioGroup.render({
-              node: getNodeForDefOrDetached(radioGroup),
+              node: radioGroupNode,
               props: {
                 value: radioGroup.value,
                 onValueChange: radioGroup.onValueChange,
@@ -1243,7 +1171,7 @@ export const DataListInner = React.forwardRef<
             radioGroup.id,
             radioGroup.label,
             radioGroup.renderLabel,
-            getNodeForDefOrDetached(radioGroup),
+            radioGroupNode,
             {
               ...groupContext,
               label: radioGroup.label,
@@ -1255,7 +1183,7 @@ export const DataListInner = React.forwardRef<
         </div>
       )
     },
-    [renderRowNode, getNodeForDefOrDetached],
+    [renderRowNode],
   )
 
   // Build the renderNode function that handles groups, radio groups, and rows

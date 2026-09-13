@@ -7,11 +7,6 @@ import type {
   UnresolvedMenuNode,
 } from './types.js'
 
-const detachedNodeCache = new WeakMap<
-  GetResolvedIdFn,
-  WeakMap<NodeDef, PopupMenuNode>
->()
-
 export function isPopupMenuNode(value: unknown): value is PopupMenuNode {
   return (
     typeof value === 'object' &&
@@ -24,25 +19,6 @@ export function isPopupMenuNode(value: unknown): value is PopupMenuNode {
     typeof (value as PopupMenuNode).depth === 'number' &&
     'parent' in value
   )
-}
-
-/** Resolve a single out-of-tree def to a stable detached node (per seam, per def). */
-export function resolveDetachedNode<D extends NodeDef>(
-  def: D,
-  getResolvedId: GetResolvedIdFn,
-): PopupMenuNode<D> {
-  let perSeam = detachedNodeCache.get(getResolvedId)
-  if (!perSeam) {
-    perSeam = new WeakMap()
-    detachedNodeCache.set(getResolvedId, perSeam)
-  }
-  let node = perSeam.get(def)
-  if (!node) {
-    node = resolveNodeDefs([def], null, [], getResolvedId)[0]!
-    perSeam.set(def, node)
-  }
-  // node was built from (or cached under) this exact def; def === node.def
-  return node as PopupMenuNode<D>
 }
 
 function encodeDefinitionPathEntry(entry: string): string {

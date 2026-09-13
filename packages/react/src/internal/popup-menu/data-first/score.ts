@@ -4,8 +4,7 @@
 
 import { commandScore } from '../../listbox/utils/command-score.js'
 import { normalizeValue } from '../../listbox/utils/normalize.js'
-import type { FlattenedNode } from './flatten.js'
-import type { ScoredNode } from './types.js'
+import type { FlattenedNode, ScoredNode } from './types.js'
 
 // Score Nodes
 // ============================================================================
@@ -44,8 +43,11 @@ export function scoreNodes(
     inheritedKeywords,
   } of flattenedNodes) {
     // Normalize value and keywords to match cmdk's behavior
-    const normalizedValue = normalizeValue(node.value)
-    const normalizedKeywords = [...(node.keywords ?? []), ...inheritedKeywords]
+    const normalizedValue = normalizeValue(node.def.value)
+    const normalizedKeywords = [
+      ...(node.def.keywords ?? []),
+      ...inheritedKeywords,
+    ]
       .map((k) => normalizeValue(k))
       .filter(Boolean)
 
@@ -54,7 +56,7 @@ export function scoreNodes(
       normalizedQuery,
       normalizedKeywords.length > 0 ? normalizedKeywords : undefined,
     )
-    const score = node.forceScore ?? fuzzyScore
+    const score = node.def.forceScore ?? fuzzyScore
 
     if (score > 0) {
       results.push({

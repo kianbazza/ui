@@ -651,4 +651,77 @@ describe('CommandMenu async data-first API', () => {
     })
     expect(screen.getByTestId('item-beta')).toBeInTheDocument()
   })
+
+  it('renders a subpage whose loader replaces its static children without crashing', async () => {
+    const user = userEvent.setup()
+    const loader = createControllableLoader()
+    const staticProject = createItemDef('static-project', 'Static project')
+    const subpage = createSubpageDef({
+      id: 'projects',
+      value: 'Projects',
+      nodes: [staticProject],
+      asyncNodes: {
+        type: 'static',
+        Loader: loader.Loader,
+        loadStrategy: 'lazy',
+      },
+    })
+    // Hand the authored static def straight back through `renderNode`, the
+    // way a custom `renderContent` may.
+    subpage.renderContent = ({ pageId, asyncContent, renderNode }) => (
+      <>
+        <CommandMenu.Subpage pageId={pageId}>
+          <CommandMenu.Surface
+            asyncContent={asyncContent}
+            content={[staticProject]}
+            data-testid="surface-projects"
+          >
+            <CommandMenu.Input
+              aria-label="Search Projects"
+              data-testid="input-projects"
+            />
+            <CommandMenu.List data-testid="list-projects">
+              <CommandMenu.SubpageBackItem
+                data-testid="subpage-back-projects"
+                value="projects-back"
+              >
+                Back
+              </CommandMenu.SubpageBackItem>
+              {renderNode(staticProject)}
+              <DataRows />
+            </CommandMenu.List>
+          </CommandMenu.Surface>
+        </CommandMenu.Subpage>
+        <SubpageContentReady id="projects" />
+      </>
+    )
+    const nodes: NodeDef[] = [subpage]
+
+    render(
+      <DataCommandMenu
+        deepSearch={{ enabled: true, minLength: 999 }}
+        nodes={nodes}
+      />,
+    )
+    await waitForRootInputFocus()
+    await waitForSubpageContentReady('projects')
+    await user.click(screen.getByTestId('subpage-trigger-projects'))
+    if (!screen.queryByTestId('input-projects')) {
+      await user.click(screen.getByTestId('subpage-trigger-projects'))
+    }
+    await waitForSubpageInputFocus('projects')
+    // Once via `DataRows`, once via the direct `renderNode` call.
+    expect(screen.getAllByTestId('item-static-project')).toHaveLength(2)
+
+    // `asyncContent` replaces the static children under the subpage branch;
+    // the authored static def handed back through `renderNode` must render
+    // nothing rather than throw.
+    await resolveLoader(loader, [
+      createItemDef('loaded-project', 'Loaded project'),
+    ])
+    await waitFor(() => {
+      expect(screen.getByTestId('item-loaded-project')).toBeInTheDocument()
+    })
+    expect(screen.queryByTestId('item-static-project')).not.toBeInTheDocument()
+  })
 })
