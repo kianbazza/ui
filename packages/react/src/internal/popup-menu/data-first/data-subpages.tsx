@@ -24,7 +24,6 @@ import type {
   SubmenuDef,
   SubpageDef,
 } from './types.js'
-import { getAsyncLoaderIdForBranch } from './utils.js'
 
 interface QueryExecutionState {
   effectiveQuery: string
@@ -86,17 +85,16 @@ function resolveQueryExecutionState(
 }
 
 function getBranchAsyncState(
-  node: SubmenuDef | SubpageDef,
-  breadcrumbs: BreadcrumbNode[],
+  menuNode: PopupMenuNode<SubmenuDef | SubpageDef>,
   searchQuery: string,
   coordinator: ReturnType<typeof useAsyncMenuCoordinator>,
 ): AsyncRenderState | undefined {
+  const node = menuNode.def
   if (!node.asyncNodes || !coordinator) {
     return undefined
   }
 
-  const asyncLoaderId = getAsyncLoaderIdForBranch(node, breadcrumbs)
-  const asyncResult = coordinator.loaders.get(asyncLoaderId)
+  const asyncResult = coordinator.loaders.get(menuNode.id)
 
   if (!asyncResult) {
     return undefined
@@ -323,8 +321,7 @@ export function DataSubpagesContent(props: DataSubpagesContentProps) {
 
         if (rowNode.kind === 'submenu') {
           const submenuAsyncState = getBranchAsyncState(
-            rowNode,
-            rowContext.breadcrumbs,
+            rowMenuNode as PopupMenuNode<SubmenuDef>,
             searchQuery,
             coordinator,
           )
@@ -466,8 +463,7 @@ export function DataSubpagesContent(props: DataSubpagesContentProps) {
         if (rowNode.kind !== 'subpage') return null
 
         const subpageAsyncState = getBranchAsyncState(
-          rowNode,
-          rowContext.breadcrumbs,
+          rowMenuNode as PopupMenuNode<SubpageDef>,
           searchQuery,
           coordinator,
         )
@@ -566,8 +562,7 @@ export function DataSubpagesContent(props: DataSubpagesContentProps) {
                 value: node.value,
                 disabled: node.disabled ?? false,
                 async: getBranchAsyncState(
-                  node,
-                  context.breadcrumbs,
+                  resolved as PopupMenuNode<SubpageDef>,
                   searchQuery,
                   coordinator,
                 ),

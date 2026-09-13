@@ -18,11 +18,14 @@ import type {
 export interface AsyncMenuState {
   /** Unique identifier for this async menu */
   id: string
-  /** Breadcrumbs path to this menu (for merging into tree) */
-  breadcrumbs: string[]
   /** The loader configuration */
   config: AsyncLoaderConfig
   /** Current loader result */
+  result: AsyncLoaderResult<NodeDef[]>
+}
+
+export interface RootAsyncMenuState {
+  config: AsyncLoaderConfig
   result: AsyncLoaderResult<NodeDef[]>
 }
 
@@ -37,6 +40,9 @@ export interface AsyncMenuCoordinatorValue {
   unregisterLoader: (id: string) => void
   /** Update loader result */
   updateLoaderResult: (id: string, result: AsyncLoaderResult<NodeDef[]>) => void
+  registerRootLoader: (state: RootAsyncMenuState) => void
+  unregisterRootLoader: () => void
+  updateRootLoaderResult: (result: AsyncLoaderResult<NodeDef[]>) => void
 
   // ---- Search Query ----
   /** Current search query from the store */
@@ -45,6 +51,8 @@ export interface AsyncMenuCoordinatorValue {
   // ---- Loader State ----
   /** All registered loaders */
   loaders: Map<string, AsyncMenuState>
+  /** The root surface's own `asyncContent` loader; `null` when none is registered. Never present in `loaders`. */
+  root: RootAsyncMenuState | null
 
   // ---- Computed State ----
   /** Any loader is currently in initial loading phase */
@@ -57,7 +65,7 @@ export interface AsyncMenuCoordinatorValue {
   isAnyRefetching: boolean
   /** All registered loaders are currently in background refetch phase */
   isAllRefetching: boolean
-  /** The root (__root__) loader is currently in initial loading phase */
+  /** The root loader is currently in initial loading phase */
   isRootLoading: boolean
   /** Static loaders are currently in initial loading phase */
   isStaticLoading: boolean
@@ -79,16 +87,16 @@ export interface AsyncMenuCoordinatorValue {
   allResolved: boolean
 
   // ---- Async Nodes ----
-  /** Get all resolved async nodes with their breadcrumbs */
-  getAsyncNodes: () => Array<{
-    id: string
-    breadcrumbs: string[]
-    nodes: NodeDef[]
-  }>
+  /** Every loader with a usable result: the root entry (if any) and one branch entry per Resolved ID. */
+  getAsyncNodes: () => Array<
+    | { kind: 'root'; nodes: NodeDef[] }
+    | { kind: 'branch'; id: string; nodes: NodeDef[] }
+  >
 
   // ---- Error Tracking ----
   /** Loaders that errored */
   erroredLoaders: Map<string, Error>
+  rootError: Error | null
 
   // ---- Aggregated State ----
   /** Get the aggregate async state for DataList */
@@ -134,11 +142,31 @@ export function AsyncMenuCoordinatorProvider(
   const [loaders, setLoaders] = React.useState<Map<string, AsyncMenuState>>(
     () => new Map(),
   )
+  const [root, setRoot] = React.useState<RootAsyncMenuState | null>(null)
 
   // Track errored loaders
   const [erroredLoaders, setErroredLoaders] = React.useState<
     Map<string, Error>
   >(() => new Map())
+  const [rootError, setRootError] = React.useState<Error | null>(null)
+
+  const registerRootLoader = React.useCallback((state: RootAsyncMenuState) => {
+    setRoot(state)
+  }, [])
+  const unregisterRootLoader = React.useCallback(() => {
+    setRoot(null)
+    setRootError(null)
+  }, [])
+  const updateRootLoaderResult = React.useCallback(
+    (result: AsyncLoaderResult<NodeDef[]>) => {
+      setRoot((prev) => (prev ? { ...prev, result } : prev))
+      // Same transitions as branch loaders: set on a real error, clear only
+      // once the loader is no longer errored.
+      if (result.isError && result.error) setRootError(result.error)
+      else if (!result.isError) setRootError(null)
+    },
+    [],
+  )
 
   // Register a loader
   const registerLoader = React.useCallback((state: AsyncMenuState) => {
@@ -198,83 +226,101 @@ export function AsyncMenuCoordinatorProvider(
 
   // Computed loading states
   const isStaticFetching = React.useMemo(() => {
+    if (root?.config.type === 'static' && root.result.isFetching) return true
     for (const [, state] of loaders) {
       if (state.config.type === 'static' && state.result.isFetching) {
         return true
       }
     }
     return false
-  }, [loaders])
+  }, [loaders, root])
 
   const isStaticLoading = React.useMemo(() => {
+    if (root?.config.type === 'static' && root.result.isLoading) return true
     for (const [, state] of loaders) {
       if (state.config.type === 'static' && state.result.isLoading) {
         return true
       }
     }
     return false
-  }, [loaders])
+  }, [loaders, root])
 
   const isStaticInitialLoading = React.useMemo(() => {
+    if (root?.config.type === 'static' && root.result.isInitialLoading)
+      return true
     for (const [, state] of loaders) {
       if (state.config.type === 'static' && state.result.isInitialLoading) {
         return true
       }
     }
     return false
-  }, [loaders])
+  }, [loaders, root])
 
   const isStaticRefetching = React.useMemo(() => {
+    if (root?.config.type === 'static' && root.result.isRefetching) return true
     for (const [, state] of loaders) {
       if (state.config.type === 'static' && state.result.isRefetching) {
         return true
       }
     }
     return false
-  }, [loaders])
+  }, [loaders, root])
 
   const isQueryFetching = React.useMemo(() => {
+    if (root?.config.type === 'query' && root.result.isFetching) return true
     for (const [, state] of loaders) {
       if (state.config.type === 'query' && state.result.isFetching) {
         return true
       }
     }
     return false
-  }, [loaders])
+  }, [loaders, root])
 
   const isQueryLoading = React.useMemo(() => {
+    if (root?.config.type === 'query' && root.result.isLoading) return true
     for (const [, state] of loaders) {
       if (state.config.type === 'query' && state.result.isLoading) {
         return true
       }
     }
     return false
-  }, [loaders])
+  }, [loaders, root])
 
   const isQueryInitialLoading = React.useMemo(() => {
+    if (root?.config.type === 'query' && root.result.isInitialLoading)
+      return true
     for (const [, state] of loaders) {
       if (state.config.type === 'query' && state.result.isInitialLoading) {
         return true
       }
     }
     return false
-  }, [loaders])
+  }, [loaders, root])
 
   const isQueryRefetching = React.useMemo(() => {
+    if (root?.config.type === 'query' && root.result.isRefetching) return true
     for (const [, state] of loaders) {
       if (state.config.type === 'query' && state.result.isRefetching) {
         return true
       }
     }
     return false
-  }, [loaders])
+  }, [loaders, root])
 
-  const isAnyFetching = isStaticFetching || isQueryFetching
-  const isAnyLoading = isStaticLoading || isQueryLoading
-  const isAnyInitialLoading = isStaticInitialLoading || isQueryInitialLoading
-  const isAnyRefetching = isStaticRefetching || isQueryRefetching
+  const isAnyFetching =
+    (root?.result.isFetching ?? false) || isStaticFetching || isQueryFetching
+  const isAnyLoading =
+    (root?.result.isLoading ?? false) || isStaticLoading || isQueryLoading
+  const isAnyInitialLoading =
+    (root?.result.isInitialLoading ?? false) ||
+    isStaticInitialLoading ||
+    isQueryInitialLoading
+  const isAnyRefetching =
+    (root?.result.isRefetching ?? false) ||
+    isStaticRefetching ||
+    isQueryRefetching
   const isAllRefetching = React.useMemo(() => {
-    if (loaders.size === 0) {
+    if (loaders.size === 0 && !root) {
       return false
     }
 
@@ -283,33 +329,33 @@ export function AsyncMenuCoordinatorProvider(
         return false
       }
     }
+    return root ? root.result.isRefetching : true
+  }, [loaders, root])
 
-    return true
-  }, [loaders])
-
-  // Only the root loader (__root__) — i.e. the DataSurface's own asyncContent.
-  // Child submenu loaders are not included; they show loading on their own triggers.
   const isRootLoading = React.useMemo(() => {
-    const rootLoader = loaders.get('__root__')
-    return rootLoader?.result.isLoading ?? false
-  }, [loaders])
+    return root?.result.isLoading ?? false
+  }, [root])
 
   const allResolved = React.useMemo(() => {
+    if (root?.result.isFetching) return false
     for (const [, state] of loaders) {
       if (state.result.isFetching) {
         return false
       }
     }
     return true
-  }, [loaders])
+  }, [loaders, root])
 
   // Get all resolved async nodes
   const getAsyncNodes = React.useCallback(() => {
-    const result: Array<{
-      id: string
-      breadcrumbs: string[]
-      nodes: NodeDef[]
-    }> = []
+    const result: Array<
+      | { kind: 'root'; nodes: NodeDef[] }
+      | { kind: 'branch'; id: string; nodes: NodeDef[] }
+    > = []
+
+    if (root?.result.data && !rootError) {
+      result.push({ kind: 'root', nodes: root.result.data })
+    }
 
     for (const [id, state] of loaders) {
       // Skip errored loaders
@@ -320,22 +366,24 @@ export function AsyncMenuCoordinatorProvider(
       // Add resolved data
       if (state.result.data) {
         result.push({
+          kind: 'branch',
           id,
-          breadcrumbs: state.breadcrumbs,
           nodes: state.result.data,
         })
       }
     }
 
     return result
-  }, [loaders, erroredLoaders])
+  }, [loaders, erroredLoaders, root, rootError])
 
   // Get aggregate async state
   const getAsyncState = React.useCallback((): AsyncState => {
-    const skippedMenus: Array<{ id: string; reason: 'error' }> = []
+    const skippedMenus: AsyncState['skippedMenus'] = []
+
+    if (rootError) skippedMenus.push({ kind: 'root', reason: 'error' })
 
     for (const [id] of erroredLoaders) {
-      skippedMenus.push({ id, reason: 'error' })
+      skippedMenus.push({ kind: 'branch', id, reason: 'error' })
     }
 
     return {
@@ -365,6 +413,7 @@ export function AsyncMenuCoordinatorProvider(
     isQueryInitialLoading,
     isQueryRefetching,
     erroredLoaders,
+    rootError,
   ])
 
   // Context value
@@ -373,8 +422,12 @@ export function AsyncMenuCoordinatorProvider(
       registerLoader,
       unregisterLoader,
       updateLoaderResult,
+      registerRootLoader,
+      unregisterRootLoader,
+      updateRootLoaderResult,
       searchQuery,
       loaders,
+      root,
       isAnyLoading,
       isAnyFetching,
       isAnyInitialLoading,
@@ -392,14 +445,19 @@ export function AsyncMenuCoordinatorProvider(
       allResolved,
       getAsyncNodes,
       erroredLoaders,
+      rootError,
       getAsyncState,
     }),
     [
       registerLoader,
       unregisterLoader,
       updateLoaderResult,
+      registerRootLoader,
+      unregisterRootLoader,
+      updateRootLoaderResult,
       searchQuery,
       loaders,
+      root,
       isAnyLoading,
       isAnyFetching,
       isAnyInitialLoading,
@@ -417,6 +475,7 @@ export function AsyncMenuCoordinatorProvider(
       allResolved,
       getAsyncNodes,
       erroredLoaders,
+      rootError,
       getAsyncState,
     ],
   )

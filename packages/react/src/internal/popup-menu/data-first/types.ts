@@ -284,7 +284,10 @@ export interface AsyncState {
   isQueryRefetching: boolean
 
   /** Menus that failed (skipped from results) */
-  skippedMenus: Array<{ id: string; reason: 'error' }>
+  skippedMenus: Array<
+    | { kind: 'root'; reason: 'error' }
+    | { kind: 'branch'; id: string; reason: 'error' }
+  >
 }
 
 // ============================================================================

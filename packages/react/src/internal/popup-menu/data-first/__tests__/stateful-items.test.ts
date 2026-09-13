@@ -1316,9 +1316,14 @@ describe('Value Normalization', () => {
         }),
       ]
 
-      const collected = collectAsyncSubmenus(nodes)
+      const resolver = createMenuTreeResolver()
+      resolver.setContent(nodes)
+      const collected = collectAsyncSubmenus(resolver.rootNodes)
 
-      expect(collected.map((entry) => entry.id)).toEqual(['Included'])
+      expect(collected.map((entry) => entry.node.def.value)).toEqual([
+        'Included',
+      ])
+      expect(collected[0].id).toBe(resolver.getNodeForDef(nodes[0])!.id)
     })
 
     it('collectAsyncSubmenus also collects async subpages', () => {
@@ -1334,9 +1339,14 @@ describe('Value Normalization', () => {
         }),
       ]
 
-      const collected = collectAsyncSubmenus(nodes)
+      const resolver = createMenuTreeResolver()
+      resolver.setContent(nodes)
+      const collected = collectAsyncSubmenus(resolver.rootNodes)
 
-      expect(collected.map((entry) => entry.id)).toEqual(['AI Filter'])
+      expect(collected.map((entry) => entry.node.def.value)).toEqual([
+        'AI Filter',
+      ])
+      expect(collected[0].id).toBe(resolver.getNodeForDef(nodes[0])!.id)
     })
 
     it('collectAsyncSubmenus respects ancestor trigger-only hard stop', () => {
@@ -1361,7 +1371,9 @@ describe('Value Normalization', () => {
         ),
       ]
 
-      const collected = collectAsyncSubmenus(nodes)
+      const resolver = createMenuTreeResolver()
+      resolver.setContent(nodes)
+      const collected = collectAsyncSubmenus(resolver.rootNodes)
 
       expect(collected).toHaveLength(0)
     })
@@ -1475,5 +1487,58 @@ describe('Menu Node pipeline', () => {
     expect(rowNodes).toHaveLength(1)
     expect(rowNodes[0]!.node.def.value).toBe('Grafted')
     expect(rowNodes[0]!.context.breadcrumbs[0]!.menuNode).toBe(submenuNode)
+  })
+})
+
+describe('deduplicateNodes', () => {
+  it('keeps same-value rows that a custom getResolvedId distinguishes', () => {
+    const first = {
+      kind: 'item',
+      value: 'Backlog',
+      render: () => null,
+    } as ItemDef
+    const second = {
+      kind: 'item',
+      value: 'Backlog',
+      render: () => null,
+    } as ItemDef
+    const resolver = createMenuTreeResolver({
+      getResolvedId: (node) =>
+        node.def.id ?? `${node.definitionKey}-${node.index}`,
+    })
+    resolver.setContent([createSubmenuDef('status', 'Status', [first, second])])
+
+    const { displayNodes } = filterNodes({
+      query: 'backlog',
+      nodes: resolver.rootNodes,
+      highlightedId: null,
+      deepSearch: true,
+      groupSearchBehavior: 'flatten',
+    })
+    const rows = displayNodes.filter(isDisplayRowNode)
+
+    expect(rows.map((row) => row.node.def)).toEqual([first, second])
+    expect(new Set(rows.map((row) => row.node.id)).size).toBe(2)
+  })
+
+  it('collapses a loader-repeated def', () => {
+    const item = createItemDef('backlog', 'Backlog')
+    const resolver = createMenuTreeResolver()
+    resolver.setContent([createSubmenuDef('status', 'Status', [item])])
+    const submenuNode = resolver.rootNodes[0]!
+
+    resolver.graft(submenuNode, [item, item])
+    // Dedup runs in the flatten search path (its only call site).
+    const { displayNodes } = filterNodes({
+      query: 'backlog',
+      nodes: resolver.rootNodes,
+      highlightedId: null,
+      deepSearch: true,
+      groupSearchBehavior: 'flatten',
+    })
+    const rows = displayNodes.filter(isDisplayRowNode)
+
+    expect(rows).toHaveLength(1)
+    expect(rows[0]!.node.def).toBe(item)
   })
 })

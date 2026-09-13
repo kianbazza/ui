@@ -2,7 +2,6 @@
 // Sort Nodes
 // ============================================================================
 
-import { normalizeValue } from '../../listbox/utils/normalize.js'
 import type { DisplayRowNode, ScoredNode } from './types.js'
 
 // Sort Nodes
@@ -130,24 +129,14 @@ export function partitionByKind(nodes: ScoredNode[]): ScoredNode[] {
   return result
 }
 
-/**
- * Deduplicates nodes by their composite ID (breadcrumb segments + node ID/value).
- * This handles the case where the same node appears multiple times in the tree.
- * Values are normalized (trimmed) for consistent deduplication.
- */
+/** Deduplicates scored rows by Resolved ID. A row can reach the flat list twice when a loader result repeats a def already present under the same branch. */
 export function deduplicateNodes(nodes: ScoredNode[]): ScoredNode[] {
   const seen = new Set<string>()
   const result: ScoredNode[] = []
 
   for (const scoredNode of nodes) {
-    const compositeId = [
-      ...scoredNode.breadcrumbs.map(
-        (breadcrumb) => breadcrumb.id ?? normalizeValue(breadcrumb.value),
-      ),
-      scoredNode.node.def.id ?? normalizeValue(scoredNode.node.def.value),
-    ].join('.')
-    if (!seen.has(compositeId)) {
-      seen.add(compositeId)
+    if (!seen.has(scoredNode.node.id)) {
+      seen.add(scoredNode.node.id)
       result.push(scoredNode)
     }
   }

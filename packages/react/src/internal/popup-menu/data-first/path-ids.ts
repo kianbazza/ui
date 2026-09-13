@@ -2,8 +2,8 @@
 // Path and ID Helpers
 // ============================================================================
 
-import { normalizeValue, slugify } from '../../listbox/utils/normalize.js'
-import type { BreadcrumbNode, SubmenuDef, SubpageDef } from './types.js'
+import { slugify } from '../../listbox/utils/normalize.js'
+import type { BreadcrumbNode } from './types.js'
 
 // ============================================================================
 /**
@@ -30,20 +30,4 @@ export function computeDefPath(
       .map((b) => b.id ?? slugify(b.value)),
     id ?? slugify(value),
   ]
-}
-
-/**
- * Path key for a branch's async loader. **Value-only by design** — breadcrumb
- * and leaf `value`s, normalized and dot-joined; explicit `id`s are deliberately
- * ignored. Must stay consistent with the key computations inside
- * `collectAsyncSubmenus` and `mergeAsyncNodesIntoTree`.
- */
-export function getAsyncLoaderIdForBranch(
-  node: SubmenuDef | SubpageDef,
-  breadcrumbs: BreadcrumbNode[],
-): string {
-  return [
-    ...breadcrumbs.map((breadcrumb) => normalizeValue(breadcrumb.value)),
-    normalizeValue(node.value),
-  ].join('.')
 }

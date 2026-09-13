@@ -2,11 +2,11 @@
 // Async Node Collection & Merging
 // ============================================================================
 
-import { normalizeValue } from '../../listbox/utils/normalize.js'
+import { staticChildrenOf } from '../menu-tree/resolve.js'
+import type { PopupMenuNode } from '../menu-tree/types.js'
 import type {
   AsyncNodesConfig,
   IncludeInDeepSearch,
-  NodeDef,
   SubmenuDef,
   SubpageDef,
 } from './types.js'
@@ -18,12 +18,10 @@ import type {
  * Info about an async branch node (submenu/subpage) for registration.
  */
 export interface AsyncSubmenuInfo {
-  /** Unique identifier (uses node value and breadcrumbs) */
+  /** The branch's Resolved ID — the loader key. */
   id: string
-  /** Breadcrumbs path to this branch node */
-  breadcrumbs: string[]
-  /** The branch node definition */
-  node: SubmenuDef | SubpageDef
+  /** The branch Menu Node (graft target and async-state key). */
+  node: PopupMenuNode<SubmenuDef | SubpageDef>
   /** The async configuration */
   config: AsyncNodesConfig
 }
@@ -32,25 +30,23 @@ export interface AsyncSubmenuInfo {
  * Collects all async branch nodes from a node tree.
  * Recursively traverses groups and branches to find all async configurations.
  */
-export function collectAsyncSubmenus(
-  nodes: NodeDef[],
-  breadcrumbs: string[] = [],
+function collectAsyncSubmenusRaw(
+  nodes: readonly PopupMenuNode[],
   includeInDeepSearch: IncludeInDeepSearch = true,
   descendantsIncluded = true,
 ): AsyncSubmenuInfo[] {
   const result: AsyncSubmenuInfo[] = []
 
   for (const node of nodes) {
-    if (node.kind === 'separator') {
+    if (node.def.kind === 'separator') {
       continue
     }
 
-    if (node.kind === 'group') {
+    if (node.def.kind === 'group') {
       // Recurse into groups
       result.push(
-        ...collectAsyncSubmenus(
-          node.nodes,
-          breadcrumbs,
+        ...collectAsyncSubmenusRaw(
+          staticChildrenOf(node),
           includeInDeepSearch,
           descendantsIncluded,
         ),
@@ -58,13 +54,12 @@ export function collectAsyncSubmenus(
       continue
     }
 
-    if (node.kind === 'radio-group') {
-      if (node.hidden) continue
+    if (node.def.kind === 'radio-group') {
+      if (node.def.hidden) continue
       // Recurse into radio groups
       result.push(
-        ...collectAsyncSubmenus(
-          node.nodes,
-          breadcrumbs,
+        ...collectAsyncSubmenusRaw(
+          staticChildrenOf(node),
           includeInDeepSearch,
           descendantsIncluded,
         ),
@@ -72,34 +67,30 @@ export function collectAsyncSubmenus(
       continue
     }
 
-    if (node.kind === 'submenu' || node.kind === 'subpage') {
-      if (node.hidden) continue
+    if (node.def.kind === 'submenu' || node.def.kind === 'subpage') {
+      if (node.def.hidden) continue
 
-      const branchIncludeMode = node.includeInDeepSearch ?? includeInDeepSearch
+      const branchIncludeMode =
+        node.def.includeInDeepSearch ?? includeInDeepSearch
       const shouldIncludeBranchDescendants =
         descendantsIncluded &&
         branchIncludeMode === true &&
-        node.deepSearch !== false
+        node.def.deepSearch !== false
 
       // If this branch has async nodes, add it to the result
-      if (node.asyncNodes && shouldIncludeBranchDescendants) {
-        // Must match getAsyncLoaderIdForBranch's value-only path-key scheme.
-        const id = [...breadcrumbs, normalizeValue(node.value)].join('.')
+      if (node.def.asyncNodes && shouldIncludeBranchDescendants) {
         result.push({
-          id,
-          breadcrumbs,
-          node,
-          config: node.asyncNodes,
+          id: node.id,
+          node: node as PopupMenuNode<SubmenuDef | SubpageDef>,
+          config: node.def.asyncNodes,
         })
       }
 
       // Recurse into branch node's static nodes
-      if (node.nodes && shouldIncludeBranchDescendants) {
-        const childBreadcrumbs = [...breadcrumbs, normalizeValue(node.value)]
+      if (shouldIncludeBranchDescendants) {
         result.push(
-          ...collectAsyncSubmenus(
-            node.nodes,
-            childBreadcrumbs,
+          ...collectAsyncSubmenusRaw(
+            staticChildrenOf(node),
             includeInDeepSearch,
             true,
           ),
@@ -149,4 +140,29 @@ export function shouldLoadEagerly(config: AsyncNodesConfig): boolean {
 
   // Both static and query loaders can still opt into legacy eager strategy.
   return config.loadStrategy === 'eager'
+}
+
+/**
+ * Collects all async branch nodes from a Menu Node tree, one entry per
+ * Resolved ID. Recursively traverses groups and branches (static children
+ * only) to find every async configuration. A loader result that repeats an
+ * authored branch def yields the same Resolved ID and is collapsed.
+ */
+export function collectAsyncSubmenus(
+  nodes: readonly PopupMenuNode[],
+  includeInDeepSearch: IncludeInDeepSearch = true,
+  descendantsIncluded = true,
+): AsyncSubmenuInfo[] {
+  const seen = new Set<string>()
+  const result: AsyncSubmenuInfo[] = []
+  for (const info of collectAsyncSubmenusRaw(
+    nodes,
+    includeInDeepSearch,
+    descendantsIncluded,
+  )) {
+    if (seen.has(info.id)) continue
+    seen.add(info.id)
+    result.push(info)
+  }
+  return result
 }
